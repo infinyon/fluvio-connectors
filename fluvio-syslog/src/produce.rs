@@ -1,7 +1,7 @@
-use std::io::{self, BufRead};
-use structopt::StructOpt;
 use crate::error::ConnectorError;
 use crate::DEFAULT_TOPIC;
+use std::io::{self, BufRead};
+use structopt::StructOpt;
 
 use fluvio::{
     metadata::topic::{TopicReplicaParam, TopicSpec},
@@ -24,7 +24,6 @@ pub struct ProducerOpts {
 
 impl ProducerOpts {
     pub async fn exec(self) -> Result<(), ConnectorError> {
-
         let topic = self.topic;
         let fluvio = Fluvio::connect().await?;
         let mut admin = fluvio.admin().await;
@@ -56,19 +55,21 @@ impl ProducerOpts {
                 }
             }
         } else if let Some(file) = self.file {
-
-            use notify::{Watcher, RecommendedWatcher, RecursiveMode, EventKind, event::ModifyKind, Result as NotifyResult};
+            use notify::{
+                event::ModifyKind, EventKind, RecommendedWatcher, RecursiveMode,
+                Result as NotifyResult, Watcher,
+            };
 
             let (tx, rx) = std::sync::mpsc::channel();
-            let mut watcher: RecommendedWatcher = RecommendedWatcher::new_immediate(move |res: NotifyResult<notify::Event>| {
-                match res {
+            let mut watcher: RecommendedWatcher = RecommendedWatcher::new_immediate(
+                move |res: NotifyResult<notify::Event>| match res {
                     Ok(event) => {
                         println!("NEW EVENT: {:?}", event);
                         let _ = tx.send(event);
-                    },
+                    }
                     Err(e) => println!("watch error: {:?}", e),
-                }
-            })?;
+                },
+            )?;
             watcher.watch(file.clone(), RecursiveMode::Recursive)?;
 
             let file = std::fs::File::open(file)?;
@@ -96,10 +97,10 @@ impl ProducerOpts {
                                 break;
                             }
                             if let Some(line) = line.strip_suffix("\n") {
-                                let _ = producer.send("", line.clone()).await?;
+                                let _ = producer.send("", line).await?;
                             }
                         }
-                    },
+                    }
                     other => {
                         println!("OTHER EVENT {:?}", other);
                     }
@@ -116,4 +117,3 @@ impl ProducerOpts {
         Ok(())
     }
 }
-

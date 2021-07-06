@@ -1,13 +1,10 @@
+use futures_util::stream::StreamExt;
 use structopt::StructOpt;
 use syslog_loose::parse_message;
-use futures_util::stream::StreamExt;
 
 use crate::error::ConnectorError;
 use crate::DEFAULT_TOPIC;
-use fluvio::{
-    Fluvio,
-    Offset,
-};
+use fluvio::{Fluvio, Offset};
 
 #[derive(StructOpt, Debug)]
 pub struct ConsumerOpts {

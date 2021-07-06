@@ -1,12 +1,12 @@
 use structopt::StructOpt;
 
+mod consume;
 mod error;
 mod produce;
-mod consume;
 
+use consume::ConsumerOpts;
 use error::ConnectorError;
 use produce::ProducerOpts;
-use consume::ConsumerOpts;
 
 const DEFAULT_TOPIC: &str = "syslog";
 
@@ -19,14 +19,13 @@ enum ConnectorOpts {
     Consume(ConsumerOpts),
 }
 
-
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), ConnectorError> {
     let opts = ConnectorOpts::from_args();
     match opts {
         ConnectorOpts::Produce(opts) => {
             let _ = opts.exec().await?;
-        },
+        }
         ConnectorOpts::Consume(opts) => {
             let _ = opts.exec().await?;
         }

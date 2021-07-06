@@ -1,6 +1,5 @@
 use thiserror::Error;
 
-
 #[derive(Debug, Error)]
 pub enum ConnectorError {
     #[error("Fluvio Error {0}")]
