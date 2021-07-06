@@ -1,0 +1,5 @@
+[workspace]
+members = [
+    "fluvio-syslog/",
+]
+resolver = "2"
