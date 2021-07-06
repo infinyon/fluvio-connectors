@@ -40,4 +40,4 @@ jobs:
         run: cargo fmt -- --check
 
       - name: Cargo clippy
-        run: cargo clippy -- -D w
+        run: cargo clippy -- -D warnings
