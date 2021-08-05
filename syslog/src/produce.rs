@@ -1,6 +1,9 @@
 use crate::error::ConnectorError;
+use crate::config::ConnectorConfig;
 use crate::DEFAULT_TOPIC;
 use std::io::{self, BufRead};
+use std::path::Path;
+use std::convert::TryFrom;
 use structopt::StructOpt;
 
 use fluvio::{
@@ -20,13 +23,16 @@ pub struct ProducerOpts {
     /// The topic where all things should go
     #[structopt(short, long, default_value = DEFAULT_TOPIC)]
     topic: String,
+
+    #[structopt(short, long)]
+    config: Option<String>,
 }
 
 impl ProducerOpts {
     pub async fn exec(self) -> Result<(), ConnectorError> {
         let topic = self.topic;
         let fluvio = Fluvio::connect().await?;
-        let mut admin = fluvio.admin().await;
+        let admin = fluvio.admin().await;
         let topics = admin
             .list::<TopicSpec, _>(vec![])
             .await?
@@ -46,7 +52,9 @@ impl ProducerOpts {
 
         let producer = fluvio.topic_producer(topic.clone()).await?;
 
-        if let Some(_bind) = self.bind {
+        if let Some(config_file) = self.config {
+            let _config = ConnectorConfig::try_from(Path::new(&config_file))?;
+        } else if let Some(_bind) = self.bind {
             cfg_if::cfg_if! {
                 if #[cfg(target_arch = "wasm32")] {
                     unimplemented!("Not supported on wasm32!");
@@ -61,7 +69,7 @@ impl ProducerOpts {
             };
 
             let (tx, rx) = std::sync::mpsc::channel();
-            let mut watcher: RecommendedWatcher = RecommendedWatcher::new_immediate(
+            let mut watcher: RecommendedWatcher = RecommendedWatcher::new(
                 move |res: NotifyResult<notify::Event>| match res {
                     Ok(event) => {
                         println!("NEW EVENT: {:?}", event);
@@ -70,7 +78,7 @@ impl ProducerOpts {
                     Err(e) => println!("watch error: {:?}", e),
                 },
             )?;
-            watcher.watch(file.clone(), RecursiveMode::Recursive)?;
+            watcher.watch(Path::new(&file), RecursiveMode::Recursive)?;
 
             let file = std::fs::File::open(file)?;
             let mut f = std::io::BufReader::new(file);
@@ -96,7 +104,7 @@ impl ProducerOpts {
                             if line.is_empty() {
                                 break;
                             }
-                            if let Some(line) = line.strip_suffix("\n") {
+                            if let Some(line) = line.strip_suffix('\n') {
                                 let _ = producer.send("", line).await?;
                             }
                         }

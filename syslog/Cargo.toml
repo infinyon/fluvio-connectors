@@ -11,7 +11,10 @@ structopt = "0.3"
 fluvio = "0.8.4"
 thiserror = "1.0.25"
 tokio = { version = "1.7.1", features = ["macros", "rt", ] }
-notify = "5.0.0-pre.10"
+notify = "5.0.0-pre.11"
 futures-util = "0.3.15"
 cfg-if = "1.0.0"
-futures = "0.3"
+
+# Configuration stuff
+serde = "1.0.127"
+toml = "0.5"

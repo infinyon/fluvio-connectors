@@ -3,6 +3,8 @@ use structopt::StructOpt;
 mod consume;
 mod error;
 mod produce;
+mod config;
+
 
 use consume::ConsumerOpts;
 use error::ConnectorError;
