@@ -1,0 +1,4 @@
+sources:
+  - name: test-connector
+    # This package is relative to the base of the repo
+    package: file://target/debug/test-connector

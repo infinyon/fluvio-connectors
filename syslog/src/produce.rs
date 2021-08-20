@@ -1,9 +1,9 @@
-use crate::error::ConnectorError;
 use crate::config::ConnectorConfig;
+use crate::error::ConnectorError;
 use crate::DEFAULT_TOPIC;
+use std::convert::TryFrom;
 use std::io::{self, BufRead};
 use std::path::Path;
-use std::convert::TryFrom;
 use structopt::StructOpt;
 
 use fluvio::{
@@ -69,15 +69,14 @@ impl ProducerOpts {
             };
 
             let (tx, rx) = std::sync::mpsc::channel();
-            let mut watcher: RecommendedWatcher = RecommendedWatcher::new(
-                move |res: NotifyResult<notify::Event>| match res {
+            let mut watcher: RecommendedWatcher =
+                RecommendedWatcher::new(move |res: NotifyResult<notify::Event>| match res {
                     Ok(event) => {
                         println!("NEW EVENT: {:?}", event);
                         let _ = tx.send(event);
                     }
                     Err(e) => println!("watch error: {:?}", e),
-                },
-            )?;
+                })?;
             watcher.watch(Path::new(&file), RecursiveMode::Recursive)?;
 
             let file = std::fs::File::open(file)?;

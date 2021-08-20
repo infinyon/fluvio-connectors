@@ -1,10 +1,9 @@
 use structopt::StructOpt;
 
+mod config;
 mod consume;
 mod error;
 mod produce;
-mod config;
-
 
 use consume::ConsumerOpts;
 use error::ConnectorError;
