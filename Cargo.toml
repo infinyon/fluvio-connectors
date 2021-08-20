@@ -1,5 +1,8 @@
 [workspace]
 members = [
     "syslog/",
+    "connectors-manager/",
+    "common/",
+    "test-connector/",
 ]
 resolver = "2"

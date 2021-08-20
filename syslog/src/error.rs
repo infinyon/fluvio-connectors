@@ -1,5 +1,5 @@
-use thiserror::Error;
 use crate::config::ConfigError;
+use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum ConnectorError {

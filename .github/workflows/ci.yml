@@ -29,11 +29,13 @@ jobs:
           toolchain: stable
           override: true
           components: clippy
-          target: wasm32-unknown-unknown
 
-      - name: Cargo check on wasm
+      - name: Cargo test
         run: |
-          cargo check --all-targets --target wasm32-unknown-unknown
+          cargo test
+
+      - name: Cargo check
+        run: |
           cargo check --all-targets
 
       - name: Cargo fmt

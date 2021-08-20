@@ -1,0 +1,12 @@
+[package]
+name = "fluvio-connector"
+version = "0.1.0"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+structopt = "0.3"
+tokio = { version = "1.7.1", features = ["macros", "rt", ] }
+fluvio-connectors-common = { path = "../common" }
+thiserror = "1.0.25"
