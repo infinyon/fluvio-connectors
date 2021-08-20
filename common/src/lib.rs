@@ -24,7 +24,7 @@ pub struct ConnectorConfig {
 }
 
 #[cfg(test)]
-mod yaml{
+mod yaml {
     use super::*;
     #[test]
     fn test_yaml() {
@@ -39,12 +39,13 @@ sinks:
   - name: foobar
     package: bar
 #";
-    let config : ConnectorConfigSet = serde_yaml::from_str(input_yaml).expect("Failed to parse yaml");
-    assert!(config.sources.is_some());
-    let sources = config.sources.unwrap();
-    assert_eq!(sources[0].name, "foo");
-    assert_eq!(sources[1].name, "baz");
-    let sinks = config.sinks.unwrap();
-    assert_eq!(sinks[0].name, "foobar");
+        let config: ConnectorConfigSet =
+            serde_yaml::from_str(input_yaml).expect("Failed to parse yaml");
+        assert!(config.sources.is_some());
+        let sources = config.sources.unwrap();
+        assert_eq!(sources[0].name, "foo");
+        assert_eq!(sources[1].name, "baz");
+        let sinks = config.sinks.unwrap();
+        assert_eq!(sinks[0].name, "foobar");
     }
 }
