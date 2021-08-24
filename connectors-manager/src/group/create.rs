@@ -21,22 +21,6 @@ pub struct CreateManagedSpuGroupOpt {
     /// The name for the new SPU Group
     #[structopt(value_name = "name")]
     pub name: String,
-
-    /// The number of SPUs to create in this SPG
-    #[structopt(short, long, value_name = "integer", default_value = "1")]
-    pub replicas: u16,
-
-    /// Minimum SPU ID
-    #[structopt(long, value_name = "integer", default_value = "1")]
-    pub min_id: i32,
-
-    /// Rack name
-    #[structopt(long, value_name = "string")]
-    pub rack: Option<String>,
-
-    /// The amount of storage to assign to this SPG
-    #[structopt(long, value_name = "string")]
-    pub storage_size: Option<String>,
 }
 
 impl CreateManagedSpuGroupOpt {
@@ -52,6 +36,8 @@ impl CreateManagedSpuGroupOpt {
 
     /// Validate cli options. Generate target-server and create spu group config.
     fn validate(self) -> (String, SpuGroupSpec) {
+        todo!();
+        /*
         let storage = self.storage_size.map(|storage_size| StorageConfig {
             size: Some(storage_size),
             ..Default::default()
@@ -69,5 +55,6 @@ impl CreateManagedSpuGroupOpt {
             spu_config,
         };
         (self.name, spec)
+        */
     }
 }

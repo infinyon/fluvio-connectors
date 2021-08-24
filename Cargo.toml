@@ -6,3 +6,8 @@ members = [
     "test-connector/",
 ]
 resolver = "2"
+
+[patch.crates-io]
+fluvio-controlplane-metadata = { path = "../fluvio/src/controlplane-metadata/" }
+fluvio = { path = "../fluvio/src/client/" }
+fluvio-extension-common = { path = "../fluvio/src/extension-common/" }
