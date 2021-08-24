@@ -1,26 +1,25 @@
 use serde::Deserialize;
 use std::collections::HashMap;
 
-#[derive(Debug, Deserialize)]
-pub struct ConnectorConfigSet {
-    sources: Option<Vec<ConnectorConfig>>,
-    sinks: Option<Vec<ConnectorConfig>>,
-}
+pub type ConnectorConfigSet = HashMap<String, ConnectorConfig>;
 
 #[derive(Debug, Deserialize)]
 pub struct ConnectorConfig {
-    /// A unique identifier for this connector
-    name: String,
-    /// A scheme to a package to run. ex:
-    /// * "file:://../test-connector"
-    /// * "docker://infinyon/fluvio"
-    package: String,
+    /// The type of connector used
+    r#type: String,
     /// The topic for this connector. If none, defaults to `name`
     topic: Option<String>,
     /// Auto create topic if it doesn't exist
-    create_topic: Option<bool>,
+    #[serde(default = "ConnectorConfig::create_topic_default")]
+    create_topic: bool,
     /// Specefic arguments to the connector itself. Such as API Keys, etc.
-    connector_args: Option<HashMap<String, String>>,
+    inputs: Option<HashMap<String, String>>,
+}
+
+impl ConnectorConfig {
+    pub fn create_topic_default() -> bool {
+        true
+    }
 }
 
 #[cfg(test)]
@@ -29,23 +28,17 @@ mod yaml {
     #[test]
     fn test_yaml() {
         let input_yaml = "#
-sources:
-  - name: foo
-    package: bar
-  - name: baz
-    package: bar
+my-simple-connector:
+  type: syslog
 
-sinks:
-  - name: foobar
-    package: bar
+my-complex-connector:
+  type: syslog
+  version: 0.1
+  topic_name: my-syslog-connector # defaults to id
+  inputs:
+    bind_url: tcp://0.0.0.0:9000
 #";
         let config: ConnectorConfigSet =
             serde_yaml::from_str(input_yaml).expect("Failed to parse yaml");
-        assert!(config.sources.is_some());
-        let sources = config.sources.unwrap();
-        assert_eq!(sources[0].name, "foo");
-        assert_eq!(sources[1].name, "baz");
-        let sinks = config.sinks.unwrap();
-        assert_eq!(sinks[0].name, "foobar");
     }
 }
