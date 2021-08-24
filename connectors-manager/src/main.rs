@@ -1,41 +1,20 @@
 mod error;
-mod list;
-mod start;
-mod stop;
+mod group;
 
 use error::ConnectorError;
-use list::ListOpts;
-use start::StartOpts;
-use stop::StopOpts;
+use group::SpuGroupCmd as ConnectorOpts;
 
 use structopt::StructOpt;
-
-#[derive(StructOpt, Debug)]
-enum ConnectorOpts {
-    #[structopt(name = "start")]
-    Start(StartOpts),
-
-    #[structopt(name = "stop")]
-    Stop(StopOpts),
-
-    #[structopt(name = "list")]
-    List(ListOpts),
-}
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), ConnectorError> {
     let opts = ConnectorOpts::from_args();
-    match opts {
-        ConnectorOpts::Start(opts) => {
-            let _ = opts.exec().await?;
-        }
-        ConnectorOpts::Stop(opts) => {
-            let _ = opts.exec().await?;
-        }
-        ConnectorOpts::List(opts) => {
-            let _ = opts.exec().await?;
-        }
-    }
+    use fluvio_extension_common::PrintTerminal;
+    use std::sync::Arc;
+    let out = Arc::new(PrintTerminal::new());
+    let fluvio = fluvio::Fluvio::connect().await.expect("Failed to connect to fluvio");
+
+    let _ = opts.process(out, &fluvio).await?;
 
     Ok(())
 }
