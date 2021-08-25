@@ -1,20 +1,11 @@
 use thiserror::Error;
-
-// TODO: Add more error types
-#[derive(Debug, Error)]
-pub enum ConnectorError {}
-
-use fluvio::FluvioError;
-impl From<FluvioError> for ConnectorError {
-    fn from(err: FluvioError) -> Self {
-        println!("{:?}", err);
-        todo!();
-    }
-}
 use fluvio_extension_common::output::OutputError;
-impl From<OutputError> for ConnectorError {
-    fn from(err: OutputError) -> Self {
-        println!("{:?}", err);
-        todo!();
-    }
+use fluvio::FluvioError;
+
+#[derive(Debug, Error)]
+pub enum ConnectorError {
+    #[error("Fluvio Error `{0:?}`")]
+    Fluvio(#[from] FluvioError),
+    #[error("Otuput Error `{0:?}`")]
+    Output(#[from] OutputError),
 }
