@@ -8,6 +8,7 @@ use structopt::StructOpt;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), ConnectorError> {
+    fluvio_future::subscriber::init_tracer(None);
     let opts = ConnectorOpts::from_args();
     use fluvio_extension_common::PrintTerminal;
     use std::sync::Arc;

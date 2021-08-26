@@ -7,7 +7,9 @@ use std::sync::Arc;
 use structopt::StructOpt;
 
 use fluvio::Fluvio;
-use fluvio_controlplane_metadata::spg::SpuGroupSpec;
+use fluvio_controlplane_metadata::managed_connector::{
+    ManagedConnectorSpec,
+};
 
 use fluvio_extension_common::Terminal;
 use fluvio_extension_common::OutputFormat;
@@ -27,7 +29,7 @@ impl ListManagedSpuGroupsOpt {
         fluvio: &Fluvio,
     ) -> Result<(), ClusterCliError> {
         let admin = fluvio.admin().await;
-        let lists = admin.list::<SpuGroupSpec, _>(vec![]).await?;
+        let lists = admin.list::<ManagedConnectorSpec, _>(vec![]).await?;
 
         output::spu_group_response_to_output(out, lists, self.output.format)
     }
@@ -51,14 +53,14 @@ mod output {
     use fluvio_extension_common::Terminal;
 
     use fluvio::metadata::objects::Metadata;
-    use fluvio_controlplane_metadata::spg::SpuGroupSpec;
+    use fluvio_controlplane_metadata::managed_connector::ManagedConnectorSpec;
 
     use crate::error::ConnectorError as ClusterCliError;
     use fluvio_extension_common::output::TableOutputHandler;
     use fluvio_extension_common::t_println;
 
     #[derive(Serialize)]
-    struct ListSpuGroups(Vec<Metadata<SpuGroupSpec>>);
+    struct ListSpuGroups(Vec<Metadata<ManagedConnectorSpec>>);
 
     // -----------------------------------
     // Format Output
@@ -67,7 +69,7 @@ mod output {
     /// Format SPU Group based on output type
     pub fn spu_group_response_to_output<O: Terminal>(
         out: std::sync::Arc<O>,
-        list_spu_groups: Vec<Metadata<SpuGroupSpec>>,
+        list_spu_groups: Vec<Metadata<ManagedConnectorSpec>>,
         output_type: OutputType,
     ) -> Result<(), ClusterCliError> {
         debug!("groups: {:#?}", list_spu_groups);
@@ -102,17 +104,9 @@ mod output {
                 .iter()
                 .map(|r| {
                     let spec = &r.spec;
-                    let storage_config = spec.spu_config.real_storage_config();
                     Row::new(vec![
                         Cell::new_align(&r.name, Alignment::RIGHT),
-                        Cell::new_align(&spec.replicas.to_string(), Alignment::CENTER),
-                        Cell::new_align(&r.spec.min_id.to_string(), Alignment::RIGHT),
-                        Cell::new_align(
-                            &spec.spu_config.rack.clone().unwrap_or_default(),
-                            Alignment::RIGHT,
-                        ),
-                        Cell::new_align(&storage_config.size, Alignment::RIGHT),
-                        Cell::new_align(&r.status.to_string(), Alignment::RIGHT),
+                        //Cell::new_align(&r.status.to_string(), Alignment::RIGHT),
                     ])
                 })
                 .collect()

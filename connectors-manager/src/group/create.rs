@@ -38,10 +38,18 @@ impl CreateManagedSpuGroupOpt {
             },
         };
 
-        debug!("creating spg: {}, spec: {:#?}", name, spec);
+        debug!("creating managed_connector: {}, spec: {:#?}", name, spec);
 
         let admin = fluvio.admin().await;
+        //fluvio_future::timer::sleep(std::time::Duration::from_secs(5)).await;
         admin.create(name, false, spec).await?;
+        /*
+        admin.create(
+            name,
+            false,
+            fluvio_controlplane_metadata::topic::TopicSpec::default()
+        ).await?;
+        */
 
         Ok(())
     }

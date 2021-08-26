@@ -6,7 +6,9 @@
 use structopt::StructOpt;
 
 use fluvio::Fluvio;
-use fluvio::metadata::spg::SpuGroupSpec;
+use fluvio_controlplane_metadata::managed_connector::{
+    ManagedConnectorSpec,
+};
 
 use crate::error::ConnectorError as ClusterCliError;
 
@@ -24,7 +26,7 @@ pub struct DeleteManagedSpuGroupOpt {
 impl DeleteManagedSpuGroupOpt {
     pub async fn process(self, fluvio: &Fluvio) -> Result<(), ClusterCliError> {
         let admin = fluvio.admin().await;
-        admin.delete::<SpuGroupSpec, _>(&self.name).await?;
+        admin.delete::<ManagedConnectorSpec, _>(&self.name).await?;
         Ok(())
     }
 }
