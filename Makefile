@@ -8,14 +8,21 @@ TARGET_FLAG=$(if $(TARGET),--target $(TARGET),)
 TEST_CONNECTOR_BIN=$(if $(TARGET),./target/$(TARGET)/$(BUILD_PROFILE)/test-connector,./target/$(BUILD_PROFILE)/test-connector)
 SYSLOG_BIN=$(if $(TARGET),./target/$(TARGET)/$(BUILD_PROFILE)/fluvio-syslog,./target/$(BUILD_PROFILE)/fluvio-syslog)
 
-CONNECTOR_NAME?=test-connector
-IMAGE_NAME?=infinyon/fluvio-connect-test-connector
+#CONNECTOR_NAME?=test-connector
+#IMAGE_NAME?=infinyon/fluvio-connect-test-connector
+CONNECTOR_NAME?=
+IMAGE_NAME?=
 
 smoke-test:
 	cargo run --bin fluvio-connector start ./test-connector/config.yaml
 
+ifndef CONNECTOR_NAME
 build:
 	cargo build $(TARGET_FLAG) $(RELEASE_FLAG) 
+else
+build:
+	cargo build $(TARGET_FLAG) $(RELEASE_FLAG) --bin $(CONNECTOR_NAME)
+endif
 
 ifeq (${CI},true)
 # In CI, we expect all artifacts to already be built and loaded for the script
