@@ -60,7 +60,7 @@ mod output {
     use fluvio_extension_common::t_println;
 
     #[derive(Serialize)]
-    struct ListSpuGroups(Vec<Metadata<ManagedConnectorSpec>>);
+    struct ListManagedConnectors(Vec<Metadata<ManagedConnectorSpec>>);
 
     // -----------------------------------
     // Format Output
@@ -72,14 +72,14 @@ mod output {
         list_spu_groups: Vec<Metadata<ManagedConnectorSpec>>,
         output_type: OutputType,
     ) -> Result<(), ClusterCliError> {
-        debug!("groups: {:#?}", list_spu_groups);
+        debug!("managed connectors: {:#?}", list_spu_groups);
 
         if !list_spu_groups.is_empty() {
-            let groups = ListSpuGroups(list_spu_groups);
+            let groups = ListManagedConnectors(list_spu_groups);
             out.render_list(&groups, output_type)?;
             Ok(())
         } else {
-            t_println!(out, "no groups");
+            t_println!(out, "no managed connectors");
             Ok(())
         }
     }
@@ -87,10 +87,10 @@ mod output {
     // -----------------------------------
     // Output Handlers
     // -----------------------------------
-    impl TableOutputHandler for ListSpuGroups {
+    impl TableOutputHandler for ListManagedConnectors {
         /// table header implementation
         fn header(&self) -> Row {
-            row!["NAME", "REPLICAS", "MIN ID", "RACK", "SIZE", "STATUS",]
+            row!["NAME", "STATUS",]
         }
 
         /// return errors in string format
@@ -106,7 +106,7 @@ mod output {
                     let spec = &r.spec;
                     Row::new(vec![
                         Cell::new_align(&r.name, Alignment::RIGHT),
-                        //Cell::new_align(&r.status.to_string(), Alignment::RIGHT),
+                        Cell::new_align(&r.status.to_string(), Alignment::RIGHT),
                     ])
                 })
                 .collect()
