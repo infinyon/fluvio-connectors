@@ -57,10 +57,10 @@ jobs:
 
   build_containers:
     name: Build containers 
-    fail-fast: false
     #needs: check_fmt
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest]
         rust-target:
