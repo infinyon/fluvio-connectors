@@ -74,11 +74,11 @@ jobs:
       - name: Install Rust stable
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: stable
+          toolchain: ${{ matrix.rust }} 
           override: true
-          components: clippy
+          target: ${{ matrix.rust-target }}
       - name: Build containers
-        run: make official-containers
+        run: make RELEASE=true official-containers
       # TODO: Create docker manifest
 
   # Job that follows the success of all required jobs in this workflow.
@@ -91,4 +91,3 @@ jobs:
     steps:
       - name: Done
         run: echo "Done!"
-
