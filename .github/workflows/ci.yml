@@ -81,8 +81,8 @@ jobs:
       - name: Install system toolchain - x86_64-unknown-linux-musl'
         if: ${{ matrix.rust-target == 'x86_64-unknown-linux-musl' }}
         run: |
-          apt update
-          apt install -y musl-tools
+          sudo apt update
+          sudo apt install -y musl-tools
 
       #- name: Install system toolchain - aarch64-unknown-linux-musl
       #  if: ${{ matrix.rust-target == 'aarch64-unknown-linux-musl' }}
