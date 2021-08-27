@@ -108,7 +108,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.connector-name }}-${{ matrix.rust-target }}
-          path: ${{ env.RUST_BIN_DIR }}/${{ matrix.connector-name }
+          path: ${{ env.RUST_BIN_DIR }}/${{ matrix.connector-name }}
 
   build_containers:
     name: Build containers 
