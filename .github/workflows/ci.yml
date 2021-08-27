@@ -55,6 +55,32 @@ jobs:
         if: ${{ matrix.check == 'clippy' }}
         run: cargo clippy -- -D warnings
 
+  build_containers:
+    name: Build containers 
+    needs: check_fmt
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        rust-target:
+          - x86_64-unknown-linux-musl
+          - aarch64-unknown-linux-musl
+        rust: [stable]
+    env:
+      RUSTV: ${{ matrix.rust }}
+      TARGET: ${{ matrix.rust-target }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Rust stable
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          components: clippy
+      - name: Build containers
+        run: make official-containers
+      # TODO: Create docker manifest
+
   # Job that follows the success of all required jobs in this workflow.
   # Used by Bors to detect that all required jobs have completed successfully
   done:
@@ -65,3 +91,4 @@ jobs:
     steps:
       - name: Done
         run: echo "Done!"
+
