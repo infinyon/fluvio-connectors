@@ -3,7 +3,7 @@ name: CI
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [ main, staging, trying ]
   pull_request:
     branches: [ main ]
 
@@ -43,3 +43,14 @@ jobs:
 
       - name: Cargo clippy
         run: cargo clippy -- -D warnings
+
+  # Job that follows the success of all required jobs in this workflow.
+  # Used by Bors to detect that all required jobs have completed successfully
+  done:
+    name: Done
+    if: github.event_name == 'push' && github.ref == 'refs/heads/staging'
+    needs: [check_fmt]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Done
+        run: echo "Done!"
