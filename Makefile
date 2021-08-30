@@ -8,10 +8,9 @@ TARGET_FLAG=$(if $(TARGET),--target $(TARGET),)
 TEST_CONNECTOR_BIN=$(if $(TARGET),./target/$(TARGET)/$(BUILD_PROFILE)/test-connector,./target/$(BUILD_PROFILE)/test-connector)
 SYSLOG_BIN=$(if $(TARGET),./target/$(TARGET)/$(BUILD_PROFILE)/fluvio-syslog,./target/$(BUILD_PROFILE)/fluvio-syslog)
 
-#CONNECTOR_NAME?=test-connector
-#IMAGE_NAME?=infinyon/fluvio-connect-test-connector
-CONNECTOR_NAME?=
-IMAGE_NAME?=
+# These defaults are set for development purposes only. CI will override
+CONNECTOR_NAME?=test-connector
+IMAGE_NAME?=infinyon/fluvio-connect-test-connector
 
 smoke-test:
 	cargo run --bin fluvio-connector start ./test-connector/config.yaml
