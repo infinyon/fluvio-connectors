@@ -157,7 +157,7 @@ jobs:
   done:
     name: Done
     if: github.event_name == 'push' && github.ref == 'refs/heads/staging'
-    needs: [check_fmt]
+    needs: [check]
     runs-on: ubuntu-latest
     steps:
       - name: Done
