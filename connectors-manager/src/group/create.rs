@@ -1,7 +1,7 @@
 //!
-//! # Create Mange SPU Groups
+//! # Create a Managed Connector
 //!
-//! CLI tree to generate Create Managed SPU Groups
+//! CLI tree to generate Create a Managed Connector
 //!
 
 use fluvio_controlplane_metadata::managed_connector::{
@@ -19,13 +19,13 @@ use crate::error::ConnectorError as ClusterCliError;
 // -----------------------------------
 
 #[derive(Debug, StructOpt, Default)]
-pub struct CreateManagedSpuGroupOpt {
-    /// The name for the new SPU Group
+pub struct CreateManagedConnectorOpt {
+    /// The name for the new Managed Connector
     #[structopt(value_name = "name")]
     pub name: String,
 }
 
-impl CreateManagedSpuGroupOpt {
+impl CreateManagedConnectorOpt {
     pub async fn process(self, fluvio: &Fluvio) -> Result<(), ClusterCliError> {
         // let (name, spec) = self.validate();
 
@@ -35,21 +35,14 @@ impl CreateManagedSpuGroupOpt {
             config: ManagedConnectorConfig {
                 r#type: "type1".to_owned(),
                 topic: "type1topic".to_owned(),
+                args: todo!(),
             },
         };
 
         debug!("creating managed_connector: {}, spec: {:#?}", name, spec);
 
         let admin = fluvio.admin().await;
-        //fluvio_future::timer::sleep(std::time::Duration::from_secs(5)).await;
         admin.create(name, false, spec).await?;
-        /*
-        admin.create(
-            name,
-            false,
-            fluvio_controlplane_metadata::topic::TopicSpec::default()
-        ).await?;
-        */
 
         Ok(())
     }

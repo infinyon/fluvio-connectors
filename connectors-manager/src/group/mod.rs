@@ -10,35 +10,35 @@ use crate::error::ConnectorError as ClusterCliError;
 use fluvio_extension_common::Terminal;
 use fluvio_extension_common::COMMAND_TEMPLATE;
 
-use create::CreateManagedSpuGroupOpt;
-use delete::DeleteManagedSpuGroupOpt;
-use list::ListManagedSpuGroupsOpt;
+use create::CreateManagedConnectorOpt;
+use delete::DeleteManagedConnectorOpt;
+use list::ListManagedConnectorsOpt;
 
 #[derive(Debug, StructOpt)]
-pub enum SpuGroupCmd {
+pub enum ManagedConnectorCmd {
     /// Create a new managed SPU Group
     #[structopt(
         name = "create",
         template = COMMAND_TEMPLATE,
     )]
-    Create(CreateManagedSpuGroupOpt),
+    Create(CreateManagedConnectorOpt),
 
     /// Delete a managed SPU Group
     #[structopt(
         name = "delete",
         template = COMMAND_TEMPLATE,
     )]
-    Delete(DeleteManagedSpuGroupOpt),
+    Delete(DeleteManagedConnectorOpt),
 
     /// List all SPU Groups
     #[structopt(
         name = "list",
         template = COMMAND_TEMPLATE,
     )]
-    List(ListManagedSpuGroupsOpt),
+    List(ListManagedConnectorsOpt),
 }
 
-impl SpuGroupCmd {
+impl ManagedConnectorCmd {
     pub async fn process<O: Terminal>(
         self,
         out: Arc<O>,

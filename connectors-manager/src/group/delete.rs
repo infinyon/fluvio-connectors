@@ -17,13 +17,13 @@ use crate::error::ConnectorError as ClusterCliError;
 // -----------------------------------
 
 #[derive(Debug, StructOpt)]
-pub struct DeleteManagedSpuGroupOpt {
+pub struct DeleteManagedConnectorOpt {
     /// The name of the SPU Group to delete
     #[structopt(value_name = "name")]
     name: String,
 }
 
-impl DeleteManagedSpuGroupOpt {
+impl DeleteManagedConnectorOpt {
     pub async fn process(self, fluvio: &Fluvio) -> Result<(), ClusterCliError> {
         let admin = fluvio.admin().await;
         admin.delete::<ManagedConnectorSpec, _>(&self.name).await?;

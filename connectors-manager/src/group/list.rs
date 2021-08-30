@@ -16,13 +16,13 @@ use fluvio_extension_common::OutputFormat;
 use crate::error::ConnectorError as ClusterCliError;
 
 #[derive(Debug, StructOpt)]
-pub struct ListManagedSpuGroupsOpt {
+pub struct ListManagedConnectorsOpt {
     #[structopt(flatten)]
     output: OutputFormat,
 }
 
-impl ListManagedSpuGroupsOpt {
-    /// Process list spus cli request
+impl ListManagedConnectorsOpt {
+    /// Process list connectors cli request
     pub async fn process<O: Terminal>(
         self,
         out: Arc<O>,
@@ -31,7 +31,7 @@ impl ListManagedSpuGroupsOpt {
         let admin = fluvio.admin().await;
         let lists = admin.list::<ManagedConnectorSpec, _>(vec![]).await?;
 
-        output::spu_group_response_to_output(out, lists, self.output.format)
+        output::managed_connectors_response_to_output(out, lists, self.output.format)
     }
 }
 
@@ -66,17 +66,17 @@ mod output {
     // Format Output
     // -----------------------------------
 
-    /// Format SPU Group based on output type
-    pub fn spu_group_response_to_output<O: Terminal>(
+    /// Format Managed Connectors based on output type
+    pub fn managed_connectors_response_to_output<O: Terminal>(
         out: std::sync::Arc<O>,
-        list_spu_groups: Vec<Metadata<ManagedConnectorSpec>>,
+        list_managed_connectors: Vec<Metadata<ManagedConnectorSpec>>,
         output_type: OutputType,
     ) -> Result<(), ClusterCliError> {
-        debug!("managed connectors: {:#?}", list_spu_groups);
+        debug!("managed connectors: {:#?}", list_managed_connectors);
 
-        if !list_spu_groups.is_empty() {
-            let groups = ListManagedConnectors(list_spu_groups);
-            out.render_list(&groups, output_type)?;
+        if !list_managed_connectors.is_empty() {
+            let connectors = ListManagedConnectors(list_managed_connectors);
+            out.render_list(&connectors, output_type)?;
             Ok(())
         } else {
             t_println!(out, "no managed connectors");

@@ -1,17 +1,18 @@
 mod error;
 mod group;
+mod config;
 
 use error::ConnectorError;
-use group::SpuGroupCmd as ConnectorOpts;
+use group::ManagedConnectorCmd as ConnectorOpts;
 
 use structopt::StructOpt;
+use fluvio_extension_common::PrintTerminal;
+use std::sync::Arc;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), ConnectorError> {
     fluvio_future::subscriber::init_tracer(None);
     let opts = ConnectorOpts::from_args();
-    use fluvio_extension_common::PrintTerminal;
-    use std::sync::Arc;
     let out = Arc::new(PrintTerminal::new());
     let fluvio = fluvio::Fluvio::connect().await.expect("Failed to connect to fluvio");
 
