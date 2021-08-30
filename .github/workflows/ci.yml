@@ -15,12 +15,19 @@ jobs:
       - uses: styfle/cancel-workflow-action@0.9.0
         with:
           access_token: ${{ secrets.GITHUB_TOKEN }}
-  check_fmt:
-    name: Check fmt and clippy
+  check:
+    name: Rust Check - ${{ matrix.check }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest]
+        rust: [stable]
+        rust-target: [x86_64-unknown-linux-gnu]
+        check: [test, check, fmt, clippy]
+    env:
+      RUST_BACKTRACE: full
+      RUSTV: ${{ matrix.rust }}
+      TARGET: ${{ matrix.rust-target }}
     steps:
       - uses: actions/checkout@v2
       - name: Install Rust stable
@@ -31,15 +38,19 @@ jobs:
           components: clippy
 
       - name: Cargo test
+        if: ${{ matrix.check == 'test' }}
         run: |
           cargo test
 
       - name: Cargo check
+        if: ${{ matrix.check == 'check' }}
         run: |
           cargo check --all-targets
 
       - name: Cargo fmt
+        if: ${{ matrix.check == 'fmt' }}
         run: cargo fmt -- --check
 
       - name: Cargo clippy
+        if: ${{ matrix.check == 'clippy' }}
         run: cargo clippy -- -D warnings
