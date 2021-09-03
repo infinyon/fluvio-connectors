@@ -14,4 +14,13 @@ RUN chmod +x /usr/local/bin/${CONNECTOR_NAME}
 # The startup script uses this file to get the connector binary name
 RUN echo ${CONNECTOR_NAME} | tee /CONNECTOR_NAME
 
+# Add non-privileged user
+ENV USER=fluvio
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/home/$USER" \
+    "$USER"
+USER $USER 
+
 ENTRYPOINT [ "sh", "-c", "tini $CONNECTOR_NAME" ] 
