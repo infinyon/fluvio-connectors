@@ -121,9 +121,9 @@ jobs:
         rust-target:
           - x86_64-unknown-linux-musl
           - aarch64-unknown-linux-musl
+        connector-name: [test-connector]
+        image-name: [infinyon/fluvio-connect-test-connector]
         include:
-          - connector-name: test-connector
-            image-name: infinyon/fluvio-connect-test-connector
           - connector-name: fluvio-syslog
             image-name: infinyon/fluvio-connect-syslog
         rust: [stable]
