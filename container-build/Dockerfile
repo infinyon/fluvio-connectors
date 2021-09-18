@@ -1,4 +1,5 @@
-FROM alpine 
+ARG ARCH=
+FROM ${ARCH}alpine:3.14
 
 # Install tini for signal processing and zombie killing
 RUN apk add --no-cache tini
@@ -18,7 +19,6 @@ RUN echo ${CONNECTOR_NAME} | tee /CONNECTOR_NAME
 ENV USER=fluvio
 RUN adduser \
     --disabled-password \
-    --gecos "" \
     --home "/home/$USER" \
     "$USER"
 USER $USER 

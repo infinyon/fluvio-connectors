@@ -36,7 +36,7 @@ endif
 
 official-containers: copy-binaries
 	cd container-build && \
-		docker build -t $(IMAGE_NAME) --build-arg CONNECTOR_NAME=$(CONNECTOR_NAME) .
+		../build-scripts/docker/build-connector-image.sh
 
 clean:
 	$(CARGO_BUILDER) clean
