@@ -5,7 +5,7 @@ FROM ${ARCH}alpine:3.14
 RUN if [ -z "$ARCH" ]; then \
         apk add --arch x86_64 --no-cache tini ;\
     else \
-        apk add --arch arm64 --no-cache tini ;\
+        apk add --arch aarch64 --no-cache tini ;\
     fi
 
 # This env var is used in the entrypoint
