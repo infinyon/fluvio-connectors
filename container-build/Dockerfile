@@ -2,7 +2,7 @@ ARG ARCH=
 FROM ${ARCH}alpine:3.14
 
 # Install tini for signal processing and zombie killing
-RUN apk add --no-cache tini
+RUN apk add --arch $(uname -p) --no-cache tini
 
 # This env var is used in the entrypoint
 ARG CONNECTOR_NAME=test-connector
