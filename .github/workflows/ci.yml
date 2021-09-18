@@ -141,6 +141,12 @@ jobs:
           # This is the directory the Makefile expects artifacts to live in
           path: container-build 
 
+      - name: Print container-build dir
+        run: |
+          ls container-build;
+          chmod +x ./container-build/${{ matrix.connector-name }}-${{ matrix.rust-target }}
+          ./container-build/${{ matrix.connector-name }}-${{ matrix.rust-target }} -h || true
+
       - name: Build containers
         env:
           TARGET: ${{ matrix.rust-target }}

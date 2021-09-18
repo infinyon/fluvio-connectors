@@ -16,9 +16,6 @@ ENV CONNECTOR_NAME=${CONNECTOR_NAME}
 COPY ${CONNECTOR_NAME} /usr/local/bin/${CONNECTOR_NAME}
 RUN chmod +x /usr/local/bin/${CONNECTOR_NAME}
 
-# The startup script uses this file to get the connector binary name
-RUN echo ${CONNECTOR_NAME} | tee /CONNECTOR_NAME
-
 # Add non-privileged user
 ENV USER=fluvio
 RUN adduser \
