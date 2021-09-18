@@ -134,7 +134,6 @@ jobs:
             image-name: infinyon/fluvio-connect-syslog
             rust-target: aarch64-unknown-linux-musl
     env:
-    env:
       RUSTV: ${{ matrix.rust }}
       TARGET: ${{ matrix.rust-target }}
     steps:
