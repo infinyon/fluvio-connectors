@@ -57,7 +57,7 @@ jobs:
 
 
   build_connector_bins:
-    name:  Build ${{ matrix.connector-name }} for ${{ matrix.rust-target }} on (${{ matrix.os }}) 
+    name:  Build binary ${{ matrix.connector-name }} for ${{ matrix.rust-target }} on (${{ matrix.os }}) 
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -111,7 +111,7 @@ jobs:
           path: ${{ env.RUST_BIN_DIR }}/${{ matrix.connector-name }}
 
   build_containers:
-    name: Build containers 
+    name: Build image ${{ matrix.connector-name }} for ${{ matrix.rust-target }} 
     needs: build_connector_bins 
     runs-on: ${{ matrix.os }}
     strategy:
@@ -128,6 +128,12 @@ jobs:
           - os: ubuntu-latest
             connector-name: fluvio-syslog
             image-name: infinyon/fluvio-connect-syslog
+            rust-target: x86_64-unknown-linux-musl
+          - os: ubuntu-latest
+            connector-name: fluvio-syslog
+            image-name: infinyon/fluvio-connect-syslog
+            rust-target: aarch64-unknown-linux-musl
+    env:
     env:
       RUSTV: ${{ matrix.rust }}
       TARGET: ${{ matrix.rust-target }}
