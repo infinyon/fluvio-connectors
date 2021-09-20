@@ -14,19 +14,19 @@ function main() {
 
 
   if [ "$TARGET" = "aarch64-unknown-linux-musl" ]; then
-    BUILD_ARGS="--build-arg CONNECTOR_NAME=${CONNECTOR_NAME} --build-arg ARCH=arm64v8/"
+    BUILD_ARGS="--platform linux/arm64 --build-arg CONNECTOR_NAME=${CONNECTOR_NAME} --build-arg ARCH=arm64v8/"
   else
-    BUILD_ARGS="--build-arg CONNECTOR_NAME=${CONNECTOR_NAME}"
+    BUILD_ARGS="--platform linux/amd64 --build-arg CONNECTOR_NAME=${CONNECTOR_NAME}"
   fi
 
   # Tag the image with a commit hash if we provide it
   if [[ -z "$COMMIT_HASH" ]];
   then
     # shellcheck disable=SC2086
-    docker build -t "$IMAGE_NAME" $BUILD_ARGS .
+    docker buildx build -t "$IMAGE_NAME" $BUILD_ARGS .
   else
     # shellcheck disable=SC2086
-    docker build -t "$IMAGE_NAME" -t "$IMAGE_NAME:$COMMIT_HASH-$TARGET" $BUILD_ARGS .
+    docker buildx build -t "$IMAGE_NAME" -t "$IMAGE_NAME:$COMMIT_HASH-$TARGET" $BUILD_ARGS .
   fi
 
 }
