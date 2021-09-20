@@ -192,7 +192,7 @@ jobs:
           path: /tmp/infinyon-fluvio-connector-${{ matrix.connector-name }}-${{ matrix.rust-target }}.tar
 
   docker_push:
-    name: Publish connector images to Docker Hub
+    name: Publish ${{ matrix.connector-name }} images to Docker Hub
     needs: [build_containers]
     runs-on: ${{ matrix.os }}
     strategy:
@@ -231,8 +231,8 @@ jobs:
       - name: Load Fluvio Docker Image
         run: |
           ls -la /tmp
-          docker image load --input infinyon-fluvio-connector-${{ matrix.connector-name }}-x86_64-unknown-linux-musl.tar
-          docker image load --input infinyon-fluvio-connector-${{ matrix.connector-name }}-aarch64-unknown-linux-musl.tar
+          docker image load --input /tmp/infinyon-fluvio-connector-${{ matrix.connector-name }}-x86_64-unknown-linux-musl.tar
+          docker image load --input /tmp/infinyon-fluvio-connector-${{ matrix.connector-name }}-aarch64-unknown-linux-musl.tar
           docker image ls -a
 
       #- name: Publish Fluvio Connector Docker images
