@@ -193,7 +193,7 @@ jobs:
 
   docker_push:
     name: Publish connector images to Docker Hub
-    needs: [build-containers]
+    needs: [build_containers]
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
