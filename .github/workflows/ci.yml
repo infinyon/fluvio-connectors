@@ -181,7 +181,15 @@ jobs:
           COMMIT_HASH: ${{ github.sha }}
           IMAGE_NAME: ${{ matrix.image-name }}
         run: make official-containers
-      # TODO: Create docker manifest
+
+      - name: Export Docker Image to tarball
+        run: docker image save infinyon/fluvio-connector-${{ matrix.connector-name }}:latest --output /tmp/infinyon-fluvio-connector-${{ matrix.connector-name }}-${{ matrix.rust-target }}.tar
+
+      - name: Upload tarball as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: infinyon-fluvio-connector-${{ matrix.connector-name }}-${{ matrix.rust-target }}.tar
+          path: /tmp/infinyon-fluvio-connector-${{ matrix.connector-name }}-${{ matrix.rust-target }}.tar
 
   # Job that follows the success of all required jobs in this workflow.
   # Used by Bors to detect that all required jobs have completed successfully
