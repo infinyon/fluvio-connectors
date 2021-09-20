@@ -199,23 +199,9 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        #rust: [stable]
-        #rust-target:
-        #  - x86_64-unknown-linux-musl
-        #  - aarch64-unknown-linux-musl
         connector-name:
           - test-connector
           - fluvio-syslog
-        #image-name: [infinyon/fluvio-connect-test-connector]
-        #include:
-        #  - os: ubuntu-latest
-        #    connector-name: fluvio-syslog
-        #    image-name: infinyon/fluvio-connect-syslog
-        #    rust-target: x86_64-unknown-linux-musl
-        #  - os: ubuntu-latest
-        #    connector-name: fluvio-syslog
-        #    image-name: infinyon/fluvio-connect-syslog
-        #    rust-target: aarch64-unknown-linux-musl
     steps:
       - name: Download ${{ matrix.connector-name }} x86_64-unknown-linux-musl Docker Image as Artifact
         uses: actions/download-artifact@v2
@@ -243,9 +229,9 @@ jobs:
           docker tag "infinyon/fluvio-connect-${{ matrix.connector-name }}:${{ github.sha }}-aarch64-unknown-linux-musl" "docker.io/infinyon/fluvio-connect-${{ matrix.connector-name }}:${TAG}-arm64v8"
           #docker push "docker.io/infinyon/fluvio-connect-${{ matrix.connector-name }}:${TAG}-amd64"
           #docker push "docker.io/infinyon/fluvio-connect-${{ matrix.connector-name }}:${TAG}-arm64v8"
-          docker manifest create "docker.io/infinyon/fluvio-connect-${{ matrix.connector-name }}:${TAG}" \
-            "docker.io/infinyon/fluvio-connect-${{ matrix.connector-name }}:${TAG}-amd64" \
-            "docker.io/infinyon/fluvio-connect-${{ matrix.connector-name }}:${TAG}-arm64v8"
+          #docker manifest create "docker.io/infinyon/fluvio-connect-${{ matrix.connector-name }}:${TAG}" \
+          #  "docker.io/infinyon/fluvio-connect-${{ matrix.connector-name }}:${TAG}-amd64" \
+          #  "docker.io/infinyon/fluvio-connect-${{ matrix.connector-name }}:${TAG}-arm64v8"
           #docker manifest push "docker.io/infinyon/fluvio-connect-${{ matrix.connector-name }}:${TAG}"
           # Debug: Remove this last step
           docker image ls -a
