@@ -19,15 +19,24 @@ function main() {
     BUILD_ARGS="--platform linux/amd64 --build-arg CONNECTOR_NAME=${CONNECTOR_NAME}"
   fi
 
+
   # Tag the image with a commit hash if we provide it
   if [[ -z "$COMMIT_HASH" ]];
   then
-    # shellcheck disable=SC2086
-    docker buildx build --load -t "$IMAGE_NAME" $BUILD_ARGS .
+    IMAGE_TAGS='-t "$IMAGE_NAME" $BUILD_ARGS'
   else
-    # shellcheck disable=SC2086
-    docker buildx build --load -t "$IMAGE_NAME" -t "$IMAGE_NAME:$COMMIT_HASH-$TARGET" $BUILD_ARGS .
+    IMAGE_TAGS='-t "$IMAGE_NAME" -t "$IMAGE_NAME:$COMMIT_HASH-$TARGET"'
   fi
+
+  # The CI build should producer a tarball
+  if [[ -z "$CI" ]];
+  then
+    docker buildx build $IMAGE_TAGS $BUILD_ARGS .
+  else
+    docker buildx build -o type=docker,dest=- $IMAGE_TAGS $BUILD_ARGS . > /tmp/infinyon-fluvio-connector-${CONNECTOR_NAME}-${TARGET}.tar
+  fi
+
+
 
 }
 

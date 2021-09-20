@@ -183,8 +183,8 @@ jobs:
           IMAGE_NAME: ${{ matrix.image-name }}
         run: make official-containers
 
-      - name: Export Docker Image to tarball
-        run: docker image save infinyon/fluvio-connector-${{ matrix.connector-name }}:latest --output /tmp/infinyon-fluvio-connector-${{ matrix.connector-name }}-${{ matrix.rust-target }}.tar
+      #- name: Export Docker Image to tarball
+      #  run: docker image save infinyon/fluvio-connector-${{ matrix.connector-name }}:latest --output /tmp/infinyon-fluvio-connector-${{ matrix.connector-name }}-${{ matrix.rust-target }}.tar
 
       - name: Upload tarball as artifact
         uses: actions/upload-artifact@v2
