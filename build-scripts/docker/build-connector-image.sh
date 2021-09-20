@@ -23,10 +23,10 @@ function main() {
   if [[ -z "$COMMIT_HASH" ]];
   then
     # shellcheck disable=SC2086
-    docker buildx build -t "$IMAGE_NAME" $BUILD_ARGS .
+    docker buildx build --load -t "$IMAGE_NAME" $BUILD_ARGS .
   else
     # shellcheck disable=SC2086
-    docker buildx build -t "$IMAGE_NAME" -t "$IMAGE_NAME:$COMMIT_HASH-$TARGET" $BUILD_ARGS .
+    docker buildx build --load -t "$IMAGE_NAME" -t "$IMAGE_NAME:$COMMIT_HASH-$TARGET" $BUILD_ARGS .
   fi
 
 }

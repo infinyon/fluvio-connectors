@@ -139,14 +139,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      # Building w/ QEMU for the arm64 support
       - name: Set up QEMU
         id: qemu
         uses: docker/setup-qemu-action@v1
         with:
           image: tonistiigi/binfmt:latest
           platforms: all
-      - name: Available platforms
-        run: echo ${{ steps.qemu.outputs.platforms }}
+      #- name: Available platforms
+      #  run: echo ${{ steps.qemu.outputs.platforms }}
 
       - name: Set up Docker Buildx
         id: buildx
