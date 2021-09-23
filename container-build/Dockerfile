@@ -1,7 +1,12 @@
-FROM alpine 
+ARG ARCH=
+FROM ${ARCH}alpine:3.14
 
 # Install tini for signal processing and zombie killing
-RUN apk add --no-cache tini
+#RUN if [ -z "$ARCH" ]; then \
+#        apk add --arch x86_64 --no-cache tini ;\
+#    else \
+#        apk add --arch aarch64 --no-cache tini ;\
+#    fi
 
 # This env var is used in the entrypoint
 ARG CONNECTOR_NAME=test-connector
@@ -11,14 +16,10 @@ ENV CONNECTOR_NAME=${CONNECTOR_NAME}
 COPY ${CONNECTOR_NAME} /usr/local/bin/${CONNECTOR_NAME}
 RUN chmod +x /usr/local/bin/${CONNECTOR_NAME}
 
-# The startup script uses this file to get the connector binary name
-RUN echo ${CONNECTOR_NAME} | tee /CONNECTOR_NAME
-
 # Add non-privileged user
 ENV USER=fluvio
 RUN adduser \
     --disabled-password \
-    --gecos "" \
     --home "/home/$USER" \
     "$USER"
 USER $USER 
