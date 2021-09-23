@@ -57,7 +57,7 @@ jobs:
 
 
   build_connector_bins:
-    name: Build connector binaries 
+    name:  Build binary ${{ matrix.connector-name }} for ${{ matrix.rust-target }} on (${{ matrix.os }}) 
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -65,14 +65,16 @@ jobs:
         os: [ubuntu-latest]
         rust-target:
           - x86_64-unknown-linux-musl
-          #- aarch64-unknown-linux-musl
+          - aarch64-unknown-linux-musl
         connector-name:
           - test-connector
           - fluvio-syslog
         rust: [stable]
     env:
+      RUST_BACKTRACE: full
       RUSTV: ${{ matrix.rust }}
       TARGET: ${{ matrix.rust-target }}
+      RUST_BIN_DIR: target/${{ matrix.rust-target }}/debug
     steps:
       - uses: actions/checkout@v2
       - name: Set RELEASE mode
@@ -82,82 +84,169 @@ jobs:
           echo "RELEASE=true" | tee -a $GITHUB_ENV
           echo "RELEASE_NAME=release" | tee -a $GITHUB_ENV
           echo "RUST_BIN_DIR=target/${{ matrix.rust-target }}/release" | tee -a $GITHUB_ENV
-      - name: Install Rust stable
+      - name: Print env
+        run: |
+          echo "RUST_BIN_DIR = ${{ env.RUST_BIN_DIR }} "
+      - name: Install Rust ${{ matrix.rust }} 
         uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ matrix.rust }} 
           override: true
           target: ${{ matrix.rust-target }}
-      - name: Install system toolchain - x86_64-unknown-linux-musl'
-        if: ${{ matrix.rust-target == 'x86_64-unknown-linux-musl' }}
-        run: |
-          sudo apt update
-          sudo apt install -y musl-tools
-
-      #- name: Install system toolchain - aarch64-unknown-linux-musl
-      #  if: ${{ matrix.rust-target == 'aarch64-unknown-linux-musl' }}
-      #  run: |
-      #    apt update
-      #    apt install -y gcc-aarch64-linux-gnu 
-
+      - name: Install zig
+        run: ./actions/zig-install.sh ${{ matrix.os }}
+      - uses: Swatinem/rust-cache@v1
+        with:
+          key: ${{ matrix.os }}-${{ matrix.rust-target }}-${{ matrix.connector-name }}
       - name: Build
         env:
           CONNECTOR_NAME: ${{ matrix.connector-name }}
         run: make build
 
       # Upload artifacts
-      - name: Upload artifact - ${{ matrix.binary }}
+      - name: Upload artifact - ${{ matrix.connector-name }}
         uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.connector-name }}-${{ matrix.rust-target }}
           path: ${{ env.RUST_BIN_DIR }}/${{ matrix.connector-name }}
 
   build_containers:
-    name: Build containers 
+    name: Build image ${{ matrix.connector-name }} for ${{ matrix.rust-target }} 
     needs: build_connector_bins 
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
+        rust: [stable]
         rust-target:
           - x86_64-unknown-linux-musl
-          #- aarch64-unknown-linux-musl
+          - aarch64-unknown-linux-musl
+        connector-name: [test-connector]
+        image-name: [infinyon/fluvio-connect-test-connector]
         include:
-          - connector-name: test-connector
-            image-name: infinyon/fluvio-connect-test-connector
-          - connector-name: fluvio-syslog
+          - os: ubuntu-latest
+            connector-name: fluvio-syslog
             image-name: infinyon/fluvio-connect-syslog
-        rust: [stable]
+            rust-target: x86_64-unknown-linux-musl
+          - os: ubuntu-latest
+            connector-name: fluvio-syslog
+            image-name: infinyon/fluvio-connect-syslog
+            rust-target: aarch64-unknown-linux-musl
     env:
       RUSTV: ${{ matrix.rust }}
       TARGET: ${{ matrix.rust-target }}
     steps:
       - uses: actions/checkout@v2
 
+      # Building w/ QEMU for the arm64 support
+      - name: Set up QEMU
+        id: qemu
+        uses: docker/setup-qemu-action@v1
+        with:
+          image: tonistiigi/binfmt:latest
+          platforms: all
+      #- name: Available platforms
+      #  run: echo ${{ steps.qemu.outputs.platforms }}
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Inspect builder
+        run: |
+          echo "Name:      ${{ steps.buildx.outputs.name }}"
+          echo "Endpoint:  ${{ steps.buildx.outputs.endpoint }}"
+          echo "Status:    ${{ steps.buildx.outputs.status }}"
+          echo "Flags:     ${{ steps.buildx.outputs.flags }}"
+          echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
+
       # Download artifacts from build
-      - name: Download artifact - fluvio-run
+      - name: Download artifact - ${{ matrix.connector-name }} - ${{ matrix.rust-target }}
         uses: actions/download-artifact@v2
         with:
           name: ${{ matrix.connector-name }}-${{ matrix.rust-target }}
+          # This is the directory the Makefile expects artifacts to live in
           path: container-build 
 
-      #- name: Install system toolchain - aarch64-unknown-linux-musl
-      #  if: ${{ matrix.rust-target == 'aarch64-unknown-linux-musl' }}
-      #  run: |
-      #    apt update
-      #    apt install -y gcc-aarch64-linux-gnu 
+      - name: Print container-build dir
+        run: |
+          ls container-build;
+          chmod +x ./container-build/${{ matrix.connector-name }}
+          ./container-build/${{ matrix.connector-name }} -h || true
 
+      # The build script will export the resulting image to
+      # /tmp/infinyon-fluvio-connector-${{ matrix.connector-name }}-${{ matrix.rust-target }}.tar
       - name: Build containers
-        run: make IMAGE_NAME=${{ matrix.image-name }} CONNECTOR_NAME=${{ matrix.connector-name }} official-containers
-      # TODO: Create docker manifest
+        env:
+          TARGET: ${{ matrix.rust-target }}
+          CONNECTOR_NAME: ${{ matrix.connector-name }}
+          COMMIT_HASH: ${{ github.sha }}
+          IMAGE_NAME: ${{ matrix.image-name }}
+        run: make official-containers
+
+      - name: Upload tarball as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: infinyon-fluvio-connector-${{ matrix.connector-name }}-${{ matrix.rust-target }}.tar
+          path: /tmp/infinyon-fluvio-connector-${{ matrix.connector-name }}-${{ matrix.rust-target }}.tar
+
+  docker_push:
+    name: Publish ${{ matrix.connector-name }} images to Docker Hub
+    needs: [build_containers]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        connector-name: [test-connector]
+        image-name: [infinyon/fluvio-connect-test-connector]
+        include:
+          - os: ubuntu-latest
+            connector-name: fluvio-syslog
+            image-name: infinyon/fluvio-connect-syslog
+    steps:
+      - name: Download ${{ matrix.connector-name }} x86_64-unknown-linux-musl Docker Image as Artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: infinyon-fluvio-connector-${{ matrix.connector-name }}-x86_64-unknown-linux-musl.tar
+          path: /tmp
+      - name: Download ${{ matrix.connector-name }} aarch64-unknown-linux-musl Docker Image as Artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: infinyon-fluvio-connector-${{ matrix.connector-name }}-aarch64-unknown-linux-musl.tar
+          path: /tmp
+
+      - name: Load Fluvio Docker Image
+        run: |
+          ls -la /tmp
+          docker image load --input /tmp/infinyon-fluvio-connector-${{ matrix.connector-name }}-x86_64-unknown-linux-musl.tar
+          docker image load --input /tmp/infinyon-fluvio-connector-${{ matrix.connector-name }}-aarch64-unknown-linux-musl.tar
+          docker image ls -a
+
+      - name: Publish Fluvio Connector Docker images
+        run: |
+          export TAG="${{ github.sha }}"
+          #docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
+          docker tag "${{ matrix.image-name }}:${{ github.sha }}-x86_64-unknown-linux-musl" "docker.io/${{ matrix.image-name }}:${TAG}-amd64"
+          docker tag "${{ matrix.image-name }}:${{ github.sha }}-aarch64-unknown-linux-musl" "docker.io/${{ matrix.image-name }}:${TAG}-arm64v8"
+          #docker push "docker.io/${{ matrix.image-name }}:${TAG}-amd64"
+          #docker push "docker.io/${{ matrix.image-name }}:${TAG}-arm64v8"
+          #docker manifest create "docker.io/${{ matrix.image-name }}:${TAG}" \
+          #  "docker.io/${{ matrix.image-name }}:${TAG}-amd64" \
+          #  "docker.io/${{ matrix.image-name }}:${TAG}-arm64v8"
+          #docker manifest push "docker.io/${{ matrix.image-name }}:${TAG}"
+          # Debug: Remove this last step
+          docker image ls -a
 
   # Job that follows the success of all required jobs in this workflow.
   # Used by Bors to detect that all required jobs have completed successfully
   done:
     name: Done
     if: github.event_name == 'push' && github.ref == 'refs/heads/staging'
-    needs: [check]
+    needs:
+      - check
+      - docker_push
     runs-on: ubuntu-latest
     steps:
       - name: Done
