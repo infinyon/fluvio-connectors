@@ -1,6 +1,6 @@
-use thiserror::Error;
-use paho_mqtt::Error as MqttError;
 use fluvio::FluvioError;
+use paho_mqtt::Error as MqttError;
+use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum MqttConnectorError {

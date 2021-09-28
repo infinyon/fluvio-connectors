@@ -5,17 +5,17 @@ mod error;
 use error::MqttConnectorError;
 
 fn try_reconnect(cli: &MqttClient) -> bool {
-	println!("Connection lost. Waiting to retry connection");
-	for _ in 0..12 {
+    println!("Connection lost. Waiting to retry connection");
+    for _ in 0..12 {
         // TODO: Make this back of exponentially
-		std::thread::sleep(std::time::Duration::from_millis(5000));
-		if cli.reconnect().is_ok() {
-			println!("Successfully reconnected");
-			return true;
-		}
-	}
-	println!("Unable to reconnect after several attempts.");
-	false
+        std::thread::sleep(std::time::Duration::from_millis(5000));
+        if cli.reconnect().is_ok() {
+            println!("Successfully reconnected");
+            return true;
+        }
+    }
+    println!("Unable to reconnect after several attempts.");
+    false
 }
 
 #[async_std::main]
@@ -42,12 +42,10 @@ async fn main() -> Result<(), MqttConnectorError> {
             let mqtt_topic = msg.topic();
             let mqtt_payload = msg.payload();
             let _ = producer.send(mqtt_topic, mqtt_payload).await?;
-
         } else if mqtt_client.is_connected() || !try_reconnect(&mqtt_client) {
             break;
         }
-    };
-
+    }
 
     println!("Hello, world!");
     Ok(())
