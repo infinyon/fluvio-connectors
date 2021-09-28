@@ -4,5 +4,6 @@ members = [
     "connectors-manager/",
     "common/",
     "test-connector/",
+    "mqtt",
 ]
 resolver = "2"
