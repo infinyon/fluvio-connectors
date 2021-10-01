@@ -1,5 +1,6 @@
 ARG ARCH=
-FROM ${ARCH}alpine:3.12 # Update to latest when https://github.com/alpinelinux/docker-alpine/issues/185 is fixed.
+FROM ${ARCH}alpine:3.12
+# Update to latest when https://github.com/alpinelinux/docker-alpine/issues/185 is fixed.
 
 # Install tini for signal processing and zombie killing
 RUN if [ -z "$ARCH" ]; then \
