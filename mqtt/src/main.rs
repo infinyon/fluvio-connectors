@@ -48,7 +48,7 @@ async fn main() -> Result<(), MqttConnectorError> {
 
     let mqtt_qos = opts.qos.unwrap_or(0);
     let mqtt_timeout_seconds = opts.timeout.unwrap_or(60);
-    let mqtt_url = opts.url; //"mqtt.hsl.fi";
+    let mqtt_url = opts.mqtt_url; //"mqtt.hsl.fi";
     let mqtt_topic = opts.mqtt_topic; //"/hfp/v2/journey/#";
     let fluvio_topic = opts.fluvio_topic; //"mqtt";
 
