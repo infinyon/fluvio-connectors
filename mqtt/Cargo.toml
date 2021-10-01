@@ -15,5 +15,5 @@ structopt = "0.3.23"
 schemars = "0.8.6"
 serde_json = "1.0.68"
 
-#paho-mqtt = { version = "0.9.1", features = ["vendored-ssl"] }
-paho-mqtt = { path = "../../paho.mqtt.rust/", features = ["vendored-ssl"] }
+paho-mqtt = { version = "0.9.1", features = ["vendored-ssl"] }
+#paho-mqtt = { path = "../../paho.mqtt.rust/", features = ["vendored-ssl"] }
