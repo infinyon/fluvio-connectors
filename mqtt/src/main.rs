@@ -1,13 +1,12 @@
 use paho_mqtt::client::Client as MqttClient;
-//use paho_mqtt::AsyncClient as MqttClient;
 use paho_mqtt::CreateOptions;
 mod error;
 use error::MqttConnectorError;
 use structopt::StructOpt;
-
 use schemars::{schema_for, JsonSchema};
+
 #[derive(StructOpt, Debug, JsonSchema)]
-struct ConnectorOpts {
+struct MqttOpts {
     #[structopt(short, long)]
     qos: Option<i32>,
 
@@ -23,26 +22,43 @@ struct ConnectorOpts {
     #[structopt(long)]
     fluvio_topic: String,
 }
+use serde::Serialize;
+
+#[derive(Debug, Serialize)]
+struct MySchema {
+    name: String,
+    direction: ConnectorDirection,
+    schema: schemars::schema::RootSchema,
+    // TODO:
+    // * add Description
+    // * add image url
+    // * add version
+}
+
+#[derive(Debug, Serialize)]
+enum ConnectorDirection {
+    Source,
+    Sink,
+    Both
+}
 
 #[async_std::main]
 async fn main() -> Result<(), MqttConnectorError> {
     fluvio_future::subscriber::init_tracer(None);
-
-    let opts = match ConnectorOpts::from_args_safe() {
-        Ok(opts) => opts,
-        Err(_e) => {
-            let arguments: Vec<String> = std::env::args().collect();
-            match arguments.get(1) {
-                Some(schema) if schema == "schema" => {
-                    let schema = schema_for!(ConnectorOpts);
-                    println!("{}", serde_json::to_string_pretty(&schema).unwrap());
-                    return Ok(());
-                }
-                _ => {
-                    ConnectorOpts::from_args();
-                    return Ok(());
-                }
-            }
+    let arguments: Vec<String> = std::env::args().collect();
+    let opts = match arguments.get(1) {
+        Some(schema) if schema == "schema" => {
+            let schema = schema_for!(MqttOpts);
+            let mqtt_schema = MySchema {
+                name: "foobar".to_string(),
+                direction: ConnectorDirection::Source,
+                schema,
+            };
+            println!("{}", serde_json::to_string_pretty(&mqtt_schema).unwrap());
+            return Ok(());
+        },
+        _ => {
+            MqttOpts::from_args()
         }
     };
 
@@ -55,7 +71,9 @@ async fn main() -> Result<(), MqttConnectorError> {
     let timeout = std::time::Duration::from_secs(mqtt_timeout_seconds);
     let mut mqtt_client = MqttClient::new(CreateOptions::from(mqtt_url))?;
     mqtt_client.set_timeout(timeout);
+
     let rx = mqtt_client.start_consuming();
+
     mqtt_client.connect(None)?;
     mqtt_client.subscribe(&mqtt_topic, mqtt_qos)?;
 
@@ -73,7 +91,6 @@ async fn main() -> Result<(), MqttConnectorError> {
         }
     }
 
-    println!("Hello, world!");
     Ok(())
 }
 
