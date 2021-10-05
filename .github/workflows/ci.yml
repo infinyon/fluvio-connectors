@@ -216,7 +216,7 @@ jobs:
             image-name: infinyon/fluvio-connect-syslog
           - os: ubuntu-latest
             connector-name: mqtt
-            image-name: infinyon/fluvio-mqtt-syslog
+            image-name: infinyon/fluvio-connect-mqtt
     steps:
       - name: Download ${{ matrix.connector-name }} x86_64-unknown-linux-musl Docker Image as Artifact
         uses: actions/download-artifact@v2
