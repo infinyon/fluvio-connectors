@@ -134,6 +134,14 @@ jobs:
             connector-name: fluvio-syslog
             image-name: infinyon/fluvio-connect-syslog
             rust-target: aarch64-unknown-linux-musl
+          - os: ubuntu-latest
+            connector-name: mqtt 
+            image-name: infinyon/fluvio-connect-mqtt
+            rust-target: x86_64-unknown-linux-musl
+          - os: ubuntu-latest
+            connector-name: mqtt
+            image-name: infinyon/fluvio-connect-mqtt
+            rust-target: aarch64-unknown-linux-musl
     env:
       RUSTV: ${{ matrix.rust }}
       TARGET: ${{ matrix.rust-target }}
@@ -206,6 +214,9 @@ jobs:
           - os: ubuntu-latest
             connector-name: fluvio-syslog
             image-name: infinyon/fluvio-connect-syslog
+          - os: ubuntu-latest
+            connector-name: mqtt
+            image-name: infinyon/fluvio-mqtt-syslog
     steps:
       - name: Download ${{ matrix.connector-name }} x86_64-unknown-linux-musl Docker Image as Artifact
         uses: actions/download-artifact@v2
@@ -233,7 +244,8 @@ jobs:
           docker image ls
 
       - name: Push Fluvio Connector Docker images
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        #if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main'
         run: |
           export TAG="latest"
           docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
@@ -243,8 +255,6 @@ jobs:
             "docker.io/${{ matrix.image-name }}:${TAG}-amd64" \
             "docker.io/${{ matrix.image-name }}:${TAG}-arm64v8"
           docker manifest push "docker.io/${{ matrix.image-name }}:${TAG}"
-
-
 
   ## Job that follows the success of all required jobs in this workflow.
   ## Used by Bors to detect that all required jobs have completed successfully
