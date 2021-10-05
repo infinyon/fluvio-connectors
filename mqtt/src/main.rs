@@ -54,7 +54,7 @@ async fn main() -> Result<(), MqttConnectorError> {
                 direction: ConnectorDirection::Source,
                 schema,
             };
-            println!("{}", serde_json::to_string_pretty(&mqtt_schema).unwrap());
+            println!("{}", serde_json::to_string(&mqtt_schema).unwrap());
             return Ok(());
         }
         _ => MqttOpts::from_args(),
