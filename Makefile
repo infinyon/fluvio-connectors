@@ -10,15 +10,16 @@ TEST_CONNECTOR_BIN=$(if $(TARGET),./target/$(TARGET)/$(BUILD_PROFILE)/test-conne
 SYSLOG_BIN=$(if $(TARGET),./target/$(TARGET)/$(BUILD_PROFILE)/fluvio-syslog,./target/$(BUILD_PROFILE)/fluvio-syslog)
 
 # These defaults are set for development purposes only. CI will override
-CONNECTOR_NAME?=test-connector
-IMAGE_NAME?=infinyon/fluvio-connect-test-connector
+CONNECTOR_NAME?=mqtt
+IMAGE_NAME?=infinyon/fluvio-connect-$(CONNECTOR_NAME)
+CONNECTOR_BIN=$(if $(TARGET),./target/$(TARGET)/$(BUILD_PROFILE)/$(CONNECTOR_NAME),./target/$(BUILD_PROFILE)/$(CONNECTOR_NAME))
 
 smoke-test:
 	$(CARGO_BUILDER) run --bin fluvio-connector start ./test-connector/config.yaml
 
 ifndef CONNECTOR_NAME
 build:
-	$(CARGO_BUILDER) build $(TARGET_FLAG) $(RELEASE_FLAG) 
+	$(CARGO_BUILDER) build $(TARGET_FLAG) $(RELEASE_FLAG)
 else
 build:
 	$(CARGO_BUILDER) build $(TARGET_FLAG) $(RELEASE_FLAG) --bin $(CONNECTOR_NAME)
@@ -28,10 +29,9 @@ ifeq (${CI},true)
 # In CI, we expect all artifacts to already be built and loaded for the script
 copy-binaries:
 else
-# When not in CI (i.e. development), build and copy the binaries alongside the Dockerfile 
-copy-binaries: build 
-	cp $(TEST_CONNECTOR_BIN) container-build
-	cp $(SYSLOG_BIN) container-build 
+# When not in CI (i.e. development), build and copy the binaries alongside the Dockerfile
+copy-binaries: build
+	cp $(CONNECTOR_BIN) container-build
 endif
 
 official-containers: copy-binaries
@@ -50,3 +50,5 @@ CC_aarch64_unknown_linux_musl=$(PWD)/build-scripts/aarch64-linux-musl-zig-cc
 CC_x86_64_unknown_linux_musl=$(PWD)/build-scripts/x86_64-linux-musl-zig-cc
 CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER=$(PWD)/build-scripts/ld.lld
 CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER=$(PWD)/build-scripts/ld.lld
+CMAKE_CXX_COMPILER_x86_64_unknown_linux_musl=$(PWD)/build-scripts/x86_64-linux-musl-zig-c++
+CMAKE_C_COMPILER_x86_64_unknown_linux_musl=$(PWD)/build-scripts/x86_64-linux-musl-zig-cc

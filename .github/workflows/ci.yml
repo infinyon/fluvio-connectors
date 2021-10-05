@@ -57,7 +57,7 @@ jobs:
 
 
   build_connector_bins:
-    name:  Build binary ${{ matrix.connector-name }} for ${{ matrix.rust-target }} on (${{ matrix.os }}) 
+    name:  Build binary ${{ matrix.connector-name }} for ${{ matrix.rust-target }} on (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -69,6 +69,7 @@ jobs:
         connector-name:
           - test-connector
           - fluvio-syslog
+          - mqtt
         rust: [stable]
     env:
       RUST_BACKTRACE: full
@@ -87,10 +88,10 @@ jobs:
       - name: Print env
         run: |
           echo "RUST_BIN_DIR = ${{ env.RUST_BIN_DIR }} "
-      - name: Install Rust ${{ matrix.rust }} 
+      - name: Install Rust ${{ matrix.rust }}
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: ${{ matrix.rust }} 
+          toolchain: ${{ matrix.rust }}
           override: true
           target: ${{ matrix.rust-target }}
       - name: Install zig
@@ -111,8 +112,8 @@ jobs:
           path: ${{ env.RUST_BIN_DIR }}/${{ matrix.connector-name }}
 
   build_containers:
-    name: Build image ${{ matrix.connector-name }} for ${{ matrix.rust-target }} 
-    needs: build_connector_bins 
+    name: Build image ${{ matrix.connector-name }} for ${{ matrix.rust-target }}
+    needs: build_connector_bins
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -167,7 +168,7 @@ jobs:
         with:
           name: ${{ matrix.connector-name }}-${{ matrix.rust-target }}
           # This is the directory the Makefile expects artifacts to live in
-          path: container-build 
+          path: container-build
 
       - name: Print container-build dir
         run: |
