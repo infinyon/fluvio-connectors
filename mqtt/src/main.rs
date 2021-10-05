@@ -34,6 +34,7 @@ struct MySchema {
 }
 
 #[derive(Debug, Serialize)]
+#[allow(dead_code)] // The other variants aren't used but are part of the spec.
 enum ConnectorDirection {
     Source,
     Sink,
@@ -51,7 +52,7 @@ async fn main() -> Result<(), MqttConnectorError> {
                 name: env!("CARGO_PKG_NAME"),
                 version: env!("CARGO_PKG_VERSION"),
                 description: env!("CARGO_PKG_DESCRIPTION"),
-                direction: ConnectorDirection::Source,
+                direction: ConnectorDirection::Source, // When this works as a two way connector, this needs to be updated.
                 schema,
             };
             println!("{}", serde_json::to_string(&mqtt_schema).unwrap());
