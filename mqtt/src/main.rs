@@ -4,6 +4,7 @@ mod error;
 use error::MqttConnectorError;
 use structopt::StructOpt;
 use schemars::{schema_for, JsonSchema};
+use serde::Serialize;
 
 #[derive(StructOpt, Debug, JsonSchema)]
 struct MqttOpts {
@@ -22,17 +23,14 @@ struct MqttOpts {
     #[structopt(long)]
     fluvio_topic: String,
 }
-use serde::Serialize;
 
 #[derive(Debug, Serialize)]
 struct MySchema {
-    name: String,
+    name: &'static str,
     direction: ConnectorDirection,
     schema: schemars::schema::RootSchema,
-    // TODO:
-    // * add Description
-    // * add image url
-    // * add version
+    version: &'static str,
+    description: &'static str,
 }
 
 #[derive(Debug, Serialize)]
@@ -47,10 +45,12 @@ async fn main() -> Result<(), MqttConnectorError> {
     fluvio_future::subscriber::init_tracer(None);
     let arguments: Vec<String> = std::env::args().collect();
     let opts = match arguments.get(1) {
-        Some(schema) if schema == "schema" => {
+        Some(schema) if schema == "metadata" => {
             let schema = schema_for!(MqttOpts);
             let mqtt_schema = MySchema {
-                name: "foobar".to_string(),
+                name: env!("CARGO_PKG_NAME"),
+                version: env!("CARGO_PKG_VERSION"),
+                description: env!("CARGO_PKG_DESCRIPTION"),
                 direction: ConnectorDirection::Source,
                 schema,
             };
