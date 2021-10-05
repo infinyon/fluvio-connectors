@@ -2,9 +2,9 @@ use paho_mqtt::client::Client as MqttClient;
 use paho_mqtt::CreateOptions;
 mod error;
 use error::MqttConnectorError;
-use structopt::StructOpt;
 use schemars::{schema_for, JsonSchema};
 use serde::Serialize;
+use structopt::StructOpt;
 
 #[derive(StructOpt, Debug, JsonSchema)]
 struct MqttOpts {
@@ -37,7 +37,7 @@ struct MySchema {
 enum ConnectorDirection {
     Source,
     Sink,
-    Both
+    Both,
 }
 
 #[async_std::main]
@@ -56,10 +56,8 @@ async fn main() -> Result<(), MqttConnectorError> {
             };
             println!("{}", serde_json::to_string_pretty(&mqtt_schema).unwrap());
             return Ok(());
-        },
-        _ => {
-            MqttOpts::from_args()
         }
+        _ => MqttOpts::from_args(),
     };
 
     let mqtt_qos = opts.qos.unwrap_or(0);
