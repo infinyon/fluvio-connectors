@@ -45,6 +45,7 @@ enum ConnectorDirection {
 async fn main() -> Result<(), MqttConnectorError> {
     fluvio_future::subscriber::init_tracer(None);
     let arguments: Vec<String> = std::env::args().collect();
+    println!("ARGUMENTS TO MQTT CONNECTOR ARE: {:?}", arguments);
     let opts = match arguments.get(1) {
         Some(schema) if schema == "metadata" => {
             let schema = schema_for!(MqttOpts);
