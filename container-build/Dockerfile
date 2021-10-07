@@ -25,4 +25,4 @@ RUN adduser \
     "$USER"
 USER $USER
 
-ENTRYPOINT [ "sh", "-c", "tini $CONNECTOR_NAME" ]
+ENTRYPOINT [ "sh", "-c", "tini $CONNECTOR_NAME \"$@\"" ]
