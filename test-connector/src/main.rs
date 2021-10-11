@@ -58,7 +58,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 async fn produce(opts: TestConnectorOpts) -> Result<(), fluvio::FluvioError> {
     let producer = fluvio::producer(opts.topic).await?;
     let num_records = opts.count.unwrap_or(i64::MAX);
-    let timeout = opts.timeout.unwrap_or(1);
+    let timeout = opts.timeout.unwrap_or(1000);
     for i in 1..num_records {
         let value = format!("Hello, Fluvio! - {}", i);
         println!("Sending {}", value);
