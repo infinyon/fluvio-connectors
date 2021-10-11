@@ -81,10 +81,14 @@ async fn main() -> Result<(), MqttConnectorError> {
 
     for msg in rx.iter() {
         if let Some(msg) = msg {
-            let mqtt_topic = msg.topic();
-            let mqtt_payload = msg.payload();
-
-            let _ = producer.send(mqtt_topic, mqtt_payload).await?;
+            let mqtt_topic = msg.topic(). to_string();
+            let payload = msg.payload().to_vec();
+            let mqtt_event = MqttEvent {
+                mqtt_topic,
+                payload,
+            };
+            let fluvio_record = serde_json::to_string(&mqtt_event).unwrap();
+            let _ = producer.send("", fluvio_record).await?;
         } else if mqtt_client.is_connected() || !try_reconnect(&mqtt_client) {
             break;
         }
@@ -105,4 +109,9 @@ fn try_reconnect(cli: &MqttClient) -> bool {
     }
     println!("Unable to reconnect after several attempts.");
     false
+}
+#[derive(Debug, Serialize)]
+struct MqttEvent {
+    mqtt_topic: String,
+    payload: Vec<u8>,
 }
