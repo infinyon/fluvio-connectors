@@ -81,7 +81,7 @@ async fn main() -> Result<(), MqttConnectorError> {
 
     for msg in rx.iter() {
         if let Some(msg) = msg {
-            let mqtt_topic = msg.topic(). to_string();
+            let mqtt_topic = msg.topic().to_string();
             let payload = msg.payload().to_vec();
             let mqtt_event = MqttEvent {
                 mqtt_topic,
