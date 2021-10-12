@@ -6,3 +6,5 @@ members = [
     "mqtt",
 ]
 resolver = "2"
+[patch.crates-io]
+fluvio = { path = "../fluvio/crates/fluvio" }
