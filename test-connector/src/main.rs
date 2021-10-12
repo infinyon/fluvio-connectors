@@ -35,7 +35,6 @@ enum ConnectorDirection {
 #[async_std::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let arguments: Vec<String> = std::env::args().collect();
-    println!("ARGUMENTS TO MQTT CONNECTOR ARE: {:?}", arguments);
     let opts = match arguments.get(1) {
         Some(schema) if schema == "metadata" => {
             let schema = schema_for!(TestConnectorOpts);
