@@ -1,19 +1,11 @@
-use fluvio::RecordKey;
-use schemars::{schema_for, JsonSchema};
+use schemars::schema_for;
 use serde::Serialize;
 use structopt::StructOpt;
 
-#[derive(StructOpt, Debug, JsonSchema)]
-struct TestConnectorOpts {
-    #[structopt(long)]
-    topic: String,
-
-    #[structopt(long)]
-    count: Option<i64>,
-
-    #[structopt(long)]
-    timeout: Option<u64>,
-}
+mod produce;
+use produce::produce;
+mod opts;
+use opts::TestConnectorOpts;
 
 #[derive(Debug, Serialize)]
 struct MySchema {
@@ -35,7 +27,6 @@ enum ConnectorDirection {
 #[async_std::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let arguments: Vec<String> = std::env::args().collect();
-    println!("ARGUMENTS TO MQTT CONNECTOR ARE: {:?}", arguments);
     let opts = match arguments.get(1) {
         Some(schema) if schema == "metadata" => {
             let schema = schema_for!(TestConnectorOpts);
@@ -52,18 +43,5 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         _ => TestConnectorOpts::from_args(),
     };
     let _ = produce(opts).await?;
-    Ok(())
-}
-
-async fn produce(opts: TestConnectorOpts) -> Result<(), fluvio::FluvioError> {
-    let producer = fluvio::producer(opts.topic).await?;
-    let num_records = opts.count.unwrap_or(i64::MAX);
-    let timeout = opts.timeout.unwrap_or(1000);
-    for i in 1..num_records {
-        let value = format!("Hello, Fluvio! - {}", i);
-        println!("Sending {}", value);
-        producer.send(RecordKey::NULL, value).await?;
-        async_std::task::sleep(std::time::Duration::from_millis(timeout)).await;
-    }
     Ok(())
 }

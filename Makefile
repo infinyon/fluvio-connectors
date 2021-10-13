@@ -38,6 +38,19 @@ official-containers: copy-binaries
 	cd container-build && \
 		../build-scripts/docker/build-connector-image.sh
 
+METADATA_OUT=metadata.json
+metadata:
+	cargo build
+	echo '' >  $(METADATA_OUT)
+	echo '[' >> $(METADATA_OUT)
+	cargo run --bin mqtt -- metadata >> $(METADATA_OUT)
+	echo ',' >> $(METADATA_OUT)
+	cargo run --bin test-connector -- metadata >> $(METADATA_OUT)
+	echo ']' >> $(METADATA_OUT)
+	cat $(METADATA_OUT) | jq '.'
+
+
+
 clean:
 	$(CARGO_BUILDER) clean
 	rm -f container-build/test-connector
