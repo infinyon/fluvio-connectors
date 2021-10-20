@@ -1,9 +1,6 @@
 use crate::opts::TestConnectorOpts;
 use fluvio::RecordKey;
-use fluvio_dataplane_protocol::smartstream::{
-    SmartStreamInput,
-    SmartStreamExtraParams,
-};
+use fluvio_dataplane_protocol::smartstream::{SmartStreamExtraParams, SmartStreamInput};
 use fluvio_smartstream_executor::{SmartStream, SmartStreamEngine};
 
 pub async fn produce(opts: TestConnectorOpts) -> Result<(), fluvio::FluvioError> {
