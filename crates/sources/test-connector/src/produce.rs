@@ -1,6 +1,9 @@
 use crate::opts::TestConnectorOpts;
 use fluvio::RecordKey;
-use fluvio_dataplane_protocol::smartstream::SmartStreamInput;
+use fluvio_dataplane_protocol::smartstream::{
+    SmartStreamInput,
+    SmartStreamExtraParams,
+};
 use fluvio_smartstream_executor::{SmartStream, SmartStreamEngine};
 
 pub async fn produce(opts: TestConnectorOpts) -> Result<(), fluvio::FluvioError> {
@@ -16,7 +19,7 @@ pub async fn produce(opts: TestConnectorOpts) -> Result<(), fluvio::FluvioError>
             .expect("Failed to read wasm path");
         smart_stream = Some(Box::new(
             smart_stream_module
-                .create_filter(&engine)
+                .create_filter(&engine, SmartStreamExtraParams::default())
                 .expect("Failed to create smart stream filter"),
         ));
     }
@@ -27,7 +30,7 @@ pub async fn produce(opts: TestConnectorOpts) -> Result<(), fluvio::FluvioError>
             .expect("Failed to read wasm path");
         smart_stream = Some(Box::new(
             smart_stream_module
-                .create_map(&engine)
+                .create_map(&engine, SmartStreamExtraParams::default())
                 .expect("Failed to create smart stream filter"),
         ));
     }
