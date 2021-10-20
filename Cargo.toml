@@ -1,11 +1,12 @@
 [workspace]
 members = [
-    "syslog/",
-    "common/",
-    "test-connector/",
-    "mqtt",
+    "crates/common",
+    "crates/sources/syslog",
+    "crates/sources/test-connector",
+    "crates/sources/mqtt",
 ]
 resolver = "2"
 [patch.crates-io]
 fluvio = { git = "https://github.com/infinyon/fluvio" }
 fluvio-dataplane-protocol = { git = "https://github.com/infinyon/fluvio" }
+fluvio-smartstream-executor = { git = "https://github.com/infinyon/fluvio" }
