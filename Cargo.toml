@@ -1,9 +1,9 @@
 [workspace]
 members = [
-    "crates/common",
-    "crates/sources/syslog",
-    "crates/sources/test-connector",
-    "crates/sources/mqtt",
+    "rust-connectors/common",
+    "rust-connectors/sources/syslog",
+    "rust-connectors/sources/test-connector",
+    "rust-connectors/sources/mqtt",
 ]
 resolver = "2"
 [patch.crates-io]
