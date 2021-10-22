@@ -11,7 +11,7 @@ async-std = { version = "1.8.0", default-features = false, features = ["attribut
 fluvio-connectors-common = { path = "../../common" }
 #fluvio-dataplane-protocol = { path = "../../fluvio/crates/fluvio-dataplane-protocol"}
 fluvio-dataplane-protocol = "0.7.2"
-fluvio-smartstream-executor = "0.1.0"
+fluvio-smartengine = "0.0.0"
 
 structopt = "0.3.23"
 schemars = "0.8.6"
