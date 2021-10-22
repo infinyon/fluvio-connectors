@@ -1,14 +1,14 @@
 use crate::opts::TestConnectorOpts;
 use fluvio::RecordKey;
 use fluvio_dataplane_protocol::smartstream::{SmartStreamExtraParams, SmartStreamInput};
-use fluvio_smartstream_executor::{SmartStream, SmartStreamEngine};
+use fluvio_smartengine::{SmartEngine, SmartStream};
 
 pub async fn produce(opts: TestConnectorOpts) -> Result<(), fluvio::FluvioError> {
     let producer = fluvio::producer(opts.topic).await?;
     let num_records = opts.count.unwrap_or(i64::MAX);
     let timeout = opts.timeout.unwrap_or(1000);
 
-    let engine = SmartStreamEngine::default();
+    let engine = SmartEngine::default();
     let mut smart_stream: Option<Box<dyn SmartStream>> = None;
     if let Some(wasm_path) = opts.smartstream_filter {
         let smart_stream_module = engine
