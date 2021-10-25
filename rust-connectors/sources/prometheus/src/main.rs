@@ -1,3 +1,6 @@
+#![deny(clippy::unwrap_used)]
+#![deny(clippy::expect_used)]
+
 use structopt::StructOpt;
 use serde::Serialize;
 use tokio_stream::StreamExt;
@@ -48,7 +51,7 @@ async fn main() -> Result<()> {
             direction: ConnectorDirection::Source,
             schema,
         };
-        println!("{}", serde_json::to_string(&mqtt_schema).unwrap());
+        println!("{}", serde_json::to_string(&mqtt_schema)?);
         return Ok(());
     }
 
@@ -68,7 +71,7 @@ async fn main() -> Result<()> {
     let client = reqwest::Client::new();
     let producer = fluvio::producer(&opt.topic).await?;
 
-    while let Some(_) = timer.next().await {
+    while timer.next().await.is_some() {
         let mut success_count = 0;
 
         let metrics_text = match scrape(&client, opt.endpoint.clone()).await {
