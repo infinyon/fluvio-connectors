@@ -5,6 +5,8 @@ members = [
     "rust-connectors/sources/test-connector",
     "rust-connectors/sources/mqtt",
     "rust-connectors/sources/http-json",
+    "rust-connectors/sources/prometheus",
+    "rust-connectors/sinks/prometheus-push",
 ]
 resolver = "2"
 [patch.crates-io]
