@@ -8,19 +8,21 @@ type Result<T, E = Box<dyn std::error::Error + Send + Sync + 'static>> = core::r
 
 #[derive(StructOpt, Debug, JsonSchema)]
 pub struct HttpOpt {
-    // Endpoint for the http connector
+    /// Endpoint for the http connector
+    #[structopt(long)]
     endpoint: String,
-    // Topic to produce in the http connector
+    /// Topic to produce in the http connector
+    #[structopt(long)]
     topic: String,
-    // HTTP body for the request
+    /// HTTP body for the request
     #[structopt(long)]
     body: Option<String>,
 
-    // Method used in the request
+    /// Method used in the request
     #[structopt(long, default_value = "GET")]
     method: String,
 
-    // Interval between each request
+    /// Interval between each request
     #[structopt(long, default_value = "300")]
     interval: u64,
 
