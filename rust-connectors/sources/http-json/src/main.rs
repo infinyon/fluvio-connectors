@@ -93,15 +93,15 @@ async fn main() -> Result<()> {
     let client = reqwest::Client::new();
     let method: reqwest::Method = opts.method.parse()?;
 
-    let body = opts.body.unwrap();
-
     while timer_stream.next().await.is_some() {
-        let response = client
+        let mut req = client
             .request(method.clone(), &opts.endpoint)
-            .header("Content-Type", "application/json")
-            .body(body.clone())
-            .send()
-            .await?;
+            .header("Content-Type", "application/json");
+
+        if let Some(ref body) = opts.body {
+            req = req.body(body.clone());
+        }
+        let response = req.send().await?;
 
         let response_text = response.text().await?;
 
