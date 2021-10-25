@@ -1,0 +1,15 @@
+[package]
+name = "http-json-connector"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+structopt = "0.3"
+tokio = { version = "1", features = ["full"] }
+tokio-stream = "0.1"
+reqwest = "0.11"
+schemars = "0.8"
+serde_json = "1"
+fluvio = "0.9"
+fluvio-smartengine = { git = "https://github.com/infinyon/fluvio" }
+fluvio-dataplane-protocol = { git = "https://github.com/infinyon/fluvio" }
