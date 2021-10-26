@@ -1,25 +1,32 @@
 use crate::opts::TestConnectorOpts;
-use fluvio::RecordKey;
 use fluvio::metadata::smartmodule::SmartModuleSpec;
+use fluvio::RecordKey;
 
 pub async fn produce(opts: TestConnectorOpts) -> Result<(), fluvio::FluvioError> {
-
     let mut producer = fluvio::producer(opts.topic).await?;
     let num_records = opts.count.unwrap_or(i64::MAX);
     let timeout = opts.timeout.unwrap_or(1000);
 
     if let Some(smart_module) = opts.smartstream_filter {
         let admin = fluvio::FluvioAdmin::connect().await?;
-        let modules = admin.list::<SmartModuleSpec, _>(vec![smart_module.clone()]).await?;
-        let module = modules.first().expect(&format!("Failed to find smartmodule for {}", smart_module));
+        let modules = admin
+            .list::<SmartModuleSpec, _>(vec![smart_module.clone()])
+            .await?;
+        let module = modules
+            .first()
+            .expect(&format!("Failed to find smartmodule for {}", smart_module));
         let wasm = &module.spec.wasm;
         producer = producer.wasm_filter(wasm.payload.clone(), Default::default())
     }
 
     if let Some(smart_module) = opts.smartstream_map {
         let admin = fluvio::FluvioAdmin::connect().await?;
-        let modules = admin.list::<SmartModuleSpec, _>(vec![smart_module.clone()]).await?;
-        let module = modules.first().expect(&format!("Failed to find smartmodule for {}", smart_module));
+        let modules = admin
+            .list::<SmartModuleSpec, _>(vec![smart_module.clone()])
+            .await?;
+        let module = modules
+            .first()
+            .expect(&format!("Failed to find smartmodule for {}", smart_module));
         let wasm = &module.spec.wasm;
 
         producer = producer.wasm_map(wasm.payload.clone(), Default::default())
