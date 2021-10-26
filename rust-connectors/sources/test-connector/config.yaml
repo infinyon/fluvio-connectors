@@ -1,8 +1,0 @@
-my-simple-connector:
-  type: syslog
-my-complex-connector:
-  type: syslog
-  version: 0.1
-  topic_name: my-syslog-connector # defaults to id
-  inputs:
-    bind_url: tcp://0.0.0.0:9000

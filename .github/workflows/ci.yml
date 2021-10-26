@@ -55,6 +55,53 @@ jobs:
         if: ${{ matrix.check == 'clippy' }}
         run: cargo clippy -- -D warnings
 
+  integration-tests:
+    name: Integration testing on - ${{ matrix.check }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        rust: [stable]
+        rust-target:
+          - x86_64-unknown-linux-musl
+    env:
+      RUST_BACKTRACE: full
+    steps:
+      - uses: AbsaOSS/k3d-action@v1.5.0
+        name: "Create fluvio k3d Cluster"
+        with:
+          cluster-name: "fluvio"
+      - name: Sleep 20 to ensure k3d cluster is ready
+        run: sleep 20
+      - name: Install Fluvio Local Cluster
+        uses: infinyon/fluvio@master
+        with:
+          cluster-type: k3d
+          version: latest
+      - name: Check Fluvio Installation
+        run: |
+          fluvio version
+          fluvio topic list
+          fluvio topic create foobar
+          sleep 3
+          echo foo | fluvio produce foobar
+          fluvio consume foobar -o 0 -d
+      - uses: actions/checkout@v2
+      - name: Install Rust stable
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - name: Install Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          target: ${{ matrix.rust-target }}
+      - name: Install zig
+        run: ./actions/zig-install.sh ${{ matrix.os }}
+      - name: Test
+        run: make test
+
 
   build_connector_bins:
     name:  Build binary ${{ matrix.connector-name }} for ${{ matrix.rust-target }} on (${{ matrix.os }})
@@ -136,7 +183,7 @@ jobs:
             image-name: infinyon/fluvio-connect-syslog
             rust-target: aarch64-unknown-linux-musl
           - os: ubuntu-latest
-            connector-name: mqtt 
+            connector-name: mqtt
             image-name: infinyon/fluvio-connect-mqtt
             rust-target: x86_64-unknown-linux-musl
           - os: ubuntu-latest
