@@ -8,6 +8,4 @@ members = [
 ]
 resolver = "2"
 [patch.crates-io]
-fluvio = { git = "https://github.com/infinyon/fluvio" }
-fluvio-dataplane-protocol = { git = "https://github.com/infinyon/fluvio" }
-fluvio-smartengine = { git = "https://github.com/infinyon/fluvio" }
+fluvio = { git = "https://github.com/simlay/fluvio", branch = "add-smartstream-to-producer"}
