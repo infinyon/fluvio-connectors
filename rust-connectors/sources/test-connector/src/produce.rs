@@ -14,7 +14,7 @@ pub async fn produce(opts: TestConnectorOpts) -> Result<(), fluvio::FluvioError>
             .await?;
         let module = modules
             .first()
-            .expect(&format!("Failed to find smartmodule for {}", smart_module));
+            .unwrap_or_else(|| panic!("Failed to find smartmodule for {}", smart_module));
         let wasm = &module.spec.wasm;
         producer = producer.wasm_filter(wasm.payload.clone(), Default::default())
     }
@@ -26,7 +26,7 @@ pub async fn produce(opts: TestConnectorOpts) -> Result<(), fluvio::FluvioError>
             .await?;
         let module = modules
             .first()
-            .expect(&format!("Failed to find smartmodule for {}", smart_module));
+            .unwrap_or_else(|| panic!("Failed to find smartmodule for {}", smart_module));
         let wasm = &module.spec.wasm;
 
         producer = producer.wasm_map(wasm.payload.clone(), Default::default())

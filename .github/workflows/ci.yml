@@ -99,6 +99,8 @@ jobs:
           target: ${{ matrix.rust-target }}
       - name: Install zig
         run: ./actions/zig-install.sh ${{ matrix.os }}
+      - name: Setup BATS
+        uses: mig4/setup-bats@v1
       - name: Test
         run: make test
 
