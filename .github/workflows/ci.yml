@@ -56,7 +56,7 @@ jobs:
         run: cargo clippy -- -D warnings
 
   integration-tests:
-    name: Integration testing on - ${{ matrix.check }}
+    name: Integration testing on - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
