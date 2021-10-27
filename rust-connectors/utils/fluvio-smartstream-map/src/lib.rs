@@ -1,3 +1,4 @@
+#![allow(clippy::unnecessary_mut_passed)]
 use fluvio_smartstream::{smartstream, Record, RecordData, Result};
 
 #[smartstream(map)]

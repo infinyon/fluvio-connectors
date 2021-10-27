@@ -13,3 +13,4 @@ resolver = "2"
 fluvio = { git = "https://github.com/infinyon/fluvio" }
 fluvio-dataplane-protocol = { git = "https://github.com/infinyon/fluvio" }
 fluvio-smartengine = { git = "https://github.com/infinyon/fluvio" }
+fluvio-smartstream = { git = "https://github.com/infinyon/fluvio" }

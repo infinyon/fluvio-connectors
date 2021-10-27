@@ -101,6 +101,8 @@ jobs:
         run: ./actions/zig-install.sh ${{ matrix.os }}
       - name: Setup BATS
         uses: mig4/setup-bats@v1
+      - name: Add wasm
+        run: rustup target add wasm32-unknown-unknown
       - name: Test
         run: make test
 
