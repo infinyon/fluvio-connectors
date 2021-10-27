@@ -1,0 +1,12 @@
+version: v1
+name: http-json-connector
+type: http-json
+topic: http-json-connector-topic
+create_topic: true
+direction: source
+parameters:
+  endpoint: https://api.digitransit.fi/routing/v1/routers/hsl/index/graphql
+  method: GET
+  body: ''
+  interval: 3600
+  topic: http-json-connector
