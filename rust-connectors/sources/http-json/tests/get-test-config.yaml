@@ -5,8 +5,8 @@ topic: http-json-connector-topic
 create_topic: true
 direction: source
 parameters:
-  endpoint: https://api.digitransit.fi/routing/v1/routers/hsl/index/graphql
+  endpoint: http://IP_ADDRESS:8080/get
   method: GET
   body: ''
-  interval: 3600
-  topic: http-json-connector
+  interval: 1
+  topic: http-json-connector-topic
