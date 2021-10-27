@@ -1,8 +1,7 @@
-use tide::Request;
-use tide::prelude::*;
 use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::Arc;
-
+use tide::prelude::*;
+use tide::Request;
 
 #[derive(Clone)]
 struct State {
@@ -17,7 +16,6 @@ impl State {
         }
     }
 }
-
 
 #[async_std::main]
 async fn main() -> tide::Result<()> {
