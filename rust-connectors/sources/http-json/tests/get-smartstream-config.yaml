@@ -1,0 +1,13 @@
+version: v1
+name: http-json-connector
+type: http-json
+topic: http-json-connector-topic
+create_topic: true
+direction: source
+parameters:
+  endpoint: http://IP_ADDRESS:8080/get
+  method: GET
+  body: ''
+  interval: 1
+  topic: http-json-connector-topic
+  smartstream-map: http-json-connector-map

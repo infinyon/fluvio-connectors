@@ -1,0 +1,9 @@
+version: v1
+name: test-connector-name
+type: test-connector
+topic: test-connector-name-topic
+create_topic: false
+direction: source
+parameters:
+  topic: "test-connector-name-topic"
+  timeout: 100

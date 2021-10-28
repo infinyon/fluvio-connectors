@@ -5,9 +5,12 @@ members = [
     "rust-connectors/sources/test-connector",
     "rust-connectors/sources/mqtt",
     "rust-connectors/sources/http-json",
+    "rust-connectors/utils/mocks/http-json-mock/",
+    "rust-connectors/utils/fluvio-smartstream-map/"
 ]
 resolver = "2"
 [patch.crates-io]
 fluvio = { git = "https://github.com/infinyon/fluvio" }
 fluvio-dataplane-protocol = { git = "https://github.com/infinyon/fluvio" }
 fluvio-smartengine = { git = "https://github.com/infinyon/fluvio" }
+fluvio-smartstream = { git = "https://github.com/infinyon/fluvio" }

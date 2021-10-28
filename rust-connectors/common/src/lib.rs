@@ -38,7 +38,7 @@ my-complex-connector:
   inputs:
     bind_url: tcp://0.0.0.0:9000
 #";
-        let config: ConnectorConfigSet =
+        let _config: ConnectorConfigSet =
             serde_yaml::from_str(input_yaml).expect("Failed to parse yaml");
     }
 }

@@ -14,6 +14,8 @@ CONNECTOR_NAME?=mqtt
 IMAGE_NAME?=infinyon/fluvio-connect-$(CONNECTOR_NAME)
 CONNECTOR_BIN=$(if $(TARGET),./target/$(TARGET)/$(BUILD_PROFILE)/$(CONNECTOR_NAME),./target/$(BUILD_PROFILE)/$(CONNECTOR_NAME))
 
+CONNECTOR_LIST=test-connector mqtt http-json
+
 smoke-test:
 	$(CARGO_BUILDER) run --bin fluvio-connector start ./test-connector/config.yaml
 
@@ -49,6 +51,12 @@ metadata:
 	echo ']' >> $(METADATA_OUT)
 	cat $(METADATA_OUT) | jq '.'
 
+
+test:
+	for i in $(CONNECTOR_LIST); do \
+		CONNECTOR_NAME=$$i make official-containers; \
+		make -C rust-connectors/sources/$$i test; \
+	done
 
 
 clean:
