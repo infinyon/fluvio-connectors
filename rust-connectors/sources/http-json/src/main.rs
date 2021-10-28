@@ -1,6 +1,7 @@
 use fluvio::metadata::smartmodule::SmartModuleSpec;
-use fluvio_dataplane_protocol::smartstream::{SmartStreamExtraParams, SmartStreamInput};
-use fluvio_smartengine::{SmartEngine, SmartStream};
+use fluvio_connectors_common::opt::CommonSourceOpt;
+use fluvio_dataplane_protocol::smartstream::SmartStreamInput;
+use fluvio_smartengine::SmartStream;
 use schemars::{schema_for, JsonSchema};
 use structopt::StructOpt;
 use tokio_stream::StreamExt;
@@ -12,10 +13,6 @@ pub struct HttpOpt {
     /// Endpoint for the http connector
     #[structopt(long)]
     endpoint: String,
-
-    /// Topic to produce in the http connector
-    #[structopt(long)]
-    topic: String,
 
     /// HTTP body for the request
     #[structopt(long)]
@@ -29,23 +26,9 @@ pub struct HttpOpt {
     #[structopt(long, default_value = "300")]
     interval: u64,
 
-    /// Path of filter smartstream used as a pre-produce step
-    /// If not found file in that path, it will be fetch
-    /// the smartmodule with that name if present
-    #[structopt(long, group("smartstream"))]
-    pub smartstream_filter: Option<String>,
-
-    /// Path of map smartstream used as a pre-produce step
-    /// If not found file in that path, it will be fetch
-    /// the smartmodule with that name if present
-    #[structopt(long, group("smartstream"))]
-    pub smartstream_map: Option<String>,
-
-    /// Path of arraymap smartstream used as a pre-produce step
-    /// If not found file in that path, it will be fetch
-    /// the smartmodule with that name if present
-    #[structopt(long, group("smartstream"))]
-    pub smartstream_arraymap: Option<String>,
+    #[structopt(flatten)]
+    #[schemars(flatten)]
+    common: CommonSourceOpt,
 }
 
 #[tokio::main]
@@ -61,76 +44,32 @@ async fn main() -> Result<()> {
     let timer = tokio::time::interval(tokio::time::Duration::from_secs(opts.interval));
     let mut timer_stream = tokio_stream::wrappers::IntervalStream::new(timer);
     let fluvio = fluvio::Fluvio::connect().await?;
-    let producer = fluvio.topic_producer(&opts.topic).await?;
+    let producer = fluvio.topic_producer(&opts.common.fluvio_topic).await?;
 
-    let engine = SmartEngine::default();
-    let admin = fluvio.admin().await;
+    let mut smart_stream: Option<Box<dyn SmartStream>> = match opts.common.smarstream_module() {
+        Ok(maybe_smartstream) => maybe_smartstream,
+        Err(_) => {
+            let admin = fluvio.admin().await;
 
-    let smartstream_spec = admin.list::<SmartModuleSpec, _>(vec![]).await?;
+            let smartmodule_spec_list = &admin
+                .list::<SmartModuleSpec, _>(vec![opts
+                    .common
+                    .smartmodule_name()
+                    .expect("Not named smartmodule")
+                    .into()])
+                .await
+                .expect("Failed to get smartmodule");
 
-    let mut smart_stream: Option<Box<dyn SmartStream>> = match (
-        opts.smartstream_filter,
-        opts.smartstream_map,
-        opts.smartstream_arraymap,
-    ) {
-        (Some(filter_path), _, _) => {
-            let smart_stream_module = match engine.create_module_from_path(filter_path) {
-                Ok(smart_stream_module) => smart_stream_module,
-                Err(_) => engine
-                    .create_module_from_smartmodule_spec(
-                        &smartstream_spec
-                            .first()
-                            .expect("Not found smartmodule")
-                            .spec,
-                    )
-                    .await
-                    .expect("Failed to create smartstream module"),
-            };
-            Some(Box::new(
-                smart_stream_module
-                    .create_filter(&engine, SmartStreamExtraParams::default())
-                    .expect("Failed to create smart stream filter"),
-            ))
+            let smartmodule_spec = &smartmodule_spec_list
+                .first()
+                .expect("Not found smartmodule")
+                .spec;
+
+            opts.common
+                .smart_stream_module_from_spec(smartmodule_spec)
+                .await
+                .expect("Failed to create smartmodule")
         }
-        (_, Some(map_path), _) => {
-            let smart_stream_module = match engine.create_module_from_path(map_path) {
-                Ok(smart_stream_module) => smart_stream_module,
-                Err(_) => engine
-                    .create_module_from_smartmodule_spec(
-                        &smartstream_spec
-                            .first()
-                            .expect("Not found smartmodule")
-                            .spec,
-                    )
-                    .await
-                    .expect("Failed to create smartstream module"),
-            };
-            Some(Box::new(
-                smart_stream_module
-                    .create_map(&engine, SmartStreamExtraParams::default())
-                    .expect("Failed to create smart stream map"),
-            ))
-        }
-        (_, _, Some(array_map_path)) => {
-            let smart_stream_module = match engine.create_module_from_path(&array_map_path) {
-                Ok(smart_stream_module) => smart_stream_module,
-                Err(_) => engine
-                    .create_module_from_smartmodule_spec(
-                        &smartstream_spec
-                            .first()
-                            .expect("Not found smartmodule")
-                            .spec,
-                    )
-                    .await
-                    .expect("Failed to create smartstream module"),
-            };
-            Some(Box::new(
-                smart_stream_module
-                    .create_array_map(&engine, SmartStreamExtraParams::default())
-                    .expect("Failed to create smart stream array map"),
-            ))
-        }
-        _ => None,
     };
 
     let client = reqwest::Client::new();
