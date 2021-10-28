@@ -9,4 +9,4 @@ parameters:
   method: POST
   body: '{"name": "Pablo"} '
   interval: 1
-  topic: http-json-connector-topic
+  fluvio-topic: http-json-connector-topic

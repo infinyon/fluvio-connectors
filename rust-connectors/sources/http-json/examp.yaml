@@ -9,4 +9,4 @@ parameters:
   method: POST
   body: '{"query":"{\n  stops {\n    stopId: gtfsId\n    lat\n    lon\n    code\n    stoptimesWithoutPatterns {\n      trip {\n        tripId: gtfsId\n        serviceId\n      }\n      scheduledArrival\n    }\n  }\n}","variables":null}'
   interval: 3600
-  topic: routes-info
+  fluvio-topic: routes-info
