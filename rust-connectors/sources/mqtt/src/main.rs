@@ -1,3 +1,7 @@
+use fluvio::{dataplane::smartstream::SmartStreamInput, metadata::smartmodule::SmartModuleSpec};
+use fluvio_connectors_common::opt::CommonSourceOpt;
+use fluvio_smartengine::SmartStream;
+
 use paho_mqtt::client::Client as MqttClient;
 use paho_mqtt::CreateOptions;
 mod error;
@@ -20,8 +24,9 @@ struct MqttOpts {
     #[structopt(long)]
     mqtt_topic: String,
 
-    #[structopt(long)]
-    fluvio_topic: String,
+    #[structopt(flatten)]
+    #[schemars(flatten)]
+    common: CommonSourceOpt,
 }
 
 #[derive(Debug, Serialize)]
@@ -65,7 +70,7 @@ async fn main() -> Result<(), MqttConnectorError> {
     let mqtt_timeout_seconds = opts.timeout.unwrap_or(60);
     let mqtt_url = opts.mqtt_url; //"mqtt.hsl.fi";
     let mqtt_topic = opts.mqtt_topic; //"/hfp/v2/journey/#";
-    let fluvio_topic = opts.fluvio_topic; //"mqtt";
+    let fluvio_topic = &opts.common.fluvio_topic; //"mqtt";
 
     let timeout = std::time::Duration::from_secs(mqtt_timeout_seconds);
     let mut mqtt_client = MqttClient::new(CreateOptions::from(mqtt_url))?;
@@ -79,6 +84,32 @@ async fn main() -> Result<(), MqttConnectorError> {
     let fluvio_client = fluvio::Fluvio::connect().await?;
     let producer = fluvio_client.topic_producer(fluvio_topic).await?;
 
+    let mut smart_stream: Option<Box<dyn SmartStream>> = match opts.common.smarstream_module() {
+        Ok(maybe_smartstream) => maybe_smartstream,
+        Err(_) => {
+            let admin = fluvio_client.admin().await;
+
+            let smartmodule_spec_list = &admin
+                .list::<SmartModuleSpec, _>(vec![opts
+                    .common
+                    .smartmodule_name()
+                    .expect("Not named smartmodule")
+                    .into()])
+                .await
+                .expect("Failed to get smartmodule");
+
+            let smartmodule_spec = &smartmodule_spec_list
+                .first()
+                .expect("Not found smartmodule")
+                .spec;
+
+            opts.common
+                .smart_stream_module_from_spec(smartmodule_spec)
+                .await
+                .expect("Failed to create smartmodule")
+        }
+    };
+
     for msg in rx.iter() {
         if let Some(msg) = msg {
             let mqtt_topic = msg.topic().to_string();
@@ -88,7 +119,26 @@ async fn main() -> Result<(), MqttConnectorError> {
                 payload,
             };
             let fluvio_record = serde_json::to_string(&mqtt_event).unwrap();
-            let _ = producer.send("", fluvio_record).await?;
+            if let Some(ref mut smart_stream) = smart_stream {
+                let input = SmartStreamInput::from_single_record(fluvio_record.as_bytes())
+                    .expect("Failed to create record");
+                let output = smart_stream
+                    .process(input)
+                    .expect("Failed smartmodule execution");
+
+                let batches = output.successes.chunks(100).map(|record| {
+                    record
+                        .iter()
+                        .map(|record| (fluvio::RecordKey::NULL, record.value.as_ref()))
+                });
+                for batch in batches {
+                    producer.send_all(batch).await?;
+                }
+            } else {
+                producer
+                    .send(fluvio::RecordKey::NULL, fluvio_record)
+                    .await?;
+            }
         } else if mqtt_client.is_connected() || !try_reconnect(&mqtt_client) {
             break;
         }
