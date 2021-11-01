@@ -10,8 +10,8 @@ members = [
 ]
 resolver = "2"
 [patch.crates-io]
-fluvio = { git = "https://github.com/infinyon/fluvio", tag = "v0.9.12" }
-fluvio-dataplane-protocol = { git = "https://github.com/infinyon/fluvio", tag = "v0.9.12"  }
-fluvio-controlplane-metadata = { git = "https://github.com/infinyon/fluvio", tag = "v0.9.12"  }
-fluvio-smartengine = { git = "https://github.com/infinyon/fluvio", tag = "v0.9.12"  }
-fluvio-smartstream = { git = "https://github.com/infinyon/fluvio", tag = "v0.9.12"  }
+fluvio = { git = "https://github.com/infinyon/fluvio", rev = "476fce934a7382b75ddb7030975e55619aad2a7b" }
+fluvio-dataplane-protocol = { git = "https://github.com/infinyon/fluvio", rev = "476fce934a7382b75ddb7030975e55619aad2a7b"  }
+fluvio-controlplane-metadata = { git = "https://github.com/infinyon/fluvio", rev = "476fce934a7382b75ddb7030975e55619aad2a7b"  }
+fluvio-smartengine = { git = "https://github.com/infinyon/fluvio", rev = "476fce934a7382b75ddb7030975e55619aad2a7b"  }
+fluvio-smartstream = { git = "https://github.com/infinyon/fluvio", rev = "476fce934a7382b75ddb7030975e55619aad2a7b"  }
