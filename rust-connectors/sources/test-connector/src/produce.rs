@@ -1,7 +1,7 @@
 use crate::opts::TestConnectorOpts;
-use fluvio::RecordKey;
+use fluvio_connectors_common::RecordKey;
 
-pub async fn produce(opts: TestConnectorOpts) -> Result<(), fluvio::FluvioError> {
+pub async fn produce(opts: TestConnectorOpts) -> anyhow::Result<()> {
     let producer = opts
         .common
         .create_producer()

@@ -1,7 +1,5 @@
 use fluvio_connectors_common::opt::CommonSourceOpt;
-use fluvio_dataplane_protocol::smartstream::SmartStreamInput;
-use fluvio_future::tracing::debug;
-use fluvio_smartengine::SmartStream;
+use fluvio_connectors_common::RecordKey;
 use schemars::{schema_for, JsonSchema};
 use structopt::StructOpt;
 use tokio_stream::StreamExt;
@@ -66,9 +64,7 @@ async fn main() -> Result<()> {
 
         let response_text = response.text().await?;
 
-        producer
-            .send(fluvio::RecordKey::NULL, response_text)
-            .await?;
+        producer.send(RecordKey::NULL, response_text).await?;
     }
 
     Ok(())

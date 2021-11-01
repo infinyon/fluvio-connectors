@@ -1,6 +1,8 @@
 use serde::Deserialize;
 use std::collections::HashMap;
 
+pub use fluvio::RecordKey;
+
 pub mod opt;
 
 pub type ConnectorConfigSet = HashMap<String, ConnectorConfig>;
