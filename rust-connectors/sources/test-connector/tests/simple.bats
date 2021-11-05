@@ -2,11 +2,11 @@
 
 setup() {
     FILE=$(mktemp --suffix .yaml)
-    cp ./tests/test-config.yaml $FILE
     UUID=$(uuidgen)
     TOPIC=${UUID}-topic
+    cp ./tests/test-config.yaml $FILE
+
     sed -i.BAK "s/test-connector-name/${UUID}/g" $FILE
-    fluvio topic create $TOPIC
     fluvio connector create --config $FILE
 }
 

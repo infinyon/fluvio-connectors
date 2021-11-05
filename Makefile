@@ -10,11 +10,11 @@ TEST_CONNECTOR_BIN=$(if $(TARGET),./target/$(TARGET)/$(BUILD_PROFILE)/test-conne
 SYSLOG_BIN=$(if $(TARGET),./target/$(TARGET)/$(BUILD_PROFILE)/fluvio-syslog,./target/$(BUILD_PROFILE)/fluvio-syslog)
 
 # These defaults are set for development purposes only. CI will override
-CONNECTOR_NAME?=mqtt
+CONNECTOR_NAME?=test-connector
 IMAGE_NAME?=infinyon/fluvio-connect-$(CONNECTOR_NAME)
 CONNECTOR_BIN=$(if $(TARGET),./target/$(TARGET)/$(BUILD_PROFILE)/$(CONNECTOR_NAME),./target/$(BUILD_PROFILE)/$(CONNECTOR_NAME))
 
-CONNECTOR_LIST=test-connector mqtt http-json
+CONNECTOR_LIST=test-connector http-json-connector
 
 smoke-test:
 	$(CARGO_BUILDER) run --bin fluvio-connector start ./test-connector/config.yaml
@@ -55,6 +55,7 @@ metadata:
 test:
 	for i in $(CONNECTOR_LIST); do \
 		CONNECTOR_NAME=$$i make official-containers; \
+		docker image save "${IMAGE_NAME}" --output /tmp/infinyon-fluvio-connect-${CONNECTOR_NAME}.tar \
 		make -C rust-connectors/sources/$$i test; \
 	done
 

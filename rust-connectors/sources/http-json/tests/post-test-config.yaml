@@ -1,4 +1,5 @@
 version: v1
+connector_version: dev
 name: http-json-connector
 type: http-json
 topic: http-json-connector-topic

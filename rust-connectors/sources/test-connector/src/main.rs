@@ -40,7 +40,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("{}", serde_json::to_string(&mqtt_schema).unwrap());
             return Ok(());
         }
-        _ => TestConnectorOpts::from_args(),
+        _ => {
+            println!("cmd args: {:?}", arguments);
+            TestConnectorOpts::from_args()
+        },
     };
     let _ = produce(opts).await?;
     Ok(())

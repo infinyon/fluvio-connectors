@@ -80,6 +80,10 @@ jobs:
           version: latest
       - name: Check Fluvio Installation
         run: |
+          # TODO: When we're not using fluvio on the master branch, revert this.
+          fluvio cluster delete
+          fluvio cluster start --image-version latest
+          sleep 10
           fluvio version
           fluvio topic list
           fluvio topic create foobar

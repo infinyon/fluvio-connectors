@@ -8,6 +8,7 @@ use fluvio_controlplane_metadata::smartmodule::SmartModuleSpec;
 pub struct CommonSourceOpt {
     /// The topic where all things should go
     #[structopt(long)]
+    #[schemars(skip)]
     pub fluvio_topic: String,
 
     /// Path of filter smartstream used as a pre-produce step

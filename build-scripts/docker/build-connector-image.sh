@@ -27,18 +27,10 @@ function main() {
   else
     IMAGE_TAGS="-t $IMAGE_NAME -t $IMAGE_NAME:$COMMIT_HASH-$TARGET"
   fi
+  DOCKER_IMAGE_TAR=/tmp/infinyon-fluvio-connector-${CONNECTOR_NAME}-${TARGET}.tarj
+  docker buildx build -o type=docker,dest=- $IMAGE_TAGS $BUILD_ARGS . > ${DOCKER_IMAGE_TAR}
 
-  # The CI build should producer a tarball
-  if [[ -z "$CI" ]];
-  then
-    # shellcheck disable=SC2086
-    docker buildx build $IMAGE_TAGS $BUILD_ARGS .
-  else
-    # shellcheck disable=SC2086
-    docker buildx build -o type=docker,dest=- $IMAGE_TAGS $BUILD_ARGS . > /tmp/infinyon-fluvio-connector-${CONNECTOR_NAME}-${TARGET}.tar
-  fi
-
-
+  k3d image import -k -c fluvio ${DOCKER_IMAGE_TAR}
 
 }
 
