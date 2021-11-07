@@ -33,7 +33,9 @@ pub struct PgConnector {
 
 impl PgConnector {
     pub async fn new(config: PgConnectorOpt) -> eyre::Result<Self> {
+        tracing::info!("Initializing PgConnector");
         let fluvio = Fluvio::connect().await?;
+        tracing::info!("Connected to Fluvio");
         let consumer = fluvio.partition_consumer(&config.topic, 0).await?;
         let mut lsn: Option<PgLsn> = None;
 
@@ -52,14 +54,15 @@ impl PgConnector {
             let event = serde_json::from_slice::<ReplicationEvent>(record.value())?;
             let offset = PgLsn::from(event.wal_end);
             lsn = Some(offset);
-            tracing::info!(lsn = event.wal_end, "Resuming connector:");
+            tracing::info!(lsn = event.wal_end, "Discovered LSN to resume PgConnector:");
         } else {
-            tracing::info!("Starting connector from log beginning");
+            tracing::info!("No prior LSN discovered, starting PgConnector at beginning");
         }
 
         let producer = fluvio.topic_producer(&config.topic).await?;
         let (pg_client, conn) = tokio_postgres::connect(config.url.as_str(), NoTls).await?;
         tokio::spawn(conn);
+        tracing::info!("Connected to Postgres");
 
         Ok(Self {
             config,
