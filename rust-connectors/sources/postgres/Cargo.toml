@@ -1,0 +1,32 @@
+[package]
+name = "fluvio-connect-postgres"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "fluvio-connect-postgres"
+path = "src/bin/main.rs"
+required-features = ["connect"]
+
+[features]
+default = ["connect"]
+connect = ["tokio", "tokio-stream", "tokio-postgres", "postgres-protocol", "tracing", "tracing-subscriber", "fluvio"]
+
+[dependencies]
+tracing = { version = "0.1", optional = true }
+tracing-subscriber = { version = "0.3", features = ["env-filter"], optional = true }
+tokio = { version = "1", features = ["full"], optional = true }
+tokio-stream = { version = "0.1", optional = true }
+tokio-postgres = { path = "../../../../../Documents/rust-postgres/tokio-postgres", optional = true }
+postgres-protocol = { path = "../../../../../Documents/rust-postgres/postgres-protocol", optional = true }
+fluvio = { version = "0.9", optional = true }
+bytes = "1"
+eyre = "0.6"
+thiserror = "1"
+structopt = "0.3"
+dotenv = "0.15"
+url = "2.2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+schemars = { version = "0.8", features = ["url"] }
+once_cell = "1"
