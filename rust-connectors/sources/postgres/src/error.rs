@@ -12,6 +12,8 @@ pub enum Error {
     UnrecognizedType(u32),
     #[error("failed to parse tuple data: {0}")]
     ParseError(String),
+    #[error("failed to find specified Fluvio Topic: {0}")]
+    TopicNotFound(String),
     #[error(
         "failed to open Postgres replication stream
 check that your database has a PUBLICATION '{publication}' and slot '{slot}'"
