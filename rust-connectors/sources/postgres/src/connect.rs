@@ -1,5 +1,6 @@
 use crate::model::{Column, LogicalReplicationMessage, ReplicationEvent};
-use crate::PgConnectorOpt;
+use crate::{Error, PgConnectorOpt};
+use fluvio::metadata::topic::TopicSpec;
 use fluvio::{Fluvio, Offset, TopicProducer};
 use once_cell::sync::Lazy;
 use postgres_protocol::message::backend::{
@@ -37,6 +38,14 @@ impl PgConnector {
         tracing::info!("Initializing PgConnector");
         let fluvio = Fluvio::connect().await?;
         tracing::info!("Connected to Fluvio");
+
+        let admin = fluvio.admin().await;
+        let topics = admin.list::<TopicSpec, _>(vec![]).await?;
+        let topic_exists = topics.iter().any(|t| t.name == config.topic);
+        if !topic_exists {
+            return Err(Error::TopicNotFound(config.topic.to_string()).into());
+        }
+
         let consumer = fluvio.partition_consumer(&config.topic, 0).await?;
         let mut lsn: Option<PgLsn> = None;
 
@@ -97,7 +106,7 @@ impl PgConnector {
             .pg_client
             .copy_both_simple::<bytes::Bytes>(&query)
             .await
-            .map_err(|source| crate::Error::PostgresReplication {
+            .map_err(|source| Error::PostgresReplication {
                 publication: self.config.publication.to_string(),
                 slot: self.config.slot.to_string(),
                 source,
