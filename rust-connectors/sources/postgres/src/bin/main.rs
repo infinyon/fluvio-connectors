@@ -5,11 +5,12 @@ use tracing_subscriber::filter::EnvFilter;
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
-    dotenv::dotenv()?;
+    let _ = dotenv::dotenv();
+    std::env::set_var("RUST_BACKTRACE", "full");
 
     // Set default RUST_LOG if unset or empty
     if let Err(_) | Ok("") = std::env::var("RUST_LOG").as_deref() {
-        std::env::set_var("RUST_LOG", "fluvio_connector_postgres=info");
+        std::env::set_var("RUST_LOG", "fluvio_connect_postgres=info");
     }
 
     // Initialize logging
