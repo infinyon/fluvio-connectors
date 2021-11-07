@@ -8,6 +8,7 @@ use postgres_protocol::message::backend::{
 use std::collections::BTreeMap;
 use std::pin::Pin;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use tokio_postgres::config::ReplicationMode;
 use tokio_postgres::replication::LogicalReplicationStream;
 use tokio_postgres::types::PgLsn;
 use tokio_postgres::{Client, NoTls};
@@ -60,7 +61,14 @@ impl PgConnector {
         }
 
         let producer = fluvio.topic_producer(&config.topic).await?;
-        let (pg_client, conn) = tokio_postgres::connect(config.url.as_str(), NoTls).await?;
+
+        let (pg_client, conn) = config
+            .url
+            .as_str()
+            .parse::<tokio_postgres::Config>()?
+            .replication_mode(ReplicationMode::Logical)
+            .connect(NoTls)
+            .await?;
         tokio::spawn(conn);
         tracing::info!("Connected to Postgres");
 
@@ -89,7 +97,11 @@ impl PgConnector {
             .pg_client
             .copy_both_simple::<bytes::Bytes>(&query)
             .await
-            .unwrap();
+            .map_err(|source| crate::Error::PostgresReplication {
+                publication: self.config.publication.to_string(),
+                slot: self.config.slot.to_string(),
+                source,
+            })?;
 
         let stream = LogicalReplicationStream::new(copy_stream);
         tokio::pin!(stream);
