@@ -17,8 +17,8 @@ tracing = { version = "0.1", optional = true }
 tracing-subscriber = { version = "0.3", features = ["env-filter"], optional = true }
 tokio = { version = "1", features = ["full"], optional = true }
 tokio-stream = { version = "0.1", optional = true }
-tokio-postgres = { path = "../../../../../Documents/rust-postgres/tokio-postgres", optional = true }
-postgres-protocol = { path = "../../../../../Documents/rust-postgres/postgres-protocol", optional = true }
+tokio-postgres = { git = "https://github.com/infinyon/rust-postgres", rev = "4e86fffc7e8d4ee10c7751a58398a172a4963bfc", optional = true }
+postgres-protocol = { git = "https://github.com/infinyon/rust-postgres", rev = "4e86fffc7e8d4ee10c7751a58398a172a4963bfc", optional = true }
 fluvio = { version = "0.9", optional = true }
 bytes = "1"
 eyre = "0.6"
