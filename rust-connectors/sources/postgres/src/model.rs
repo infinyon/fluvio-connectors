@@ -15,6 +15,7 @@ pub struct ReplicationEvent {
 
 /// The payload types of a logical replication event.
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "lowercase")]
 pub enum LogicalReplicationMessage {
     /// The beginning of a transaction.
     Begin(BeginBody),
