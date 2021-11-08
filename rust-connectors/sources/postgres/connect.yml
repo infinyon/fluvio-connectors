@@ -3,7 +3,7 @@ name: fluvio-postgres
 type: postgres
 topic: postgres
 parameters:
-  url: postgres://postgres:mysecretpassword@postgres-leader-service:5432?replication=database
+  url: postgres://postgres:mysecretpassword@postgres-leader-service:5432
   publication: fluvio
   slot: fluvio
   topic: postgres
