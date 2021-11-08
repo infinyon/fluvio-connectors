@@ -1,2 +1,2 @@
 test:
-	bats --verbose-run ./tests/simple.bats
+	bats ./tests/simple.bats
