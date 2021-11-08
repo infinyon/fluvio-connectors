@@ -46,9 +46,7 @@ spec:
   selector:
     app: PostgresLeader
   ports:
-    - protocol: TCP
-      port: 5432
-      targetPort: 5432
-    - protocol: TCP
-      nodePort: 54320
-      port: 5432
+  - name: "postgres-leader-port"
+    protocol: TCP
+    nodePort: 54320
+    port: 5432
