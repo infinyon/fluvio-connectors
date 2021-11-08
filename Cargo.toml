@@ -4,7 +4,7 @@ members = [
     "rust-connectors/sources/syslog",
     "rust-connectors/sources/test-connector",
     "rust-connectors/sources/mqtt",
-    "rust-connectors/sources/http-json",
+    "rust-connectors/sources/http",
     "rust-connectors/utils/mocks/http-json-mock/",
     "rust-connectors/utils/fluvio-smartstream-map/"
 ]

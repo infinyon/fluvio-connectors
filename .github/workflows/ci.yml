@@ -184,27 +184,21 @@ jobs:
         include:
           - os: ubuntu-latest
             connector-name: fluvio-syslog
-            image-name: infinyon/fluvio-connect-syslog
             rust-target: x86_64-unknown-linux-musl
           - os: ubuntu-latest
             connector-name: fluvio-syslog
-            image-name: infinyon/fluvio-connect-syslog
             rust-target: aarch64-unknown-linux-musl
           - os: ubuntu-latest
             connector-name: mqtt
-            image-name: infinyon/fluvio-connect-mqtt
             rust-target: x86_64-unknown-linux-musl
           - os: ubuntu-latest
             connector-name: mqtt
-            image-name: infinyon/fluvio-connect-mqtt
             rust-target: aarch64-unknown-linux-musl
           - os: ubuntu-latest
-            connector-name: http-json-connector
-            image-name: infinyon/fluvio-connect-http-json
+            connector-name: http
             rust-target: x86_64-unknown-linux-musl
           - os: ubuntu-latest
-            connector-name: http-json-connector
-            image-name: infinyon/fluvio-connect-http-json
+            connector-name: http
             rust-target: aarch64-unknown-linux-musl
     env:
       RUSTV: ${{ matrix.rust }}
@@ -255,7 +249,7 @@ jobs:
           TARGET: ${{ matrix.rust-target }}
           CONNECTOR_NAME: ${{ matrix.connector-name }}
           COMMIT_HASH: ${{ github.sha }}
-          IMAGE_NAME: ${{ matrix.image-name }}
+          # IMAGE_NAME: ${{ matrix.image-name }}
         run: make official-containers
 
       - name: Upload tarball as artifact
@@ -282,8 +276,8 @@ jobs:
             connector-name: mqtt
             image-name: infinyon/fluvio-connect-mqtt
           - os: ubuntu-latest
-            connector-name: http-json-connector
-            image-name: infinyon/fluvio-connect-http-json
+            connector-name: http
+            image-name: infinyon/fluvio-connect-http
     steps:
       - name: Download ${{ matrix.connector-name }} x86_64-unknown-linux-musl Docker Image as Artifact
         uses: actions/download-artifact@v2
