@@ -1,10 +1,9 @@
+use fluvio_connectors_common::opt::CommonSourceOpt;
 use schemars::JsonSchema;
 use structopt::StructOpt;
-use fluvio_connectors_common::opt::CommonSourceOpt;
 
 #[derive(StructOpt, Debug, JsonSchema)]
 pub struct TestConnectorOpts {
-
     #[structopt(flatten)]
     #[schemars(flatten)]
     pub common: CommonSourceOpt,
@@ -14,5 +13,4 @@ pub struct TestConnectorOpts {
 
     #[structopt(long)]
     pub timeout: Option<u64>,
-
 }

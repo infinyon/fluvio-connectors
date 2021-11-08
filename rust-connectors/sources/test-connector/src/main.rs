@@ -43,7 +43,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         _ => {
             println!("cmd args: {:?}", arguments);
             TestConnectorOpts::from_args()
-        },
+        }
     };
     let _ = produce(opts).await?;
     Ok(())
