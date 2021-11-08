@@ -125,7 +125,7 @@ jobs:
           - test-connector
           - fluvio-syslog
           - mqtt
-          - http-json-connector
+          - http
         rust: [stable]
     env:
       RUST_BACKTRACE: full
