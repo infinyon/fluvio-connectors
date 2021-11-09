@@ -6,6 +6,7 @@ use paho_mqtt::client::Client as MqttClient;
 use paho_mqtt::CreateOptions;
 mod error;
 use error::MqttConnectorError;
+use fluvio_future::tracing::debug;
 use schemars::{schema_for, JsonSchema};
 use serde::Serialize;
 use structopt::StructOpt;
@@ -48,7 +49,6 @@ enum ConnectorDirection {
 
 #[async_std::main]
 async fn main() -> Result<(), MqttConnectorError> {
-    fluvio_future::subscriber::init_tracer(None);
     let arguments: Vec<String> = std::env::args().collect();
     let opts = match arguments.get(1) {
         Some(schema) if schema == "metadata" => {
@@ -65,6 +65,7 @@ async fn main() -> Result<(), MqttConnectorError> {
         }
         _ => MqttOpts::from_args(),
     };
+    opts.common.enable_logging();
 
     let mqtt_qos = opts.qos.unwrap_or(0);
     let mqtt_timeout_seconds = opts.timeout.unwrap_or(60);
@@ -119,6 +120,7 @@ async fn main() -> Result<(), MqttConnectorError> {
                 payload,
             };
             let fluvio_record = serde_json::to_string(&mqtt_event).unwrap();
+            debug!("Record before smartstream {:?}", fluvio_record);
             if let Some(ref mut smart_stream) = smart_stream {
                 let input = SmartStreamInput::from_single_record(fluvio_record.as_bytes())
                     .expect("Failed to create record");
