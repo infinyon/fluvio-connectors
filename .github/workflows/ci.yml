@@ -113,6 +113,7 @@ jobs:
         env:
           TARGET: ${{ matrix.rust-target }}
           CONNECTOR_NAME: ${{ matrix.connector-name }}
+          CI: "" # This is probably a bad thing to add.
 
 
   build_connector_bins:
