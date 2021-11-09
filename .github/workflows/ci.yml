@@ -196,7 +196,7 @@ jobs:
           name: infinyon-fluvio-connector-${{ matrix.connector-name }}-${{ matrix.rust-target }}.tar
           path: /tmp/infinyon-fluvio-connector-${{ matrix.connector-name }}-${{ matrix.rust-target }}.tar
 
-  integration-tests:
+  integration_tests:
     name: Integration testing on - ${{ matrix.os }} for ${{ matrix.connector-name }} connector.
     runs-on: ${{ matrix.os }}
     needs: [build_containers]
@@ -264,7 +264,7 @@ jobs:
 
   docker_push:
     name: Publish ${{ matrix.connector-name }} images to Docker Hub
-    needs: [build_containers]
+    needs: [build_containers, integration_tests]
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
