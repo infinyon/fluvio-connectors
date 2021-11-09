@@ -47,11 +47,8 @@ metadata:
 	cat $(METADATA_OUT) | jq '.'
 
 
-test:
-	for i in $(CONNECTOR_LIST); do \
-		CONNECTOR_NAME=$$i $(MAKE) official-containers; \
-		make -C rust-connectors/sources/$$i test; \
-	done
+test: official-containers
+	make -C rust-connectors/sources/$(CONNECTOR_NAME) test
 
 
 clean:
