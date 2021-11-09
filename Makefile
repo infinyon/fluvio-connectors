@@ -10,22 +10,17 @@ TEST_CONNECTOR_BIN=$(if $(TARGET),./target/$(TARGET)/$(BUILD_PROFILE)/test-conne
 SYSLOG_BIN=$(if $(TARGET),./target/$(TARGET)/$(BUILD_PROFILE)/fluvio-syslog,./target/$(BUILD_PROFILE)/fluvio-syslog)
 
 # These defaults are set for development purposes only. CI will override
-CONNECTOR_NAME?=mqtt
-IMAGE_NAME?=infinyon/fluvio-connect-$(CONNECTOR_NAME)
+CONNECTOR_NAME?=test-connector
+#IMAGE_NAME?=infinyon/fluvio-connect-$(CONNECTOR_NAME)
 CONNECTOR_BIN=$(if $(TARGET),./target/$(TARGET)/$(BUILD_PROFILE)/$(CONNECTOR_NAME),./target/$(BUILD_PROFILE)/$(CONNECTOR_NAME))
 
-CONNECTOR_LIST=test-connector mqtt http-json
+CONNECTOR_LIST=http test-connector
 
 smoke-test:
 	$(CARGO_BUILDER) run --bin fluvio-connector start ./test-connector/config.yaml
 
-ifndef CONNECTOR_NAME
-build:
-	$(CARGO_BUILDER) build $(TARGET_FLAG) $(RELEASE_FLAG)
-else
 build:
 	$(CARGO_BUILDER) build $(TARGET_FLAG) $(RELEASE_FLAG) --bin $(CONNECTOR_NAME)
-endif
 
 ifeq (${CI},true)
 # In CI, we expect all artifacts to already be built and loaded for the script
@@ -53,10 +48,7 @@ metadata:
 
 
 test:
-	for i in $(CONNECTOR_LIST); do \
-		CONNECTOR_NAME=$$i make official-containers; \
-		make -C rust-connectors/sources/$$i test; \
-	done
+	make -C rust-connectors/sources/$(CONNECTOR_NAME) test
 
 
 clean:

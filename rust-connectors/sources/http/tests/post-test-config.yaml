@@ -1,6 +1,7 @@
 version: v1
+connector_version: dev
 name: http-json-connector
-type: http-json
+type: http
 topic: http-json-connector-topic
 create_topic: true
 direction: source
@@ -9,4 +10,3 @@ parameters:
   method: POST
   body: '{"name": "Pablo"} '
   interval: 1
-  fluvio-topic: http-json-connector-topic

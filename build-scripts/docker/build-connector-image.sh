@@ -8,7 +8,7 @@ readonly COMMIT_HASH="${COMMIT_HASH:-}"
 # The name of the connector - Ex: test-connector
 readonly CONNECTOR_NAME="${CONNECTOR_NAME:-test-connector}"
 # Default image name structure
-readonly IMAGE_NAME="${IMAGE_NAME:-infinyon/fluvio-connect-$CONNECTOR_NAME}"
+readonly IMAGE_NAME="infinyon/fluvio-connect-$CONNECTOR_NAME"
 
 function main() {
 
@@ -27,15 +27,17 @@ function main() {
   else
     IMAGE_TAGS="-t $IMAGE_NAME -t $IMAGE_NAME:$COMMIT_HASH-$TARGET"
   fi
-
+  DOCKER_IMAGE_TAR=/tmp/infinyon-fluvio-connector-${CONNECTOR_NAME}-${TARGET}.tar
   # The CI build should producer a tarball
   if [[ -z "$CI" ]];
   then
     # shellcheck disable=SC2086
-    docker buildx build $IMAGE_TAGS $BUILD_ARGS .
+    docker build $IMAGE_TAGS $BUILD_ARGS .
+    docker save ${IMAGE_NAME} > ${DOCKER_IMAGE_TAR}
+    k3d image import -k -c fluvio ${DOCKER_IMAGE_TAR}
   else
     # shellcheck disable=SC2086
-    docker buildx build -o type=docker,dest=- $IMAGE_TAGS $BUILD_ARGS . > /tmp/infinyon-fluvio-connector-${CONNECTOR_NAME}-${TARGET}.tar
+    docker buildx build -o type=docker,dest=- $IMAGE_TAGS $BUILD_ARGS . > ${DOCKER_IMAGE_TAR}
   fi
 
 

@@ -55,56 +55,6 @@ jobs:
         if: ${{ matrix.check == 'clippy' }}
         run: cargo clippy -- -D warnings
 
-  integration-tests:
-    name: Integration testing on - ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        rust: [stable]
-        rust-target:
-          - x86_64-unknown-linux-musl
-    env:
-      RUST_BACKTRACE: full
-    steps:
-      - uses: AbsaOSS/k3d-action@v1.5.0
-        name: "Create fluvio k3d Cluster"
-        with:
-          cluster-name: "fluvio"
-      - name: Sleep 20 to ensure k3d cluster is ready
-        run: sleep 20
-      - name: Install Fluvio Local Cluster
-        uses: infinyon/fluvio@master
-        with:
-          cluster-type: k3d
-          version: latest
-      - name: Check Fluvio Installation
-        run: |
-          fluvio version
-          fluvio topic list
-          fluvio topic create foobar
-          sleep 3
-          echo foo | fluvio produce foobar
-          fluvio consume foobar -o 0 -d
-      - uses: actions/checkout@v2
-      - name: Install Rust stable
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
-      - name: Install Rust ${{ matrix.rust }}
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{ matrix.rust }}
-          target: ${{ matrix.rust-target }}
-      - name: Install zig
-        run: ./actions/zig-install.sh ${{ matrix.os }}
-      - name: Setup BATS
-        uses: mig4/setup-bats@v1
-      - name: Add wasm
-        run: rustup target add wasm32-unknown-unknown
-      - name: Test
-        run: make test
 
 
   build_connector_bins:
@@ -119,9 +69,8 @@ jobs:
           - aarch64-unknown-linux-musl
         connector-name:
           - test-connector
-          - fluvio-syslog
           - mqtt
-          - http-json-connector
+          - http
         rust: [stable]
     env:
       RUST_BACKTRACE: full
@@ -176,31 +125,18 @@ jobs:
           - x86_64-unknown-linux-musl
           - aarch64-unknown-linux-musl
         connector-name: [test-connector]
-        image-name: [infinyon/fluvio-connect-test-connector]
         include:
           - os: ubuntu-latest
-            connector-name: fluvio-syslog
-            image-name: infinyon/fluvio-connect-syslog
-            rust-target: x86_64-unknown-linux-musl
-          - os: ubuntu-latest
-            connector-name: fluvio-syslog
-            image-name: infinyon/fluvio-connect-syslog
-            rust-target: aarch64-unknown-linux-musl
-          - os: ubuntu-latest
             connector-name: mqtt
-            image-name: infinyon/fluvio-connect-mqtt
             rust-target: x86_64-unknown-linux-musl
           - os: ubuntu-latest
             connector-name: mqtt
-            image-name: infinyon/fluvio-connect-mqtt
             rust-target: aarch64-unknown-linux-musl
           - os: ubuntu-latest
-            connector-name: http-json-connector
-            image-name: infinyon/fluvio-connect-http-json
+            connector-name: http
             rust-target: x86_64-unknown-linux-musl
           - os: ubuntu-latest
-            connector-name: http-json-connector
-            image-name: infinyon/fluvio-connect-http-json
+            connector-name: http
             rust-target: aarch64-unknown-linux-musl
     env:
       RUSTV: ${{ matrix.rust }}
@@ -251,7 +187,7 @@ jobs:
           TARGET: ${{ matrix.rust-target }}
           CONNECTOR_NAME: ${{ matrix.connector-name }}
           COMMIT_HASH: ${{ github.sha }}
-          IMAGE_NAME: ${{ matrix.image-name }}
+          # IMAGE_NAME: ${{ matrix.image-name }}
         run: make official-containers
 
       - name: Upload tarball as artifact
@@ -260,9 +196,75 @@ jobs:
           name: infinyon-fluvio-connector-${{ matrix.connector-name }}-${{ matrix.rust-target }}.tar
           path: /tmp/infinyon-fluvio-connector-${{ matrix.connector-name }}-${{ matrix.rust-target }}.tar
 
+  integration_tests:
+    name: Integration testing on - ${{ matrix.os }} for ${{ matrix.connector-name }} connector.
+    runs-on: ${{ matrix.os }}
+    needs: [build_containers]
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        rust: [stable]
+        connector-name: [test-connector, mqtt, http]
+    env:
+      RUST_BACKTRACE: full
+    steps:
+      - uses: AbsaOSS/k3d-action@v1.5.0
+        name: "Create fluvio k3d Cluster"
+        with:
+          cluster-name: "fluvio"
+      - name: Sleep 20 to ensure k3d cluster is ready
+        run: sleep 20
+      - name: Download ${{ matrix.connector-name }} x86_64-unknown-linux-musl Docker Image as Artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: infinyon-fluvio-connector-${{ matrix.connector-name }}-x86_64-unknown-linux-musl.tar
+          path: /tmp
+      - name: Load ${{ matrix.connector-name }} into k3d runtime
+        run: |
+          ls -la /tmp
+          k3d image import -k -c fluvio /tmp/infinyon-fluvio-connector-${{ matrix.connector-name }}-x86_64-unknown-linux-musl.tar
+      - name: Install Fluvio Local Cluster
+        uses: infinyon/fluvio@master
+        with:
+          cluster-type: k3d
+          version: latest
+      - name: Check Fluvio Installation
+        run: |
+          # TODO: When we're not using fluvio on the master branch, revert this.
+          fluvio cluster delete
+          fluvio cluster start --image-version latest
+          sleep 10
+          fluvio version
+          fluvio topic list
+          fluvio topic create foobar
+          sleep 3
+          echo foo | fluvio produce foobar
+          fluvio consume foobar -o 0 -d
+
+      - uses: actions/checkout@v2
+      - name: Install Rust stable
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - name: Install Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          target: wasm32-unknown-unknown
+      - name: Add wasm
+
+        run: rustup target add wasm32-unknown-unknown
+      - name: Setup BATS
+        uses: mig4/setup-bats@v1
+      - name: Test
+        run: make test
+        env:
+          CONNECTOR_NAME: ${{ matrix.connector-name }}
+
   docker_push:
     name: Publish ${{ matrix.connector-name }} images to Docker Hub
-    needs: [build_containers]
+    needs: [build_containers, integration_tests]
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -272,14 +274,11 @@ jobs:
         image-name: [infinyon/fluvio-connect-test-connector]
         include:
           - os: ubuntu-latest
-            connector-name: fluvio-syslog
-            image-name: infinyon/fluvio-connect-syslog
-          - os: ubuntu-latest
             connector-name: mqtt
             image-name: infinyon/fluvio-connect-mqtt
           - os: ubuntu-latest
-            connector-name: http-json-connector
-            image-name: infinyon/fluvio-connect-http-json
+            connector-name: http
+            image-name: infinyon/fluvio-connect-http
     steps:
       - name: Download ${{ matrix.connector-name }} x86_64-unknown-linux-musl Docker Image as Artifact
         uses: actions/download-artifact@v2

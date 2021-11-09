@@ -4,13 +4,13 @@ use fluvio_dataplane_protocol::smartstream::{SmartStreamExtraParams, SmartStream
 use fluvio_smartengine::{SmartEngine, SmartStream};
 
 pub async fn produce(opts: TestConnectorOpts) -> Result<(), fluvio::FluvioError> {
-    let producer = fluvio::producer(opts.topic).await?;
+    let producer = fluvio::producer(opts.common.fluvio_topic).await?;
     let num_records = opts.count.unwrap_or(i64::MAX);
     let timeout = opts.timeout.unwrap_or(1000);
 
     let engine = SmartEngine::default();
     let mut smart_stream: Option<Box<dyn SmartStream>> = None;
-    if let Some(wasm_path) = opts.smartstream_filter {
+    if let Some(wasm_path) = opts.common.smartstream_filter {
         let smart_stream_module = engine
             .create_module_from_path(wasm_path)
             .expect("Failed to read wasm path");
@@ -21,7 +21,7 @@ pub async fn produce(opts: TestConnectorOpts) -> Result<(), fluvio::FluvioError>
         ));
     }
 
-    if let Some(wasm_path) = opts.smartstream_map {
+    if let Some(wasm_path) = opts.common.smartstream_map {
         let smart_stream_module = engine
             .create_module_from_path(wasm_path)
             .expect("Failed to read wasm path");

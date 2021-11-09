@@ -1,9 +1,9 @@
 version: v1
+connector_version: dev
 name: test-connector-name
 type: test-connector
 topic: test-connector-name-topic
-create_topic: false
+create_topic: true
 direction: source
 parameters:
-  topic: "test-connector-name-topic"
   timeout: 100
