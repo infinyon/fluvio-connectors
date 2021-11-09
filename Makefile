@@ -47,7 +47,7 @@ metadata:
 	cat $(METADATA_OUT) | jq '.'
 
 
-test: official-containers
+test:
 	make -C rust-connectors/sources/$(CONNECTOR_NAME) test
 
 
