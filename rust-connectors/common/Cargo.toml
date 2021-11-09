@@ -13,6 +13,7 @@ structopt = "0.3"
 fluvio-smartengine = { version = "0.0.0", features = ["smartmodule"] }
 anyhow = "1.0.44"
 fluvio-controlplane-metadata = "0.12.3"
+fluvio-future = { version = "0.3.11", features = ["subscriber"] }
 
 [dev-dependencies]
 serde_yaml = "0.8.18"

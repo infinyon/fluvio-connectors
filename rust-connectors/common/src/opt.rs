@@ -11,6 +11,11 @@ pub struct CommonSourceOpt {
     #[schemars(skip)]
     pub fluvio_topic: String,
 
+    /// The rust log level.
+    #[structopt(long)]
+    #[schemars(skip)]
+    pub rust_log: Option<String>,
+
     /// Path of filter smartstream used as a pre-produce step
     /// If not found file in that path, it will be fetch
     /// the smartmodule with that name if present
@@ -31,6 +36,12 @@ pub struct CommonSourceOpt {
 }
 
 impl CommonSourceOpt {
+    pub fn enable_logging(&self) {
+        if let Some(ref rust_log) = self.rust_log {
+            std::env::set_var("RUST_LOG", rust_log);
+        }
+        fluvio_future::subscriber::init_logger();
+    }
     pub fn smartmodule_name(&self) -> Option<&str> {
         match (
             &self.smartstream_filter,

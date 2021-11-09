@@ -1,6 +1,7 @@
 use fluvio::metadata::smartmodule::SmartModuleSpec;
 use fluvio_connectors_common::opt::CommonSourceOpt;
 use fluvio_dataplane_protocol::smartstream::SmartStreamInput;
+use fluvio_future::tracing::debug;
 use fluvio_smartengine::SmartStream;
 use schemars::{schema_for, JsonSchema};
 use structopt::StructOpt;
@@ -41,6 +42,8 @@ async fn main() -> Result<()> {
     }
 
     let opts: HttpOpt = HttpOpt::from_args();
+    opts.common.enable_logging();
+
     let timer = tokio::time::interval(tokio::time::Duration::from_secs(opts.interval));
     let mut timer_stream = tokio_stream::wrappers::IntervalStream::new(timer);
     let fluvio = fluvio::Fluvio::connect().await?;
@@ -88,6 +91,7 @@ async fn main() -> Result<()> {
         let response_text = response.text().await?;
 
         if let Some(ref mut smart_stream) = smart_stream {
+            debug!("Record before smartstream {:?}", response_text);
             let input = SmartStreamInput::from_single_record(response_text.as_bytes())?;
             let output = smart_stream.process(input)?;
 
