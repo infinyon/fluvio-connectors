@@ -120,7 +120,7 @@ async fn main() -> Result<(), MqttConnectorError> {
                 payload,
             };
             let fluvio_record = serde_json::to_string(&mqtt_event).unwrap();
-            debug!("Record before smartstream {:?}", fluvio_record);
+            debug!("Record before smartstream {}", fluvio_record);
             if let Some(ref mut smart_stream) = smart_stream {
                 let input = SmartStreamInput::from_single_record(fluvio_record.as_bytes())
                     .expect("Failed to create record");
