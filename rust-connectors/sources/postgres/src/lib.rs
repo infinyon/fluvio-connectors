@@ -1,11 +1,8 @@
-#[cfg(feature = "connect")]
 mod connect;
+pub mod convert;
 pub mod error;
-pub mod model;
 
-#[cfg(feature = "connect")]
 pub use self::connect::PgConnector;
-
 pub use error::{Error, Result};
 use schemars::JsonSchema;
 use structopt::StructOpt;

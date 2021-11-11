@@ -1,4 +1,4 @@
-use fluvio_connect_postgres::{PgConnector, PgConnectorOpt};
+use postgres::{PgConnector, PgConnectorOpt};
 use schemars::schema_for;
 use structopt::StructOpt;
 use tracing_subscriber::filter::EnvFilter;
