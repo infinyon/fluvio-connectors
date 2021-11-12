@@ -71,6 +71,7 @@ jobs:
           - test-connector
           - mqtt
           - http
+          - postgres
         rust: [stable]
     env:
       RUST_BACKTRACE: full
@@ -138,6 +139,12 @@ jobs:
           - os: ubuntu-latest
             connector-name: http
             rust-target: aarch64-unknown-linux-musl
+          - os: ubuntu-latest
+            connector-name: postgres
+            rust-target: x86_64-unknown-linux-musl
+          - os: ubuntu-latest
+            connector-name: postgres
+            rust-target: aarch64-unknown-linux-musl
     env:
       RUSTV: ${{ matrix.rust }}
       TARGET: ${{ matrix.rust-target }}
@@ -204,7 +211,11 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         rust: [stable]
-        connector-name: [test-connector, mqtt, http]
+        connector-name:
+          - test-connector
+          - mqtt
+          - http
+          - postgres
     env:
       RUST_BACKTRACE: full
     steps:
@@ -279,6 +290,9 @@ jobs:
           - os: ubuntu-latest
             connector-name: http
             image-name: infinyon/fluvio-connect-http
+          - os: ubuntu-latest
+            connector-name: postgres
+            image-name: infinyon/fluvio-connect-postgres
     steps:
       - name: Download ${{ matrix.connector-name }} x86_64-unknown-linux-musl Docker Image as Artifact
         uses: actions/download-artifact@v2
