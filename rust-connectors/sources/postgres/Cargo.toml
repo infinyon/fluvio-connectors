@@ -12,11 +12,8 @@ tracing = { version = "0.1" }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tokio = { version = "1", features = ["full"] }
 tokio-stream = { version = "0.1" }
-tokio-postgres = { git = "https://github.com/infinyon/rust-postgres", rev = "4e86fffc7e8d4ee10c7751a58398a172a4963bfc" }
-postgres-protocol = { git = "https://github.com/infinyon/rust-postgres", rev = "4e86fffc7e8d4ee10c7751a58398a172a4963bfc" }
 fluvio = { version = "0.9" }
 fluvio-dataplane-protocol = { git = "https://github.com/infinyon/fluvio", rev = "b2250033d49a279c3d718cd25c42a4cee0b40297" }
-#fluvio-smartengine = { git = "https://github.com/infinyon/fluvio", rev = "b2250033d49a279c3d718cd25c42a4cee0b40297", features = ["smartmodule"] }
 fluvio-connectors-common = { path = "../../common" }
 fluvio-model-postgres = { path = "../../models/fluvio-model-postgres" }
 fluvio-smartengine = { version = "0.0.0", features = ["smartmodule"] }
@@ -30,3 +27,9 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 schemars = { version = "0.8", features = ["url"] }
 once_cell = "1"
+
+# The upstream rust-postgres project does not yet have support for Logical Replication in Postgres.
+# However, there is a fork by Materialize that has added Logical Replication capabilities.
+# We forked that fork to ensure it stays up, and these two dependencies belong to that fork.
+tokio-postgres = { git = "https://github.com/infinyon/rust-postgres", rev = "4e86fffc7e8d4ee10c7751a58398a172a4963bfc" }
+postgres-protocol = { git = "https://github.com/infinyon/rust-postgres", rev = "4e86fffc7e8d4ee10c7751a58398a172a4963bfc" }
