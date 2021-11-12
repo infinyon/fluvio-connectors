@@ -124,7 +124,7 @@ impl PgConnector {
     }
 
     pub async fn process_stream(&mut self) -> eyre::Result<()> {
-        let mut last_lsn = self.lsn.unwrap_or(PgLsn::from(0));
+        let mut last_lsn = self.lsn.unwrap_or_else(|| PgLsn::from(0));
 
         // We now switch to consuming the stream
         let options = format!(

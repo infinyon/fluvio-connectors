@@ -56,7 +56,7 @@ pub fn convert_replication_message(
         PgReplication::Relation(rel) => {
             let columns = rel
                 .columns()
-                .into_iter()
+                .iter()
                 .map(convert_column)
                 .collect::<core::result::Result<Vec<_>, _>>()?;
             let body = RelationBody {
@@ -147,7 +147,7 @@ fn convert_tuple(schema: &[Column], tuple: &PgTuple) -> Result<Tuple> {
     let iter = schema.iter().zip(tuple.tuple_data().iter());
     for (column, data) in iter {
         let tid = column.type_id as u32;
-        let ty = Type::from_oid(tid).ok_or_else(|| Error::UnrecognizedType(tid))?;
+        let ty = Type::from_oid(tid).ok_or(Error::UnrecognizedType(tid))?;
         let typed_data = convert_tuple_data(&ty, data)?;
         typed_tuple_data.push(typed_data);
     }
