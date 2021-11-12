@@ -4,6 +4,7 @@ pub mod error;
 
 pub use self::connect::PgConnector;
 pub use error::{Error, Result};
+use fluvio_connectors_common::opt::CommonSourceOpt;
 use schemars::JsonSchema;
 use structopt::StructOpt;
 use url::Url;
@@ -31,4 +32,7 @@ pub struct PgConnectorOpt {
     /// The name of the Fluvio topic to produce CDC events to
     #[structopt(long, env = "FLUVIO_PG_TOPIC")]
     pub topic: String,
+    #[structopt(flatten)]
+    #[schemars(flatten)]
+    pub common: CommonSourceOpt,
 }

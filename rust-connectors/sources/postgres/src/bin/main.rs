@@ -10,7 +10,7 @@ async fn main() -> eyre::Result<()> {
 
     // Set default RUST_LOG if unset or empty
     if let Err(_) | Ok("") = std::env::var("RUST_LOG").as_deref() {
-        std::env::set_var("RUST_LOG", "fluvio_connect_postgres=info");
+        std::env::set_var("RUST_LOG", "postgres=info");
     }
 
     // Initialize logging
