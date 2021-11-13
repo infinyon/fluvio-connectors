@@ -5,7 +5,7 @@ setup() {
     UUID=$(uuidgen | tr A-Z a-z)
     TOPIC=${UUID}-topic
     cp ./tests/test-config.yaml $FILE
-    sed -i.BAK "s/test-connector-name/${UUID}/g" $FILE
+    sed -i.BAK "s/hello-connector-name/${UUID}/g" $FILE
     cat $FILE
     fluvio connector create --config $FILE
 }
