@@ -40,7 +40,7 @@ metadata:
 	echo '[' >> $(METADATA_OUT)
 	cargo run --bin mqtt -- metadata >> $(METADATA_OUT)
 	echo ',' >> $(METADATA_OUT)
-	cargo run --bin test-connector -- metadata >> $(METADATA_OUT)
+	cargo run --bin hello -- metadata >> $(METADATA_OUT)
 	echo ']' >> $(METADATA_OUT)
 	cat $(METADATA_OUT) | jq '.'
 
@@ -51,8 +51,6 @@ test:
 
 clean:
 	$(CARGO_BUILDER) clean
-	rm -f container-build/test-connector
-	rm -f container-build/fluvio-syslog
 
 .EXPORT_ALL_VARIABLES:
 FLUVIO_BUILD_ZIG ?= zig
