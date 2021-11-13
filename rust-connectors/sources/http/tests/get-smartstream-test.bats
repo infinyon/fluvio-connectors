@@ -7,9 +7,9 @@ setup() {
     ../../../target/debug/http-json-mock & disown
 
     MOCK_PID=$!
-    FILE=$(mktemp --suffix .yaml)
+    FILE=$(mktemp)
     cp ./tests/get-smartstream-config.yaml $FILE
-    UUID=$(uuidgen)
+    UUID=$(uuidgen | tr A-Z a-z)
     TOPIC=${UUID}-topic
 
     MODULE=${UUID}-map

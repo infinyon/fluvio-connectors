@@ -4,14 +4,15 @@ setup() {
     cargo build -p http-json-mock
     ../../../target/debug/http-json-mock & disown
     MOCK_PID=$!
-    FILE=$(mktemp --suffix .yaml)
-    cp ./tests/post-test-config.yaml $FILE
-    UUID=$(uuidgen)
+    FILE=$(mktemp)
+    UUID=$(uuidgen | tr A-Z a-z)
     TOPIC=${UUID}-topic
+    cp ./tests/post-test-config.yaml $FILE
 
     sed -i.BAK "s/http-json-connector/${UUID}/g" $FILE
     IP_ADDRESS=$(ip route get 8.8.8.8 | awk -F"src " 'NR==1{split($2,a," ");print a[1]}')
     sed -i.BAK "s/IP_ADDRESS/${IP_ADDRESS}/g" $FILE
+    cat $FILE
     fluvio connector create --config $FILE
 }
 

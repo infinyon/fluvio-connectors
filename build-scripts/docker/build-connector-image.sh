@@ -31,10 +31,26 @@ function main() {
   # The CI build should producer a tarball
   if [[ -z "$CI" ]];
   then
-    # shellcheck disable=SC2086
+    nodes=`kubectl get nodes -o=jsonpath='{.items[0].metadata.name}'`
+
+
+    if echo ${nodes} | grep -q minikube;  then
+      eval $(minikube -p minikube docker-env)
+      echo "Building ${CONNECTOR_NAME} into minikube cluster"
+    fi
+
     docker build $IMAGE_TAGS $BUILD_ARGS .
-    docker save ${IMAGE_NAME} > ${DOCKER_IMAGE_TAR}
-    k3d image import -k -c fluvio ${DOCKER_IMAGE_TAR}
+
+    if echo ${nodes} | grep -q k3d; then
+      echo "Building ${CONNECTOR_NAME} into k3d cluster"
+      docker save ${IMAGE_NAME} > ${DOCKER_IMAGE_TAR}
+      k3d image import -k /tmp/infinyon-fluvio.tar -c fluvio
+    elif echo ${nodes} | grep -q kind; then
+      echo "Building ${CONNECTOR_NAME} into kind cluster"
+      kind load docker-image infinyon-fluvio-connector-${CONNECTOR_NAME}
+    else
+      "unknown"
+    fi
   else
     # shellcheck disable=SC2086
     docker buildx build -o type=docker,dest=- $IMAGE_TAGS $BUILD_ARGS . > ${DOCKER_IMAGE_TAR}

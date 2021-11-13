@@ -4,9 +4,9 @@ setup() {
     cargo build -p http-json-mock
     ../../../target/debug/http-json-mock & disown
     MOCK_PID=$!
-    FILE=$(mktemp --suffix .yaml)
+    FILE=$(mktemp)
     cp ./tests/get-test-config.yaml $FILE
-    UUID=$(uuidgen)
+    UUID=$(uuidgen | tr A-Z a-z)
     TOPIC=${UUID}-topic
 
     sed -i.BAK "s/http-json-connector/${UUID}/g" $FILE
