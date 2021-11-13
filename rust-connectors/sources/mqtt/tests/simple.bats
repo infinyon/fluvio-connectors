@@ -9,10 +9,10 @@ setup() {
     fluvio connector create --config $FILE
 }
 
-teardown() {
-    fluvio connector delete $UUID
-    fluvio topic delete $TOPIC
-}
+#teardown() {
+#    fluvio connector delete $UUID
+#    fluvio topic delete $TOPIC
+#}
 
 @test "consume connector" {
     echo "TODO"
