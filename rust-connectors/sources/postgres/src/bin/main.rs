@@ -1,7 +1,6 @@
 use postgres::{PgConnector, PgConnectorOpt};
 use schemars::schema_for;
 use structopt::StructOpt;
-use tracing_subscriber::filter::EnvFilter;
 
 #[async_std::main]
 async fn main() -> eyre::Result<()> {
@@ -14,9 +13,7 @@ async fn main() -> eyre::Result<()> {
     }
 
     // Initialize logging
-    tracing_subscriber::fmt()
-        .with_env_filter(EnvFilter::from_default_env())
-        .init();
+    fluvio_future::subscriber::init_logger();
 
     if let Some("metadata") = std::env::args().nth(1).as_deref() {
         let schema = serde_json::json!({
