@@ -31,5 +31,8 @@ once_cell = "1"
 # The upstream rust-postgres project does not yet have support for Logical Replication in Postgres.
 # However, there is a fork by Materialize that has added Logical Replication capabilities.
 # We forked that fork to ensure it stays up, and these two dependencies belong to that fork.
+#
+# Materlialize fork of rust-postgres: https://github.com/MaterializeInc/rust-postgres
+# Upstream PR for rust-postgres: https://github.com/sfackler/rust-postgres/pull/778
 tokio-postgres = { git = "https://github.com/infinyon/rust-postgres", rev = "4e86fffc7e8d4ee10c7751a58398a172a4963bfc" }
 postgres-protocol = { git = "https://github.com/infinyon/rust-postgres", rev = "4e86fffc7e8d4ee10c7751a58398a172a4963bfc" }
