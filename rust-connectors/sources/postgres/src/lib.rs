@@ -30,11 +30,8 @@ pub struct PgConnectorOpt {
     /// The name of the logical replication slot to stream changes from
     #[structopt(long, env = "FLUVIO_PG_SLOT")]
     pub slot: String,
-    /// The name of the Fluvio topic to produce CDC events to
-    #[structopt(long, env = "FLUVIO_PG_TOPIC")]
-    pub topic: String,
     /// The time (in millis) to wait while fetching latest Fluvio record to resume
-    #[structopt(long, env = "FLUVIO_PG_RESUME_TIMEOUT", default_value = "1_000")]
+    #[structopt(long, env = "FLUVIO_PG_RESUME_TIMEOUT", default_value = "1000")]
     pub resume_timeout: u64,
     #[structopt(flatten)]
     #[schemars(flatten)]

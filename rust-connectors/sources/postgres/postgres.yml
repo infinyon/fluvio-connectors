@@ -48,5 +48,5 @@ spec:
   ports:
   - name: "postgres-leader-port"
     protocol: TCP
-    nodePort: 54320
+    nodePort: 5432
     port: 5432
