@@ -73,12 +73,14 @@ impl PgConnector {
         };
 
         let topics = admin.list::<TopicSpec, _>(vec![]).await?;
-        let topic_exists = topics.iter().any(|t| t.name == config.topic);
+        let topic_exists = topics.iter().any(|t| t.name == config.common.fluvio_topic);
         if !topic_exists {
-            return Err(Error::TopicNotFound(config.topic.to_string()).into());
+            return Err(Error::TopicNotFound(config.common.fluvio_topic.to_string()).into());
         }
 
-        let consumer = fluvio.partition_consumer(&config.topic, 0).await?;
+        let consumer = fluvio
+            .partition_consumer(&config.common.fluvio_topic, 0)
+            .await?;
         let mut lsn: Option<PgLsn> = None;
 
         // Try to get the last item from the Fluvio Topic. Timeout after 1 second
@@ -101,7 +103,7 @@ impl PgConnector {
             tracing::info!("No prior LSN discovered, starting PgConnector at beginning");
         }
 
-        let producer = fluvio.topic_producer(&config.topic).await?;
+        let producer = fluvio.topic_producer(&config.common.fluvio_topic).await?;
 
         let (pg_client, conn) = config
             .url
