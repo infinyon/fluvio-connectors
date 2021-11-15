@@ -83,7 +83,7 @@ impl PgConnector {
 
         // Try to get the last item from the Fluvio Topic. Timeout after 1 second
         let stream = consumer.stream(Offset::from_end(1)).await?;
-        let timeout = stream.timeout(Duration::from_millis(1_000));
+        let timeout = stream.timeout(Duration::from_millis(config.resume_timeout));
         tokio::pin!(timeout);
 
         let last_record = StreamExt::try_next(&mut timeout)
