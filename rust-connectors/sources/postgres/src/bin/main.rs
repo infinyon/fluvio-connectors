@@ -3,7 +3,7 @@ use schemars::schema_for;
 use structopt::StructOpt;
 use tracing_subscriber::filter::EnvFilter;
 
-#[tokio::main]
+#[async_std::main]
 async fn main() -> eyre::Result<()> {
     let _ = dotenv::dotenv();
     std::env::set_var("RUST_BACKTRACE", "full");

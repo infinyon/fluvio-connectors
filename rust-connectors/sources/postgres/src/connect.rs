@@ -110,7 +110,7 @@ impl PgConnector {
             .replication_mode(ReplicationMode::Logical)
             .connect(NoTls)
             .await?;
-        tokio::spawn(conn);
+        async_std::task::spawn(conn);
         tracing::info!("Connected to Postgres");
 
         Ok(Self {
