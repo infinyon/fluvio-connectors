@@ -2,7 +2,7 @@ use postgres::{PgConnector, PgConnectorOpt};
 use schemars::schema_for;
 use structopt::StructOpt;
 
-#[async_std::main]
+#[tokio::main]
 async fn main() -> eyre::Result<()> {
     let _ = dotenv::dotenv();
     std::env::set_var("RUST_BACKTRACE", "full");
