@@ -10,7 +10,8 @@ path = "src/bin/main.rs"
 [dependencies]
 tracing = { version = "0.1" }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-tokio = { version = "1", features = ["full"] }
+async-std = { version = "1", features = ["attributes"] }
+tokio = { version = "1", features = ["macros"] }
 tokio-stream = { version = "0.1" }
 fluvio = { version = "0.9" }
 fluvio-dataplane-protocol = { git = "https://github.com/infinyon/fluvio", rev = "b2250033d49a279c3d718cd25c42a4cee0b40297" }
