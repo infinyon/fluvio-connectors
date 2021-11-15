@@ -9,8 +9,7 @@ path = "src/bin/main.rs"
 
 [dependencies]
 tracing = { version = "0.1" }
-async-std = { version = "1", features = ["attributes"] }
-tokio = { version = "1", features = ["macros"] }
+tokio = { version = "1", features = ["full"] }
 tokio-stream = { version = "0.1" }
 fluvio = { version = "0.9" }
 fluvio-future = { version = "0.3", features = ["subscriber"] }
