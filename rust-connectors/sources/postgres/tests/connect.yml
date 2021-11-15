@@ -1,8 +1,8 @@
 version: v1
 connector_version: dev
-name: fluvio-postgres
+name: postgres-connector-name
 type: postgres
-topic: postgres
+topic: postgres-connector-name-topic
 parameters:
   url: postgres://postgres:mysecretpassword@postgres-leader-service:5432
   publication: fluvio
