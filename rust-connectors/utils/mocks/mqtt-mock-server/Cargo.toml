@@ -1,0 +1,12 @@
+[package]
+name = "mqtt-mock-server"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+ntex-mqtt = "0.7.5"
+log = "0.4.14"
+env_logger = "0.9.0"
+ntex = { version = "0.4.5", default-features = false }
