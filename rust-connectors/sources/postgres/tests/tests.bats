@@ -108,12 +108,34 @@ assert_simple() {
 # Test that we can consume events created by the connector
 # We put the contents of the topic into ./tests/consumed.txt,
 # then run assertions on it
-@test "consume connector" {
-    fluvio consume ${UUID}-topic -B > ./tests/consumed.txt &
+# @test "consume connector" {
+#     fluvio consume ${UUID}-topic -B > ./tests/consumed.txt &
+#     TASK_PID=$!
+#     psql_simple &
+#     sleep 10
+#     kill $TASK_PID
+#
+#     assert_simple
+# }
+
+setup_smartmodule() {
+    SM_DIR="../../utils/fluvio-postgres-map"
+    rustup target add wasm32-unknown-unknown
+    (cd "${SM_DIR}"; cargo build --release)
+    fluvio smartmodule create postgres-map --wasm-file="${SM_DIR}/target/wasm32-unknown-unknown/release/fluvio_postgres_map.wasm"
+}
+
+teardown_smartmodule() {
+    kubectl delete smartmodules.fluvio.infinyon.com postgres-map
+}
+
+@test "consume with SmartModule" {
+    setup_smartmodule
+
+    fluvio consume ${UUID}-topic -B > ./tests/postgres-map.txt --map=postgres-map &
     TASK_PID=$!
-    psql_simple &
     sleep 10
     kill $TASK_PID
 
-    assert_simple
+    teardown_smartmodule
 }

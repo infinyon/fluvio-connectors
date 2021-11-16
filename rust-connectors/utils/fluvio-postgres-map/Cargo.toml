@@ -1,0 +1,23 @@
+[package]
+name = "fluvio-postgres-map"
+version = "0.1.0"
+authors = ["Nick Mosher <nicholastmosher@gmail.com>"]
+edition = "2018"
+
+[lib]
+crate-type = ['cdylib']
+
+[dependencies]
+fluvio-smartstream = { version = "0.3" }
+fluvio-model-postgres = { path = "../../models/fluvio-model-postgres" }
+serde_json = "1"
+
+# We can make this crate have its own workspace.
+# This is needed to enable `profile.relesae.lto` below.
+# If your crate will belong to another workspace,
+# consider enabling lto in that workspace instead
+[workspace]
+members = ["."]
+
+[profile.release]
+lto = true

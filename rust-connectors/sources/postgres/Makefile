@@ -1,2 +1,2 @@
 test:
-	bats ./tests/simple.bats
+	bats ./tests/tests.bats

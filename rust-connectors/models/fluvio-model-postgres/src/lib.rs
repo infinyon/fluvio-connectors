@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 /// One top-level event from the Postgres logical replication stream.
 #[derive(Debug, Serialize, Deserialize)]
-pub struct ReplicationEvent {
+pub struct ReplicationEvent<T = LogicalReplicationMessage> {
     /// THe Postgres WAL offset before this event.
     pub wal_start: u64,
     /// THe Postgres WAL offset after this event.
@@ -10,7 +10,7 @@ pub struct ReplicationEvent {
     /// The timestamp when this event occurred.
     pub timestamp: i64,
     /// The payload of the event, describing what took place.
-    pub message: LogicalReplicationMessage,
+    pub message: T,
 }
 
 /// The payload types of a logical replication event.
