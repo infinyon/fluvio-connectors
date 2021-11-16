@@ -8,6 +8,7 @@ use error::MqttConnectorError;
 use schemars::{schema_for, JsonSchema};
 use serde::Serialize;
 use structopt::StructOpt;
+use fluvio_future::tracing::debug;
 
 #[derive(StructOpt, Debug, JsonSchema)]
 struct MqttOpts {
@@ -90,6 +91,7 @@ async fn main() -> Result<(), MqttConnectorError> {
                 payload,
             };
             let fluvio_record = serde_json::to_string(&mqtt_event).unwrap();
+            debug!("Record before smartstream {}", fluvio_record);
             producer.send(RecordKey::NULL, fluvio_record).await?;
         } else if mqtt_client.is_connected() || !try_reconnect(&mqtt_client) {
             break;
