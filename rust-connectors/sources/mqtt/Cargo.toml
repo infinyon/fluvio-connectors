@@ -6,10 +6,9 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-fluvio = "0.9.6"
+fluvio = "0.10"
 fluvio-connectors-common = { path = "../../common" }
 fluvio-future = { version = "0.3.9", features = ["subscriber"] }
-fluvio-smartengine = { version = "0.0.0", features = ["smartmodule"] }
 
 thiserror = "1.0.29"
 async-std = { version = "1.10.0", features = ["attributes"] }
@@ -20,3 +19,4 @@ serde_json = "1.0.68"
 serde = {version = "1.0.130", features = ["derive"] }
 
 paho-mqtt = { version = "0.9.1", features = ["vendored-ssl"] }
+anyhow = "1.0.44"
