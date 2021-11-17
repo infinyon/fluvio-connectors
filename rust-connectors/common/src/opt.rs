@@ -1,6 +1,8 @@
-use fluvio_smartengine::{SmartEngine, SmartStream};
+use anyhow::Context;
 use schemars::JsonSchema;
 use structopt::StructOpt;
+
+use fluvio::{Fluvio, TopicProducer};
 
 use fluvio_controlplane_metadata::smartmodule::SmartModuleSpec;
 
@@ -42,74 +44,63 @@ impl CommonSourceOpt {
         }
         fluvio_future::subscriber::init_logger();
     }
-    pub fn smartmodule_name(&self) -> Option<&str> {
-        match (
-            &self.smartstream_filter,
-            &self.smartstream_map,
-            &self.smartstream_arraymap,
-        ) {
-            (Some(filter_path), _, _) => Some(filter_path),
-            (_, Some(map_path), _) => Some(map_path),
-            (_, _, Some(array_map_path)) => Some(array_map_path),
-            _ => None,
-        }
-    }
-    pub fn smarstream_module(&self) -> anyhow::Result<Option<Box<dyn SmartStream>>> {
-        let engine = SmartEngine::default();
+    pub async fn create_producer(&self) -> anyhow::Result<TopicProducer> {
+        let fluvio = fluvio::Fluvio::connect().await?;
 
-        let smartmodule: Option<Box<dyn SmartStream>> = match (
+        let producer = match (
             &self.smartstream_filter,
             &self.smartstream_map,
             &self.smartstream_arraymap,
         ) {
             (Some(filter_path), _, _) => {
-                let smart_stream_module = engine.create_module_from_path(filter_path)?;
-                Some(Box::new(
-                    smart_stream_module.create_filter(&engine, Default::default())?,
-                ))
+                let data = self.get_smartmodule(filter_path, &fluvio).await?;
+                fluvio
+                    .topic_producer(&self.fluvio_topic)
+                    .await?
+                    .with_filter(data, Default::default())?
             }
             (_, Some(map_path), _) => {
-                let smart_stream_module = engine.create_module_from_path(map_path)?;
-                Some(Box::new(
-                    smart_stream_module.create_map(&engine, Default::default())?,
-                ))
+                let data = self.get_smartmodule(map_path, &fluvio).await?;
+                fluvio
+                    .topic_producer(&self.fluvio_topic)
+                    .await?
+                    .with_map(data, Default::default())?
             }
             (_, _, Some(array_map_path)) => {
-                let smart_stream_module = engine.create_module_from_path(&array_map_path)?;
-                Some(Box::new(
-                    smart_stream_module.create_array_map(&engine, Default::default())?,
-                ))
+                let data = self.get_smartmodule(array_map_path, &fluvio).await?;
+                fluvio
+                    .topic_producer(&self.fluvio_topic)
+                    .await?
+                    .with_array_map(data, Default::default())?
             }
-            _ => None,
+            _ => fluvio.topic_producer(&self.fluvio_topic).await?,
         };
-        Ok(smartmodule)
+
+        Ok(producer)
     }
 
-    pub async fn smart_stream_module_from_spec(
-        &self,
-        smartmodule_spec: &SmartModuleSpec,
-    ) -> anyhow::Result<Option<Box<dyn SmartStream>>> {
-        let engine = SmartEngine::default();
-        let smart_stream_module = engine
-            .create_module_from_smartmodule_spec(smartmodule_spec)
-            .await?;
+    pub async fn get_smartmodule(&self, name: &str, fluvio: &Fluvio) -> anyhow::Result<Vec<u8>> {
+        use flate2::bufread::GzDecoder;
+        use std::io::Read;
 
-        let smartmodule: Option<Box<dyn SmartStream>> = match (
-            &self.smartstream_filter,
-            &self.smartstream_map,
-            &self.smartstream_arraymap,
-        ) {
-            (Some(_), _, _) => Some(Box::new(
-                smart_stream_module.create_filter(&engine, Default::default())?,
-            )),
-            (_, Some(_), _) => Some(Box::new(
-                smart_stream_module.create_map(&engine, Default::default())?,
-            )),
-            (_, _, Some(_)) => Some(Box::new(
-                smart_stream_module.create_array_map(&engine, Default::default())?,
-            )),
-            _ => None,
-        };
-        Ok(smartmodule)
+        match std::fs::read(name) {
+            Ok(data) => Ok(data),
+            Err(_) => {
+                let admin = fluvio.admin().await;
+
+                let smartmodule_spec_list =
+                    &admin.list::<SmartModuleSpec, _>(vec![name.into()]).await?;
+
+                let smartmodule_spec = &smartmodule_spec_list
+                    .first()
+                    .context("Not found smartmodule")?
+                    .spec;
+
+                let mut decoder = GzDecoder::new(&*smartmodule_spec.wasm.payload);
+                let mut buffer = Vec::with_capacity(smartmodule_spec.wasm.payload.len());
+                decoder.read_to_end(&mut buffer)?;
+                Ok(buffer)
+            }
+        }
     }
 }
