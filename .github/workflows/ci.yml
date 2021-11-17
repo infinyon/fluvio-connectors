@@ -208,7 +208,7 @@ jobs:
     env:
       RUST_BACKTRACE: full
     steps:
-      - uses: AbsaOSS/k3d-action@v1.5.0
+      - uses: AbsaOSS/k3d-action@v1.6.0
         name: "Create fluvio k3d Cluster"
         with:
           cluster-name: "fluvio"
