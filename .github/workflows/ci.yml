@@ -68,7 +68,7 @@ jobs:
           - x86_64-unknown-linux-musl
           - aarch64-unknown-linux-musl
         connector-name:
-          - test-connector
+          - hello
           - mqtt
           - http
         rust: [stable]
@@ -124,7 +124,7 @@ jobs:
         rust-target:
           - x86_64-unknown-linux-musl
           - aarch64-unknown-linux-musl
-        connector-name: [test-connector]
+        connector-name: [hello]
         include:
           - os: ubuntu-latest
             connector-name: mqtt
@@ -204,7 +204,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         rust: [stable]
-        connector-name: [test-connector, mqtt, http]
+        connector-name: [hello, mqtt, http]
     env:
       RUST_BACKTRACE: full
     steps:
@@ -270,8 +270,8 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        connector-name: [test-connector]
-        image-name: [infinyon/fluvio-connect-test-connector]
+        connector-name: [hello]
+        image-name: [infinyon/fluvio-connect-hello]
         include:
           - os: ubuntu-latest
             connector-name: mqtt
