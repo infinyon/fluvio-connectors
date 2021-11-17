@@ -5,10 +5,10 @@ use paho_mqtt::client::Client as MqttClient;
 use paho_mqtt::CreateOptions;
 mod error;
 use error::MqttConnectorError;
+use fluvio_future::tracing::debug;
 use schemars::{schema_for, JsonSchema};
 use serde::Serialize;
 use structopt::StructOpt;
-use fluvio_future::tracing::debug;
 
 #[derive(StructOpt, Debug, JsonSchema)]
 struct MqttOpts {
