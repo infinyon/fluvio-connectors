@@ -24,21 +24,21 @@ pub struct CommonSourceOpt {
     ///
     /// If the value is not a path to a file, it will be used
     /// to lookup a SmartModule by name
-    #[structopt(long, group("smartstream"))]
+    #[structopt(long, group("smartmodule"))]
     pub filter: Option<String>,
 
     /// Path of map smartmodule used as a pre-produce step
     ///
     /// If the value is not a path to a file, it will be used
     /// to lookup a SmartModule by name
-    #[structopt(long, group("smartstream"))]
+    #[structopt(long, group("smartmodule"))]
     pub map: Option<String>,
 
     /// Path of arraymap smartmodule used as a pre-produce step
     ///
     /// If the value is not a path to a file, it will be used
     /// to lookup a SmartModule by name
-    #[structopt(long, group("smartstream"))]
+    #[structopt(long, group("smartmodule"))]
     pub arraymap: Option<String>,
 }
 
