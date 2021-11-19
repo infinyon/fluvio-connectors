@@ -1,5 +1,6 @@
 use anyhow::Context;
 use schemars::JsonSchema;
+use structopt::clap::AppSettings;
 use structopt::StructOpt;
 
 use fluvio::{Fluvio, TopicProducer};
@@ -7,8 +8,9 @@ use fluvio::{Fluvio, TopicProducer};
 use fluvio_controlplane_metadata::smartmodule::SmartModuleSpec;
 
 #[derive(StructOpt, Debug, JsonSchema)]
+#[structopt(settings = &[AppSettings::DeriveDisplayOrder])]
 pub struct CommonSourceOpt {
-    /// The topic where all things should go
+    /// The topic where this connector sends or receives records
     #[structopt(long)]
     #[schemars(skip)]
     pub fluvio_topic: String,
@@ -18,23 +20,26 @@ pub struct CommonSourceOpt {
     #[schemars(skip)]
     pub rust_log: Option<String>,
 
-    /// Path of filter smartstream used as a pre-produce step
-    /// If not found file in that path, it will be fetch
-    /// the smartmodule with that name if present
-    #[structopt(long, group("smartstream"))]
-    pub smartstream_filter: Option<String>,
+    /// Path of filter smartmodule used as a pre-produce step
+    ///
+    /// If the value is not a path to a file, it will be used
+    /// to lookup a SmartModule by name
+    #[structopt(long, group("smartmodule"))]
+    pub filter: Option<String>,
 
-    /// Path of map smartstream used as a pre-produce step
-    /// If not found file in that path, it will be fetch
-    /// the smartmodule with that name if present
-    #[structopt(long, group("smartstream"))]
-    pub smartstream_map: Option<String>,
+    /// Path of map smartmodule used as a pre-produce step
+    ///
+    /// If the value is not a path to a file, it will be used
+    /// to lookup a SmartModule by name
+    #[structopt(long, group("smartmodule"))]
+    pub map: Option<String>,
 
-    /// Path of arraymap smartstream used as a pre-produce step
-    /// If not found file in that path, it will be fetch
-    /// the smartmodule with that name if present
-    #[structopt(long, group("smartstream"))]
-    pub smartstream_arraymap: Option<String>,
+    /// Path of arraymap smartmodule used as a pre-produce step
+    ///
+    /// If the value is not a path to a file, it will be used
+    /// to lookup a SmartModule by name
+    #[structopt(long, group("smartmodule"))]
+    pub arraymap: Option<String>,
 }
 
 impl CommonSourceOpt {
@@ -47,11 +52,7 @@ impl CommonSourceOpt {
     pub async fn create_producer(&self) -> anyhow::Result<TopicProducer> {
         let fluvio = fluvio::Fluvio::connect().await?;
 
-        let producer = match (
-            &self.smartstream_filter,
-            &self.smartstream_map,
-            &self.smartstream_arraymap,
-        ) {
+        let producer = match (&self.filter, &self.map, &self.arraymap) {
             (Some(filter_path), _, _) => {
                 let data = self.get_smartmodule(filter_path, &fluvio).await?;
                 fluvio
