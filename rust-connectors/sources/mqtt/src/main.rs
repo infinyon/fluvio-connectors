@@ -49,7 +49,7 @@ enum ConnectorDirection {
 #[async_std::main]
 async fn main() -> Result<(), MqttConnectorError> {
     let arguments: Vec<String> = std::env::args().collect();
-    let opts = match arguments.get(1) {
+    let opts: MqttOpts = match arguments.get(1) {
         Some(schema) if schema == "metadata" => {
             let schema = schema_for!(MqttOpts);
             let mqtt_schema = MySchema {
@@ -65,11 +65,20 @@ async fn main() -> Result<(), MqttConnectorError> {
         _ => MqttOpts::from_args(),
     };
     opts.common.enable_logging();
+    tracing::info!("Initializing MQTT connector");
 
     let mqtt_qos = opts.qos.unwrap_or(0);
     let mqtt_timeout_seconds = opts.timeout.unwrap_or(60);
     let mqtt_url = opts.mqtt_url; //"mqtt.hsl.fi";
     let mqtt_topic = opts.mqtt_topic; //"/hfp/v2/journey/#";
+
+    tracing::info!(
+        "Using timeout={}s, url={}, fluvio-topic={}, mqtt-topic={}",
+        mqtt_timeout_seconds,
+        mqtt_url,
+        opts.common.fluvio_topic,
+        mqtt_topic,
+    );
 
     let timeout = std::time::Duration::from_secs(mqtt_timeout_seconds);
     let mut mqtt_client = MqttClient::new(CreateOptions::from(mqtt_url))?;
@@ -81,6 +90,7 @@ async fn main() -> Result<(), MqttConnectorError> {
     mqtt_client.subscribe(&mqtt_topic, mqtt_qos)?;
 
     let producer = opts.common.create_producer().await?;
+    tracing::info!("Connected to Fluvio");
 
     for msg in rx.iter() {
         if let Some(msg) = msg {
