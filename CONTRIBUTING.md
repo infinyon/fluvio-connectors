@@ -1,7 +1,7 @@
 # Adding a new connector
 
 A given connector must have a `metadata` subcommand. This subcommand will
-return a json object containing a `name`, `direction` (which is a string of `source`, `sink` or `both`), `version`, `description`
+return a json object containing a `name`, `direction` (which is a string of `source` or `sink`), `version`, `description`
 and a `schema` where the `schema` object is a
 [draft-07](http://json-schema.org/draft-07/schema#) schema which describes the
 commandline arguments for the connector.
