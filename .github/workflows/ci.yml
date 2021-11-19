@@ -320,13 +320,13 @@ jobs:
 
   ## Job that follows the success of all required jobs in this workflow.
   ## Used by Bors to detect that all required jobs have completed successfully
-  #done:
-  #  name: Done
-  #  #if: github.event_name == 'push' && github.ref == 'refs/heads/staging'
-  #  needs:
-  #    - check
-  #    - docker_push
-  #  runs-on: ubuntu-latest
-  #  steps:
-  #    - name: Done
-  #      run: echo "Done!"
+  done:
+    name: Done
+    if: github.event_name == 'push' && github.ref == 'refs/heads/staging'
+    needs:
+      - check
+      - docker_push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Done
+        run: echo "Done!"
