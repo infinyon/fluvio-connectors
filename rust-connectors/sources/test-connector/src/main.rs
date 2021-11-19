@@ -21,7 +21,6 @@ struct MySchema {
 enum ConnectorDirection {
     Source,
     Sink,
-    Both,
 }
 
 #[async_std::main]
