@@ -33,8 +33,15 @@ pub struct HttpOpt {
 async fn main() -> Result<()> {
     if let Some("metadata") = std::env::args().nth(1).as_deref() {
         let schema = schema_for!(HttpOpt);
-        let schema_json = serde_json::to_string_pretty(&schema).unwrap();
-        println!("{}", schema_json);
+        let metadata = serde_json::json!({
+            "name": env!("CARGO_PKG_NAME"),
+            "version": env!("CARGO_PKG_VERSION"),
+            "description": env!("CARGO_PKG_DESCRIPTION"),
+            "direction": "source",
+            "schema": schema,
+        });
+        let metadata_json = serde_json::to_string_pretty(&metadata).unwrap();
+        println!("{}", metadata_json);
         return Ok(());
     }
 

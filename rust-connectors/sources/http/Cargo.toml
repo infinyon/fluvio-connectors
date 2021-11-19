@@ -1,6 +1,7 @@
 [package]
 name = "http"
 version = "0.1.0"
+description = "A Fluvio connector that fetches data from HTTP endpoints"
 edition = "2018"
 
 [dependencies]
