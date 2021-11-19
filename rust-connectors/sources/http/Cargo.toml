@@ -5,6 +5,7 @@ description = "A Fluvio connector that fetches data from HTTP endpoints"
 edition = "2018"
 
 [dependencies]
+tracing = "0.1"
 structopt = "0.3"
 tokio = { version = "1", features = ["full"] }
 tokio-stream = "0.1"

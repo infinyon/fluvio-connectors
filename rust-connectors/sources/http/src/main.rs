@@ -47,6 +47,14 @@ async fn main() -> Result<()> {
 
     let opts: HttpOpt = HttpOpt::from_args();
     opts.common.enable_logging();
+    tracing::info!("Initializing HTTP connector");
+    tracing::info!(
+        "Using interval={}s, method={}, topic={}, endpoint={}",
+        opts.interval,
+        opts.method,
+        opts.common.fluvio_topic,
+        opts.endpoint
+    );
 
     let timer = tokio::time::interval(tokio::time::Duration::from_secs(opts.interval));
     let mut timer_stream = tokio_stream::wrappers::IntervalStream::new(timer);
@@ -55,6 +63,7 @@ async fn main() -> Result<()> {
         .create_producer()
         .await
         .expect("Failed to create producer");
+    tracing::info!("Connected to Fluvio");
 
     let client = reqwest::Client::new();
     let method: reqwest::Method = opts.method.parse()?;
@@ -68,9 +77,9 @@ async fn main() -> Result<()> {
             req = req.body(body.clone());
         }
         let response = req.send().await?;
-
         let response_text = response.text().await?;
 
+        tracing::info!("Producing: {}", response_text);
         producer.send(RecordKey::NULL, response_text).await?;
     }
 
