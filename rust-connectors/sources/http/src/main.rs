@@ -46,7 +46,13 @@ async fn main() -> Result<()> {
     }
 
     let opts: HttpOpt = HttpOpt::from_args();
+
+    // Enable logging, setting default RUST_LOG if not given
     opts.common.enable_logging();
+    if let Err(_) | Ok("") = std::env::var("RUST_LOG").as_deref() {
+        std::env::set_var("RUST_LOG", "http=info");
+    }
+
     tracing::info!("Initializing HTTP connector");
     tracing::info!(
         "Using interval={}s, method={}, topic={}, endpoint={}",

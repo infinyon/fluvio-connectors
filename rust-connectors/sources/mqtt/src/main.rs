@@ -63,7 +63,11 @@ async fn main() -> Result<(), MqttConnectorError> {
         }
         _ => MqttOpts::from_args(),
     };
+    // Enable logging, setting default RUST_LOG if not given
     opts.common.enable_logging();
+    if let Err(_) | Ok("") = std::env::var("RUST_LOG").as_deref() {
+        std::env::set_var("RUST_LOG", "mqtt=info");
+    }
     tracing::info!("Initializing MQTT connector");
 
     let mqtt_qos = opts.qos.unwrap_or(0);
