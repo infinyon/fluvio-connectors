@@ -79,9 +79,7 @@ async fn main() -> Result<()> {
     let method: reqwest::Method = opts.method.parse()?;
 
     while timer_stream.next().await.is_some() {
-        let mut req = client
-            .request(method.clone(), &opts.endpoint)
-            .header("Content-Type", "application/json");
+        let mut req = client.request(method.clone(), &opts.endpoint);
 
         let headers = opts.headers.iter().flat_map(|h| h.split_once(':'));
         for (key, value) in headers {
