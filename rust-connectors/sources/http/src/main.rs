@@ -24,6 +24,10 @@ pub struct HttpOpt {
     #[structopt(long, default_value = "300")]
     interval: u64,
 
+    /// Headers to include in the HTTP request, in "Key=Value" format
+    #[structopt(long = "header", alias = "headers")]
+    headers: Vec<String>,
+
     #[structopt(flatten)]
     #[schemars(flatten)]
     common: CommonSourceOpt,
@@ -78,6 +82,11 @@ async fn main() -> Result<()> {
         let mut req = client
             .request(method.clone(), &opts.endpoint)
             .header("Content-Type", "application/json");
+
+        let headers = opts.headers.iter().flat_map(|h| h.split_once(':'));
+        for (key, value) in headers {
+            req = req.header(key, value);
+        }
 
         if let Some(ref body) = opts.body {
             req = req.body(body.clone());
