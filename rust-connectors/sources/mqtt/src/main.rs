@@ -105,6 +105,7 @@ fn main() -> Result<(), MqttConnectorError> {
                     }
                 }
             }
+            std::thread::sleep(std::time::Duration::from_secs(5));
             debug!("reconnecting to mqtt and fluvio");
         }
     })
