@@ -9,11 +9,3 @@ members = [
     "rust-connectors/utils/fluvio-smartstream-map/"
 ]
 resolver = "2"
-[patch.crates-io]
-fluvio = { git = "https://github.com/infinyon/fluvio", rev = "0dc80828d30bd926ab2f031f4c802ae4e830c518" }
-fluvio-dataplane-protocol = { git = "https://github.com/infinyon/fluvio", rev = "0dc80828d30bd926ab2f031f4c802ae4e830c518"  }
-fluvio-protocol = { git = "https://github.com/infinyon/fluvio", rev = "0dc80828d30bd926ab2f031f4c802ae4e830c518"  }
-fluvio-controlplane-metadata = { git = "https://github.com/infinyon/fluvio", rev = "0dc80828d30bd926ab2f031f4c802ae4e830c518"  }
-fluvio-sc-schema = { git = "https://github.com/infinyon/fluvio", rev = "0dc80828d30bd926ab2f031f4c802ae4e830c518"  }
-fluvio-smartengine = { git = "https://github.com/infinyon/fluvio", rev = "0dc80828d30bd926ab2f031f4c802ae4e830c518"  }
-fluvio-smartstream = { git = "https://github.com/infinyon/fluvio", rev = "0dc80828d30bd926ab2f031f4c802ae4e830c518"  }
