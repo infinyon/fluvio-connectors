@@ -11,6 +11,9 @@ SYSLOG_BIN=$(if $(TARGET),./target/$(TARGET)/$(BUILD_PROFILE)/fluvio-syslog,./ta
 
 # These defaults are set for development purposes only. CI will override
 CONNECTOR_NAME?=test-connector
+CONNECTOR_VERSION=$(shell cargo metadata --format-version 1 | jq '.workspace_members[]' | sed 's/"//g' | grep $(CONNECTOR_NAME) | awk '{print $$2}')
+CONNECTOR_PATH=$(shell cargo metadata --format-version 1 | jq '.workspace_members[]' | sed 's/"//g' | grep $(CONNECTOR_NAME) | awk '{print $$3}' | sed 's/(path+file:\/\///g' | sed 's/)//g')
+
 #IMAGE_NAME?=infinyon/fluvio-connect-$(CONNECTOR_NAME)
 CONNECTOR_BIN=$(if $(TARGET),./target/$(TARGET)/$(BUILD_PROFILE)/$(CONNECTOR_NAME),./target/$(BUILD_PROFILE)/$(CONNECTOR_NAME))
 
@@ -48,7 +51,7 @@ metadata:
 
 
 test:
-	make -C rust-connectors/sources/$(CONNECTOR_NAME) test
+	make -C $(CONNECTOR_PATH) test
 
 
 clean:
