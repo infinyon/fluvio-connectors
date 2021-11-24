@@ -12,12 +12,12 @@ fluvio-connectors-common = { path = "../../common" }
 fluvio-future = { version = "0.3.9", features = ["subscriber"] }
 
 thiserror = "1.0.29"
-async-std = { version = "1.10.0", features = ["attributes"] }
+async-global-executor = { version = "2.0.2", features = ["tokio"]}
 structopt = "0.3.23"
 
 schemars = "0.8.6"
 serde_json = "1.0.68"
 serde = {version = "1.0.130", features = ["derive"] }
 
-paho-mqtt = { version = "0.9.1", features = ["vendored-ssl"] }
+rumqttc = "0.10.0"
 anyhow = "1.0.44"
