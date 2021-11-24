@@ -11,7 +11,6 @@ use structopt::StructOpt;
 
 #[derive(StructOpt, Debug, JsonSchema)]
 struct MqttOpts {
-
     #[structopt(long)]
     timeout: Option<u64>,
 
