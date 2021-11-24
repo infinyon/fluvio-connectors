@@ -70,7 +70,6 @@ fn main() -> Result<(), MqttConnectorError> {
     }
     tracing::info!("Initializing MQTT connector");
 
-
     async_global_executor::block_on(async move {
         let mqtt_qos = opts.qos.unwrap_or(0);
         let mqtt_timeout_seconds = opts.timeout.unwrap_or(60);
@@ -87,7 +86,7 @@ fn main() -> Result<(), MqttConnectorError> {
 
         let timeout = std::time::Duration::from_secs(mqtt_timeout_seconds);
 
-        use rumqttc::{MqttOptions, AsyncClient, QoS};
+        use rumqttc::{AsyncClient, MqttOptions, QoS};
         let mut mqttoptions = MqttOptions::new("rumqtt-async", mqtt_url, 1883);
         mqttoptions.set_keep_alive(timeout);
 
@@ -104,9 +103,7 @@ fn main() -> Result<(), MqttConnectorError> {
                 producer.send(RecordKey::NULL, fluvio_record).await?;
             }
         }
-
     })
-
 }
 
 #[derive(Debug, Serialize)]
@@ -114,25 +111,17 @@ struct MqttEvent {
     mqtt_topic: String,
     payload: Vec<u8>,
 }
+use rumqttc::{v4::Packet, Event};
 use std::convert::TryFrom;
-use rumqttc::{
-    Event,
-    v4::Packet,
-};
 impl TryFrom<rumqttc::Event> for MqttEvent {
     type Error = String;
     fn try_from(event: rumqttc::Event) -> Result<Self, Self::Error> {
         match event {
-            Event::Incoming(Packet::Publish(p)) => {
-                Ok(Self {
-                    mqtt_topic: p.topic,
-                    payload: p.payload.to_vec()
-                })
-            },
-            _ => {
-                Err("We don't support this event type!".to_string())
-            }
-
+            Event::Incoming(Packet::Publish(p)) => Ok(Self {
+                mqtt_topic: p.topic,
+                payload: p.payload.to_vec(),
+            }),
+            _ => Err("We don't support this event type!".to_string()),
         }
     }
 }
