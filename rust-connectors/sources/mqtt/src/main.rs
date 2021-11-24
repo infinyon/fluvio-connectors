@@ -4,16 +4,12 @@ use fluvio_connectors_common::RecordKey;
 mod error;
 use error::MqttConnectorError;
 
-use fluvio_future::tracing::{
-    debug,
-    error,
-    info
-};
-use rumqttc::{AsyncClient, MqttOptions, QoS};
+use fluvio_future::tracing::{debug, error, info};
 use rumqttc::{v4::Packet, Event};
-use std::convert::TryFrom;
+use rumqttc::{AsyncClient, MqttOptions, QoS};
 use schemars::{schema_for, JsonSchema};
 use serde::Serialize;
+use std::convert::TryFrom;
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug, JsonSchema)]
@@ -78,10 +74,7 @@ fn main() -> Result<(), MqttConnectorError> {
 
         info!(
             "Using timeout={}s, url={}, fluvio-topic={}, mqtt-topic={}",
-            mqtt_timeout_seconds,
-            mqtt_url,
-            opts.common.fluvio_topic,
-            mqtt_topic,
+            mqtt_timeout_seconds, mqtt_url, opts.common.fluvio_topic, mqtt_topic,
         );
 
         let timeout = std::time::Duration::from_secs(mqtt_timeout_seconds);
@@ -90,7 +83,9 @@ fn main() -> Result<(), MqttConnectorError> {
         mqttoptions.set_keep_alive(timeout);
         loop {
             let (client, mut eventloop) = AsyncClient::new(mqttoptions.clone(), 10);
-            client.subscribe(mqtt_topic.clone(), QoS::AtMostOnce).await?;
+            client
+                .subscribe(mqtt_topic.clone(), QoS::AtMostOnce)
+                .await?;
             let producer = opts.common.create_producer().await?;
             tracing::info!("Connected to Fluvio");
             loop {
