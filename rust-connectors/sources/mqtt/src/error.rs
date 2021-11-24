@@ -1,6 +1,5 @@
 use anyhow::Error as AnyhowError;
 use fluvio::FluvioError;
-//use paho_mqtt::Error as MqttError;
 use rumqttc::ClientError as MqttClientError;
 use rumqttc::ConnectionError as MqttConnectionError;
 use rumqttc::Error as MqttError;

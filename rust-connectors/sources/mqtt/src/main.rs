@@ -11,8 +11,6 @@ use structopt::StructOpt;
 
 #[derive(StructOpt, Debug, JsonSchema)]
 struct MqttOpts {
-    #[structopt(short, long)]
-    qos: Option<i32>,
 
     #[structopt(long)]
     timeout: Option<u64>,
@@ -71,7 +69,6 @@ fn main() -> Result<(), MqttConnectorError> {
     tracing::info!("Initializing MQTT connector");
 
     async_global_executor::block_on(async move {
-        let mqtt_qos = opts.qos.unwrap_or(0);
         let mqtt_timeout_seconds = opts.timeout.unwrap_or(60);
         let mqtt_url = opts.mqtt_url; //"mqtt.hsl.fi";
         let mqtt_topic = opts.mqtt_topic; //"/hfp/v2/journey/#";
