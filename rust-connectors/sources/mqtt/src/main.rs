@@ -4,7 +4,14 @@ use fluvio_connectors_common::RecordKey;
 mod error;
 use error::MqttConnectorError;
 
-use fluvio_future::tracing::debug;
+use fluvio_future::tracing::{
+    debug,
+    error,
+    info
+};
+use rumqttc::{AsyncClient, MqttOptions, QoS};
+use rumqttc::{v4::Packet, Event};
+use std::convert::TryFrom;
 use schemars::{schema_for, JsonSchema};
 use serde::Serialize;
 use structopt::StructOpt;
@@ -40,9 +47,6 @@ enum ConnectorDirection {
     Source,
     Sink,
 }
-
-//#[async_std::main]
-//#[tokio::main]
 fn main() -> Result<(), MqttConnectorError> {
     let arguments: Vec<String> = std::env::args().collect();
     let opts: MqttOpts = match arguments.get(1) {
@@ -65,14 +69,14 @@ fn main() -> Result<(), MqttConnectorError> {
     if let Err(_) | Ok("") = std::env::var("RUST_LOG").as_deref() {
         std::env::set_var("RUST_LOG", "mqtt=info");
     }
-    tracing::info!("Initializing MQTT connector");
+    info!("Initializing MQTT connector");
 
     async_global_executor::block_on(async move {
         let mqtt_timeout_seconds = opts.timeout.unwrap_or(60);
         let mqtt_url = opts.mqtt_url; //"mqtt.hsl.fi";
         let mqtt_topic = opts.mqtt_topic; //"/hfp/v2/journey/#";
 
-        tracing::info!(
+        info!(
             "Using timeout={}s, url={}, fluvio-topic={}, mqtt-topic={}",
             mqtt_timeout_seconds,
             mqtt_url,
@@ -82,22 +86,31 @@ fn main() -> Result<(), MqttConnectorError> {
 
         let timeout = std::time::Duration::from_secs(mqtt_timeout_seconds);
 
-        use rumqttc::{AsyncClient, MqttOptions, QoS};
         let mut mqttoptions = MqttOptions::new("rumqtt-async", mqtt_url, 1883);
         mqttoptions.set_keep_alive(timeout);
-
-        let (client, mut eventloop) = AsyncClient::new(mqttoptions, 10);
-        client.subscribe(mqtt_topic, QoS::AtMostOnce).await?;
-        let producer = opts.common.create_producer().await?;
-        tracing::info!("Connected to Fluvio");
-
         loop {
-            let notification = eventloop.poll().await?;
-            if let Ok(mqtt_event) = MqttEvent::try_from(notification) {
-                let fluvio_record = serde_json::to_string(&mqtt_event).unwrap();
-                debug!("Record before smartstream {}", fluvio_record);
-                producer.send(RecordKey::NULL, fluvio_record).await?;
+            let (client, mut eventloop) = AsyncClient::new(mqttoptions.clone(), 10);
+            client.subscribe(mqtt_topic.clone(), QoS::AtMostOnce).await?;
+            let producer = opts.common.create_producer().await?;
+            tracing::info!("Connected to Fluvio");
+            loop {
+                let notification = match eventloop.poll().await {
+                    Ok(notification) => notification,
+                    Err(e) => {
+                        error!("Mqtt error {:?}", e);
+                        break;
+                    }
+                };
+                if let Ok(mqtt_event) = MqttEvent::try_from(notification) {
+                    let fluvio_record = serde_json::to_string(&mqtt_event)?;
+                    debug!("Record before smartstream {}", fluvio_record);
+                    if let Err(e) = producer.send(RecordKey::NULL, fluvio_record).await {
+                        error!("Fluvio error! {:?}", e);
+                        break;
+                    }
+                }
             }
+            debug!("reconnecting to mqtt and fluvio");
         }
     })
 }
@@ -107,8 +120,6 @@ struct MqttEvent {
     mqtt_topic: String,
     payload: Vec<u8>,
 }
-use rumqttc::{v4::Packet, Event};
-use std::convert::TryFrom;
 impl TryFrom<rumqttc::Event> for MqttEvent {
     type Error = String;
     fn try_from(event: rumqttc::Event) -> Result<Self, Self::Error> {

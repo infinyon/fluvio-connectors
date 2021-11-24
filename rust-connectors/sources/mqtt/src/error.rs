@@ -1,10 +1,13 @@
 use anyhow::Error as AnyhowError;
 use fluvio::FluvioError;
-use rumqttc::ClientError as MqttClientError;
-use rumqttc::ConnectionError as MqttConnectionError;
+use rumqttc::{
+    ClientError as MqttClientError,
+    ConnectionError as MqttConnectionError,
+};
 use rumqttc::Error as MqttError;
 use structopt::clap::Error as ClapError;
 use thiserror::Error;
+use serde_json::Error as SerdeJsonError;
 
 #[derive(Error, Debug)]
 pub enum MqttConnectorError {
@@ -18,6 +21,8 @@ pub enum MqttConnectorError {
     Fluvio(#[from] FluvioError),
     #[error("Clap Error: `{0:#?}`.")]
     Clap(#[from] ClapError),
+    #[error("Serde Json Error: `{0:#?}`.")]
+    SerdeJson(#[from] SerdeJsonError),
     #[error("Anyhow Error: `{0:#?}`.")]
     Anyhow(#[from] AnyhowError),
 }
