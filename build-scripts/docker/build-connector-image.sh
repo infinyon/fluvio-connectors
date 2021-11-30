@@ -25,7 +25,7 @@ function main() {
   then
     IMAGE_TAGS="-t $IMAGE_NAME $BUILD_ARGS"
   else
-    IMAGE_TAGS="-t $IMAGE_NAME -t $IMAGE_NAME:$DOCKER_TAG"
+    IMAGE_TAGS="-t $IMAGE_NAME -t $IMAGE_NAME:$DOCKER_TAG $BUILD_ARGS"
   fi
   DOCKER_IMAGE_TAR=/tmp/infinyon-fluvio-connector-${CONNECTOR_NAME}-${TARGET}.tar
   # The CI build should producer a tarball
