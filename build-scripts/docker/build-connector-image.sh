@@ -23,9 +23,9 @@ function main() {
   # Tag the image with a commit hash if we provide it
   if [[ -z "$DOCKER_TAG" ]];
   then
-    IMAGE_TAGS="-t $IMAGE_NAME $BUILD_ARGS"
+    IMAGE_TAGS="-t $IMAGE_NAME"
   else
-    IMAGE_TAGS="-t $IMAGE_NAME -t $IMAGE_NAME:$DOCKER_TAG $BUILD_ARGS"
+    IMAGE_TAGS="-t $IMAGE_NAME -t $IMAGE_NAME:$DOCKER_TAG"
   fi
   DOCKER_IMAGE_TAR=/tmp/infinyon-fluvio-connector-${CONNECTOR_NAME}-${TARGET}.tar
   # The CI build should producer a tarball
