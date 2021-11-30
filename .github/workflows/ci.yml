@@ -301,7 +301,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: Tag Fluvio Connector Docker images
         run: |
-          CONNECTOR_VERSION=$(cargo metadata --format-version 1 | jq '.workspace_members[]' | sed 's/"//g' | grep ${{matrix.connector-name}} | awk '{print $$2}')
+          CONNECTOR_VERSION=$(cargo metadata --format-version 1 | jq '.workspace_members[]' | sed 's/"//g' | awk '{if($$1 == "${{matrix.connector-name}}") print $$2}')
           export TAG="${CONNECTOR_VERSION}-${{github.sha}}"
           docker tag "${{ matrix.image-name }}:${{ github.sha }}-x86_64-unknown-linux-musl" "docker.io/${{ matrix.image-name }}:${TAG}-amd64"
           docker tag "${{ matrix.image-name }}:${{ github.sha }}-aarch64-unknown-linux-musl" "docker.io/${{ matrix.image-name }}:${TAG}-arm64v8"
