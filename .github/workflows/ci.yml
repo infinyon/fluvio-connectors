@@ -302,10 +302,11 @@ jobs:
       - name: Tag Fluvio Connector Docker images
         run: |
           export CONNECTOR_VERSION=$(cargo metadata --format-version 1 | jq '.workspace_members[]' | sed 's/"//g' | awk '{if($1 == "${{matrix.connector-name}}") print $2}')
-          for TAG in "${CONNECTOR_VERSION}-${{github.sha}}" "latest"; do
-            docker tag "${{ matrix.image-name }}:${TAG}-x86_64-unknown-linux-musl" "docker.io/${{ matrix.image-name }}:${TAG}-amd64"
-            docker tag "${{ matrix.image-name }}:${TAG}-aarch64-unknown-linux-musl" "docker.io/${{ matrix.image-name }}:${TAG}-arm64v8"
-          done
+          export TAG="${CONNECTOR_VERSION}-${{github.sha}}"
+          docker tag "${{ matrix.image-name }}:${TAG}-x86_64-unknown-linux-musl" "docker.io/${{ matrix.image-name }}:${TAG}-amd64"
+          docker tag "${{ matrix.image-name }}:${TAG}-aarch64-unknown-linux-musl" "docker.io/${{ matrix.image-name }}:${TAG}-arm64v8"
+          docker tag "${{ matrix.image-name }}:${TAG}-x86_64-unknown-linux-musl" "docker.io/${{ matrix.image-name }}:latest-amd64"
+          docker tag "${{ matrix.image-name }}:${TAG}-aarch64-unknown-linux-musl" "docker.io/${{ matrix.image-name }}:latest-arm64v8"
           docker image ls
 
       - name: Push Fluvio Connector Docker images
