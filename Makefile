@@ -11,7 +11,9 @@ SYSLOG_BIN=$(if $(TARGET),./target/$(TARGET)/$(BUILD_PROFILE)/fluvio-syslog,./ta
 
 # These defaults are set for development purposes only. CI will override
 CONNECTOR_NAME?=test-connector
-CONNECTOR_VERSION=$(shell cargo metadata --format-version 1 | jq '.workspace_members[]' | sed 's/"//g' | grep $(CONNECTOR_NAME) | awk '{print $$2}')
+CONNECTOR_VERSION=$(shell cargo metadata --format-version 1 | jq '.workspace_members[]' | sed 's/"//g' | awk '{if($$1 == "$(CONNECTOR_NAME)") print $$2}')
+GIT_COMMIT=$(shell git rev-parse HEAD)
+DOCKER_TAG=$(CONNECTOR_VERSION)-$(GIT_COMMIT)
 CONNECTOR_PATH=$(shell cargo metadata --format-version 1 | jq '.workspace_members[]' | sed 's/"//g' | grep $(CONNECTOR_NAME) | awk '{print $$3}' | sed 's/(path+file:\/\///g' | sed 's/)//g')
 
 #IMAGE_NAME?=infinyon/fluvio-connect-$(CONNECTOR_NAME)
@@ -68,3 +70,4 @@ CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER=$(PWD)/build-scripts/ld.lld
 CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER=$(PWD)/build-scripts/ld.lld
 CMAKE_CXX_COMPILER_x86_64_unknown_linux_musl=$(PWD)/build-scripts/x86_64-linux-musl-zig-c++
 CMAKE_C_COMPILER_x86_64_unknown_linux_musl=$(PWD)/build-scripts/x86_64-linux-musl-zig-cc
+DOCKER_TAG=$(CONNECTOR_VERSION)-$(GIT_COMMIT)

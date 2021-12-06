@@ -3,18 +3,10 @@ use std::convert::TryFrom;
 use std::path::Path;
 
 #[derive(Debug, Deserialize)]
-pub struct ConnectorConfig {
-    source: ConnectorSource,
-}
+pub struct ConnectorConfig {}
 
 #[derive(Debug, Deserialize)]
-pub struct ConnectorSource {
-    name: String,
-    r#type: String,
-    filter_prefix: Option<String>,
-    topic: Option<String>,
-    create_topic: Option<bool>,
-}
+pub struct ConnectorSource {}
 
 use thiserror::Error;
 
