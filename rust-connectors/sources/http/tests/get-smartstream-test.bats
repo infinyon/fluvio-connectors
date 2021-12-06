@@ -13,7 +13,7 @@ setup() {
     TOPIC=${UUID}-topic
 
     MODULE=${UUID}-map
-    fluvio smartmodule create $MODULE --wasm-file ../../../target/wasm32-unknown-unknown/release/fluvio_wasm_map.wasm
+    fluvio smart-module create $MODULE --wasm-file ../../../target/wasm32-unknown-unknown/release/fluvio_wasm_map.wasm
 
     sed -i.BAK "s/http-json-connector/${UUID}/g" $FILE
 
@@ -25,7 +25,7 @@ setup() {
 teardown() {
     fluvio connector delete $UUID
     fluvio topic delete $TOPIC
-    fluvio smartmodule delete $MODULE
+    fluvio smart-module delete $MODULE
     kill $MOCK_PID
 }
 
