@@ -2,8 +2,6 @@ name: RELEASE
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ "simlay/release-versions-ci" ]
 
 
 jobs:
