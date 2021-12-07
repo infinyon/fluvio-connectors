@@ -49,8 +49,8 @@ jobs:
           export TAG="${CONNECTOR_VERSION}-${{github.sha}}"
           docker pull "${{ matrix.image-name }}:latest-amd64"
           docker pull "${{ matrix.image-name }}:latest-arm64v8"
-          docker tag "${{ matrix.image-name }}:latest-amd64" "docker.io/${{ matrix.image-name }}:${CONNECTOR_VERSION}l"
-          docker tag "${{ matrix.image-name }}:latest-arm64v8" "docker.io/${{ matrix.image-name }}:${CONNECTOR_VERSION}"
+          docker tag "${{ matrix.image-name }}:latest-amd64" "docker.io/${{ matrix.image-name }}:${CONNECTOR_VERSION}-amd64"
+          docker tag "${{ matrix.image-name }}:latest-arm64v8" "docker.io/${{ matrix.image-name }}:${CONNECTOR_VERSION}-arm64v8"
 
           docker push "docker.io/${{ matrix.image-name }}:${CONNECTOR_VERSION}-amd64"
           docker push "docker.io/${{ matrix.image-name }}:${CONNECTOR_VERSION}-arm64v8"
@@ -58,3 +58,7 @@ jobs:
             "docker.io/${{ matrix.image-name }}:${CONNECTOR_VERSION}-amd64" \
             "docker.io/${{ matrix.image-name }}:${CONNECTOR_VERSION}-arm64v8"
           docker manifest push "docker.io/${{ matrix.image-name }}:${CONNECTOR_VERSION}"
+
+      - name: Publishing ${{ matrix.connector-name}} failed
+        if: ${{ failure() }}
+        run: docker image ls -a
