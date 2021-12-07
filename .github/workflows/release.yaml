@@ -16,7 +16,6 @@ jobs:
           access_token: ${{ secrets.GITHUB_TOKEN }}
   docker_push:
     name: Publish ${{ matrix.connector-name }} images to Docker Hub
-    needs: [build_containers, integration_tests]
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
