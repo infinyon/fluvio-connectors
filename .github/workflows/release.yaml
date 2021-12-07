@@ -1,0 +1,62 @@
+name: RELEASE
+
+on:
+  workflow_dispatch:
+
+
+jobs:
+  cancel_previous_runs:
+    name: Cancel Previous Runs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: styfle/cancel-workflow-action@0.9.1
+        with:
+          access_token: ${{ secrets.GITHUB_TOKEN }}
+  docker_push:
+    name: Publish ${{ matrix.connector-name }} images to Docker Hub
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        connector-name: [test-connector]
+        image-name: [infinyon/fluvio-connect-test-connector]
+        include:
+          - os: ubuntu-latest
+            connector-name: mqtt
+            image-name: infinyon/fluvio-connect-mqtt
+          - os: ubuntu-latest
+            connector-name: http
+            image-name: infinyon/fluvio-connect-http
+    steps:
+      - uses: actions/checkout@v2
+      - name: Try pulling ${{ matrix.connector-name }} x86_64-unknown-linux-musl docker images
+        continue-on-error: true
+        id: docker_check
+        run: |
+          export CONNECTOR_VERSION=$(cargo metadata --format-version 1 | jq '.workspace_members[]' | sed 's/"//g' | awk '{if($1 == "${{matrix.connector-name}}") print $2}')
+          docker pull ${{ matrix.image-name }}:${CONNECTOR_VERSION}
+      - name: Login to Docker Hub
+        if: ${{ steps.docker_check.outcome == 'failure' }}
+        run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Tag and push release image
+        if: ${{ steps.docker_check.outcome == 'failure' }}
+        run: |
+          export CONNECTOR_VERSION=$(cargo metadata --format-version 1 | jq '.workspace_members[]' | sed 's/"//g' | awk '{if($1 == "${{matrix.connector-name}}") print $2}')
+          export TAG="${CONNECTOR_VERSION}-${{github.sha}}"
+          docker pull "${{ matrix.image-name }}:latest-amd64"
+          docker pull "${{ matrix.image-name }}:latest-arm64v8"
+          docker tag "${{ matrix.image-name }}:latest-amd64" "docker.io/${{ matrix.image-name }}:${CONNECTOR_VERSION}-amd64"
+          docker tag "${{ matrix.image-name }}:latest-arm64v8" "docker.io/${{ matrix.image-name }}:${CONNECTOR_VERSION}-arm64v8"
+
+          docker push "docker.io/${{ matrix.image-name }}:${CONNECTOR_VERSION}-amd64"
+          docker push "docker.io/${{ matrix.image-name }}:${CONNECTOR_VERSION}-arm64v8"
+          docker manifest create "docker.io/${{ matrix.image-name }}:${CONNECTOR_VERSION}" \
+            "docker.io/${{ matrix.image-name }}:${CONNECTOR_VERSION}-amd64" \
+            "docker.io/${{ matrix.image-name }}:${CONNECTOR_VERSION}-arm64v8"
+          docker manifest push "docker.io/${{ matrix.image-name }}:${CONNECTOR_VERSION}"
+
+      - name: Publishing ${{ matrix.connector-name}} failed
+        if: ${{ failure() }}
+        run: docker image ls -a
