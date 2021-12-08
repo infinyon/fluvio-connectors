@@ -37,6 +37,7 @@ impl GitHubConnector {
     pub async fn new(config: GitHubOpt) -> Result<Self> {
         let client = reqwest::Client::new();
         let fluvio = Fluvio::connect().await?;
+        tracing::info!("Connected to Fluvio");
         Ok(Self {
             client,
             fluvio,
@@ -50,17 +51,17 @@ impl GitHubConnector {
             .topic_producer(&self.config.fluvio_topic)
             .await?;
 
-        let maybe_resume: Option<String> = if self.config.from_beginning {
-            None
-        } else if let Some(resume_from) = self.get_last_updated_at().await? {
-            eprintln!(
-                "Resuming from last record in topic, timestamp={}",
-                resume_from
-            );
+        let maybe_resume = if let Some(resume_from) = self.get_last_updated_at().await? {
+            tracing::info!(timestamp = %resume_from, "Resuming from latest record in pre-existing topic:");
             Some(resume_from)
+        } else if self.config.from_beginning {
+            tracing::info!("Cannot resume from topic, streaming '--from-beginning'");
+            None
         } else if let Some(resume_from) = self.get_last_updated_from_endpoint().await? {
+            tracing::info!(timestamp = %resume_from, "Resuming from latest object in endpoint:");
             Some(resume_from)
         } else {
+            tracing::info!("Unable to read latest endpoint object, streaming from beginning");
             None
         };
 
