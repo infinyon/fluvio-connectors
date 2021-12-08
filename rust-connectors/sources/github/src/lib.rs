@@ -1,3 +1,5 @@
+use fluvio::dataplane::record::RecordData;
+use fluvio::Fluvio;
 use reqwest::{Method, Url};
 use std::time::Duration;
 use structopt::StructOpt;
@@ -12,6 +14,10 @@ pub struct GitHubOpt {
     #[structopt(long, env, hide_env_values = true)]
     github_access_token: String,
 
+    /// The name of the Fluvio topic to produce events to
+    #[structopt(long)]
+    fluvio_topic: String,
+
     /// Fetch elements that have been updated_at a more recent time than start_date
     #[structopt(long)]
     start_date: Option<String>,
@@ -19,16 +25,27 @@ pub struct GitHubOpt {
 
 pub struct GitHubConnector {
     client: reqwest::Client,
+    fluvio: Fluvio,
     config: GitHubOpt,
 }
 
 impl GitHubConnector {
-    pub fn new(config: GitHubOpt) -> Result<Self> {
+    pub async fn new(config: GitHubOpt) -> Result<Self> {
         let client = reqwest::Client::new();
-        Ok(Self { client, config })
+        let fluvio = Fluvio::connect().await?;
+        Ok(Self {
+            client,
+            fluvio,
+            config,
+        })
     }
 
     pub async fn run_stream(&self) -> Result<()> {
+        let producer = self
+            .fluvio
+            .topic_producer(&self.config.fluvio_topic)
+            .await?;
+
         for i in 1.. {
             let mut req = self
                 .client
@@ -60,6 +77,16 @@ impl GitHubConnector {
                 return Ok(());
             }
 
+            let batch: Vec<_> = json_array
+                .into_iter()
+                .map(|value| {
+                    let key = value["number"].as_i64().unwrap().to_string();
+                    let value = serde_json::to_vec(value).unwrap();
+                    (key, value)
+                })
+                .collect();
+
+            producer.send_all(batch).await?;
             sleep(Duration::from_millis(1_000)).await;
         }
 

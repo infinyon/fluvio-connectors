@@ -5,7 +5,7 @@ use structopt::StructOpt;
 async fn main() -> color_eyre::Result<()> {
     dotenv::dotenv()?;
     let opt: GitHubOpt = GitHubOpt::from_args();
-    let connector = GitHubConnector::new(opt)?;
+    let connector = GitHubConnector::new(opt).await?;
     connector.run_stream().await?;
 
     Ok(())
