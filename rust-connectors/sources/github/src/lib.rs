@@ -1,6 +1,5 @@
-use fluvio::dataplane::record::RecordData;
 use fluvio::Fluvio;
-use reqwest::{Method, Url};
+use reqwest::{Method, Request, Response, Url};
 use std::time::Duration;
 use structopt::StructOpt;
 use tokio::time::sleep;
@@ -17,6 +16,10 @@ pub struct GitHubOpt {
     /// The name of the Fluvio topic to produce events to
     #[structopt(long)]
     fluvio_topic: String,
+
+    /// The number of milliseconds to wait between polling the end of a stream
+    #[structopt(long, default_value = "500")]
+    interval_millis: u64,
 
     /// Fetch elements that have been updated_at a more recent time than start_date
     #[structopt(long)]
@@ -62,8 +65,13 @@ impl GitHubConnector {
                 .query(&[
                     ("state", "all"),
                     ("direction", "asc"),
+                    ("sort", "updated"),
                     ("page", &i.to_string()),
                 ]);
+
+            if let Some(start_date) = self.config.start_date.as_deref() {
+                req = req.query(&[("since", start_date)]);
+            }
 
             let res = req.send().await?;
 
@@ -73,8 +81,7 @@ impl GitHubConnector {
 
             let json_array = json.as_array().unwrap();
             if json_array.is_empty() {
-                eprintln!("Hit empty page");
-                return Ok(());
+                sleep(Duration::from_millis(self.config.interval_millis)).await;
             }
 
             let batch: Vec<_> = json_array
@@ -87,7 +94,6 @@ impl GitHubConnector {
                 .collect();
 
             producer.send_all(batch).await?;
-            sleep(Duration::from_millis(1_000)).await;
         }
 
         Ok(())
