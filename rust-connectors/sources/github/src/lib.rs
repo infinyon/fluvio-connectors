@@ -9,8 +9,15 @@ pub type Result<T> = color_eyre::Result<T>;
 
 #[derive(StructOpt, Debug)]
 pub struct GitHubOpt {
+    /// A list of repositories to connect to
     #[structopt(long, alias = "repos")]
     repositories: Vec<String>,
+
+    /// A GitHub personal access token, used for accessing private repositories
+    /// and allowing a greater rate-limit.
+    ///
+    /// This will check the `GITHUB_ACCESS_TOKEN` environment variable so keys
+    /// are not required to be passed on the command-line
     #[structopt(long, env, hide_env_values = true)]
     github_access_token: String,
 
@@ -27,6 +34,7 @@ pub struct GitHubOpt {
     from_beginning: bool,
 }
 
+/// Connector to continuously gather data from the GitHub API
 pub struct GitHubConnector {
     client: reqwest::Client,
     fluvio: Fluvio,
@@ -34,6 +42,7 @@ pub struct GitHubConnector {
 }
 
 impl GitHubConnector {
+    /// Create a new [`GitHubConnector`] according to the given configuration.
     pub async fn new(config: GitHubOpt) -> Result<Self> {
         let client = reqwest::Client::new();
         let fluvio = Fluvio::connect().await?;
@@ -45,12 +54,27 @@ impl GitHubConnector {
         })
     }
 
+    /// Run the [`GitHubConnector`] in a loop, retrieving data from the GitHub API.
     pub async fn run(&self) -> Result<()> {
         let producer = self
             .fluvio
             .topic_producer(&self.config.fluvio_topic)
             .await?;
 
+        //
+        // When the connector starts, it will run some checks to determine it's behavior:
+        //
+        // 1) If it finds data already in the topic it's producing to, it will get the
+        //    `updated_at` field from the last record and use it in the `since` query parameter
+        //    in order to resume from where it left off. See `self.get_last_updated_at()`.
+        // 2) If records are not found in the topic, check the `from_beginning` flag to
+        //    see whether the connector should begin fetching data from the beginning of
+        //    the API, and if not, from the end.
+        //
+        // If `maybe_resume` is set to `Some(timestamp)`, the connector will retrieve
+        // elements from the API using the `?since=timestamp` query parameter. If it is
+        // `None`, it will omit the `since` parameter.
+        //
         let maybe_resume = if let Some(resume_from) = self.get_last_updated_at().await? {
             tracing::info!(timestamp = %resume_from, "Resuming from latest record in pre-existing topic:");
             Some(resume_from)
@@ -65,7 +89,7 @@ impl GitHubConnector {
             None
         };
 
-        for i in 1.. {
+        for page in 1.. {
             let mut req = self
                 .client
                 .request(
@@ -82,7 +106,7 @@ impl GitHubConnector {
                     ("state", "all"),
                     ("direction", "asc"),
                     ("sort", "updated"),
-                    ("page", &i.to_string()),
+                    ("page", &page.to_string()),
                 ]);
 
             if let Some(resume) = maybe_resume.as_deref() {
@@ -110,6 +134,8 @@ impl GitHubConnector {
         Ok(())
     }
 
+    /// Attempt to read a record from the end of the Topic, and if one is found,
+    /// use the `updated_at` field to determine where to resume reading the API from.
     async fn get_last_updated_at(&self) -> Result<Option<String>> {
         use futures_util::StreamExt;
 
@@ -135,6 +161,9 @@ impl GitHubConnector {
         Ok(updated_at)
     }
 
+    /// Fetch the latest object from the endpoint (i.e. sort=descending) and get the
+    /// `updated_at` timestamp of that object. Use that timestamp as the `since` parameter
+    /// to "resume" fetching API elements from that point on.
     async fn get_last_updated_from_endpoint(&self) -> Result<Option<String>> {
         let req = self
             .client
