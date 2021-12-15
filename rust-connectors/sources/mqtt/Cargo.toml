@@ -7,7 +7,7 @@ edition = "2018"
 
 [dependencies]
 tracing = "0.1"
-fluvio = "0.10"
+fluvio = "0.11"
 fluvio-connectors-common = { path = "../../common" }
 fluvio-future = { version = "0.3.9", features = ["subscriber"] }
 
