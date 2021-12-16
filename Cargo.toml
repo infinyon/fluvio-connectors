@@ -2,20 +2,12 @@
 members = [
     "rust-connectors/common",
     "rust-connectors/sources/syslog",
-    "rust-connectors/sources/test-connector",
     "rust-connectors/sources/mqtt",
     "rust-connectors/sources/http",
     "rust-connectors/sources/postgres",
     "rust-connectors/models/fluvio-model-postgres",
-    "rust-connectors/utils/mocks/http-json-mock",
-    "rust-connectors/utils/fluvio-smartstream-map"
+    "rust-connectors/utils/mocks/http-json-mock/",
+    "rust-connectors/utils/test-connector",
+    "rust-connectors/utils/fluvio-smartstream-map/"
 ]
 resolver = "2"
-[patch.crates-io]
-fluvio = { git = "https://github.com/infinyon/fluvio", rev = "82c29cf9fbb2b020bca5fc5a1aca301461fbfaa3" }
-fluvio-dataplane-protocol = { git = "https://github.com/infinyon/fluvio", rev = "82c29cf9fbb2b020bca5fc5a1aca301461fbfaa3"  }
-fluvio-protocol = { git = "https://github.com/infinyon/fluvio", rev = "82c29cf9fbb2b020bca5fc5a1aca301461fbfaa3"  }
-fluvio-controlplane-metadata = { git = "https://github.com/infinyon/fluvio", rev = "82c29cf9fbb2b020bca5fc5a1aca301461fbfaa3"  }
-fluvio-sc-schema = { git = "https://github.com/infinyon/fluvio", rev = "82c29cf9fbb2b020bca5fc5a1aca301461fbfaa3"  }
-fluvio-smartengine = { git = "https://github.com/infinyon/fluvio", rev = "82c29cf9fbb2b020bca5fc5a1aca301461fbfaa3"  }
-fluvio-smartstream = { git = "https://github.com/infinyon/fluvio", rev = "82c29cf9fbb2b020bca5fc5a1aca301461fbfaa3"  }

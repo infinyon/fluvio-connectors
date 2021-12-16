@@ -4,7 +4,7 @@ set -ex
 # The target platform - Ex: x86_64-unknown-linux-musl
 readonly TARGET="${TARGET:?Set TARGET platform to build}"
 # The tag to build this Docker image with - Ex: 0.7.4-abcdef (where abcdef is a git commit)
-readonly COMMIT_HASH="${COMMIT_HASH:-}"
+readonly DOCKER_TAG="${DOCKER_TAG:-}"
 # The name of the connector - Ex: test-connector
 readonly CONNECTOR_NAME="${CONNECTOR_NAME:-test-connector}"
 # Default image name structure
@@ -21,11 +21,11 @@ function main() {
 
 
   # Tag the image with a commit hash if we provide it
-  if [[ -z "$COMMIT_HASH" ]];
+  if [[ -z "$DOCKER_TAG" ]];
   then
-    IMAGE_TAGS="-t $IMAGE_NAME $BUILD_ARGS"
+    IMAGE_TAGS="-t $IMAGE_NAME"
   else
-    IMAGE_TAGS="-t $IMAGE_NAME -t $IMAGE_NAME:$COMMIT_HASH-$TARGET"
+    IMAGE_TAGS="-t $IMAGE_NAME -t $IMAGE_NAME:$DOCKER_TAG-${TARGET}"
   fi
   DOCKER_IMAGE_TAR=/tmp/infinyon-fluvio-connector-${CONNECTOR_NAME}-${TARGET}.tar
   # The CI build should producer a tarball

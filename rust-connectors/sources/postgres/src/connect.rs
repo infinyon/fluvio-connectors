@@ -1,11 +1,8 @@
 use crate::convert::convert_replication_event;
 use crate::{Error, PgConnectorOpt};
-use fluvio::dataplane::smartstream::SmartStreamInput;
-use fluvio::metadata::smartmodule::SmartModuleSpec;
 use fluvio::metadata::topic::TopicSpec;
 use fluvio::{Fluvio, Offset, TopicProducer};
 use fluvio_model_postgres::{Column, LogicalReplicationMessage, ReplicationEvent};
-use fluvio_smartengine::SmartStream;
 use once_cell::sync::Lazy;
 use postgres_protocol::message::backend::{
     LogicalReplicationMessage as PgReplication, ReplicationMessage,
@@ -35,8 +32,6 @@ pub struct PgConnector {
     lsn: Option<PgLsn>,
     /// Caches the schema for each new table we see, grouped by relation_id
     relations: BTreeMap<u32, Vec<Column>>,
-    /// The user-given SmartStream to apply to this connector's stream
-    smartstream: Option<Box<dyn SmartStream>>,
 }
 
 impl PgConnector {
@@ -47,30 +42,6 @@ impl PgConnector {
 
         let admin = fluvio.admin().await;
 
-        let smartstream: Option<Box<dyn SmartStream>> = match config.common.smarstream_module() {
-            Ok(maybe_smartstream) => maybe_smartstream,
-            Err(_) => {
-                let smartmodule_spec_list = &admin
-                    .list::<SmartModuleSpec, _>(vec![config
-                        .common
-                        .smartmodule_name()
-                        .expect("Not named smartmodule")
-                        .into()])
-                    .await
-                    .expect("Failed to get smartmodule");
-
-                let smartmodule_spec = &smartmodule_spec_list
-                    .first()
-                    .expect("Not found smartmodule")
-                    .spec;
-
-                config
-                    .common
-                    .smart_stream_module_from_spec(smartmodule_spec)
-                    .await
-                    .expect("Failed to create smartmodule")
-            }
-        };
 
         let topics = admin.list::<TopicSpec, _>(vec![]).await?;
         let topic_exists = topics.iter().any(|t| t.name == config.common.fluvio_topic);
@@ -103,7 +74,7 @@ impl PgConnector {
             tracing::info!("No prior LSN discovered, starting PgConnector at beginning");
         }
 
-        let producer = fluvio.topic_producer(&config.common.fluvio_topic).await?;
+        let producer = config.common.create_producer().await.unwrap();
 
         let (pg_client, conn) = config
             .url
@@ -121,7 +92,6 @@ impl PgConnector {
             producer,
             lsn,
             relations: BTreeMap::default(),
-            smartstream,
         })
     }
 
@@ -174,28 +144,7 @@ impl PgConnector {
                 let event = convert_replication_event(&self.relations, &xlog_data)?;
                 let json = serde_json::to_string(&event)?;
 
-                match &mut self.smartstream {
-                    Some(smartstream) => {
-                        let input = SmartStreamInput::from_single_record(json.as_bytes())?;
-                        let output = smartstream
-                            .process(input)
-                            .map_err(|e| eyre::eyre!("{}", e))?;
-
-                        let batches = output.successes.chunks(100).map(|record| {
-                            record
-                                .iter()
-                                .map(|record| (fluvio::RecordKey::NULL, record.value.as_ref()))
-                        });
-                        for batch in batches {
-                            tracing::info!(len = batch.len(), "Producing processed batch:");
-                            self.producer.send_all(batch).await?;
-                        }
-                    }
-                    _ => {
-                        tracing::info!("Producing event: {}", json);
-                        self.producer.send(fluvio::RecordKey::NULL, json).await?;
-                    }
-                }
+                self.producer.send(fluvio::RecordKey::NULL, json).await?;
 
                 match event.message {
                     LogicalReplicationMessage::Relation(rel) => {

@@ -11,12 +11,11 @@ path = "src/bin/main.rs"
 tracing = { version = "0.1" }
 tokio = { version = "1", features = ["full"] }
 tokio-stream = { version = "0.1" }
-fluvio = { version = "0.9" }
+fluvio = { version = "0.10" }
 fluvio-future = { version = "0.3", features = ["subscriber"] }
-fluvio-dataplane-protocol = { git = "https://github.com/infinyon/fluvio", rev = "b2250033d49a279c3d718cd25c42a4cee0b40297" }
+fluvio-dataplane-protocol = "*"
 fluvio-connectors-common = { path = "../../common" }
 fluvio-model-postgres = { path = "../../models/fluvio-model-postgres" }
-fluvio-smartengine = { version = "0.0.0", features = ["smartmodule"] }
 bytes = "1"
 eyre = "0.6"
 thiserror = "1"

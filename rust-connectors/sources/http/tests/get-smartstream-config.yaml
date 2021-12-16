@@ -10,4 +10,4 @@ parameters:
   method: GET
   body: ''
   interval: 1
-  smartstream-map: http-json-connector-map
+  map: http-json-connector-map

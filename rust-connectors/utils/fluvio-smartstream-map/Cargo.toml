@@ -8,4 +8,4 @@ edition = "2018"
 crate-type = ['cdylib']
 
 [dependencies]
-fluvio-smartstream = { version = "*" }
+fluvio-smartmodule = { version = "0.2" }

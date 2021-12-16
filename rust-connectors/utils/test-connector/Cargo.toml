@@ -1,23 +1,17 @@
 [package]
-name = "mqtt"
+name = "test-connector"
 version = "0.1.0"
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tracing = "0.1"
-fluvio = "0.10"
+async-std = { version = "1.8.0", default-features = false, features = ["attributes"] }
 fluvio-connectors-common = { path = "../../common" }
-fluvio-future = { version = "0.3.9", features = ["subscriber"] }
+fluvio-dataplane-protocol = "0.8.0"
 
-thiserror = "1.0.29"
-async-global-executor = { version = "2.0.2", features = ["tokio"]}
 structopt = "0.3.23"
-
 schemars = "0.8.6"
 serde_json = "1.0.68"
 serde = {version = "1.0.130", features = ["derive"] }
-
-rumqttc = "0.10.0"
 anyhow = "1.0.44"
