@@ -11,7 +11,7 @@ schemars = "0.8"
 structopt = "0.3"
 
 anyhow = "1.0.44"
-fluvio-controlplane-metadata = "0.12.3"
+fluvio-controlplane-metadata = "0.13.1"
 fluvio-future = { version = "0.3.11", features = ["subscriber"] }
 fluvio = { version = "0.10", features = ["smartengine"] }
 flate2 = { version = "1.0" }
