@@ -11,11 +11,11 @@ readonly CONNECTOR_NAME="${CONNECTOR_NAME:-test-connector}"
 readonly IMAGE_NAME="infinyon/fluvio-connect-$CONNECTOR_NAME"
 
 # Creates a staging Docker build directory
-readonly BUILD_ROOT="$(realpath $( dirname ${BASH_SOURCE[0]})/../../container-build)"
-readonly WORK_DIR="$(mktemp -d -p $BUILD_ROOT)"
+readonly BUILD_ROOT="$(realpath "$(dirname "${BASH_SOURCE[0]}")"/../../container-build)"
+readonly WORK_DIR="$(mktemp -d -p "$BUILD_ROOT")"
 
 # Default path to Dockerfile (for `docker build`) 
-readonly DOCKERFILE_PATH="$(realpath ${DOCKERFILE_PATH:-$BUILD_ROOT/dockerfiles/default/Dockerfile})"
+readonly DOCKERFILE_PATH="$(realpath "${DOCKERFILE_PATH:-$BUILD_ROOT/dockerfiles/default/Dockerfile}")"
 
 # check if tmp dir was created
 if [[ ! "$WORK_DIR" || ! -d "$WORK_DIR" ]]; then
@@ -46,20 +46,20 @@ function main() {
   DOCKER_IMAGE_TAR=/tmp/infinyon-fluvio-connector-${CONNECTOR_NAME}-${TARGET}.tar
 
   # Copy Dockerfile and any other files copied to $BUILD_ROOT to $WORK_DIR
-  cp $DOCKERFILE_PATH $WORK_DIR 
-  find . -maxdepth 1 -type f -exec cp {} $WORK_DIR \;
+  cp "$DOCKERFILE_PATH" "$WORK_DIR"
+  find . -maxdepth 1 -type f -exec cp {} "$WORK_DIR" \;
 
   # Changes directory then runs appropriate docker build command
-  pushd $WORK_DIR
+  pushd "$WORK_DIR"
   ls
 
   # The CI build should producer a tarball
   if [[ -z "$CI" ]];
   then
     # shellcheck disable=SC2086
-    docker build $IMAGE_TAGS $BUILD_ARGS . 
-    docker save ${IMAGE_NAME} > ${DOCKER_IMAGE_TAR}
-    k3d image import -k -c fluvio ${DOCKER_IMAGE_TAR}
+    docker build $IMAGE_TAGS $BUILD_ARGS .
+    docker save "${IMAGE_NAME}" > "${DOCKER_IMAGE_TAR}"
+    k3d image import -k -c fluvio "${DOCKER_IMAGE_TAR}"
   else
     # shellcheck disable=SC2086
     docker buildx build -o type=docker,dest=- $IMAGE_TAGS $BUILD_ARGS $DOCKERFILE_PATH > ${DOCKER_IMAGE_TAR}
@@ -70,7 +70,7 @@ function main() {
   ## Cleans up staging directory
   popd
   echo "Cleaning up work dir"
-  rm -rf $WORK_DIR
+  rm -rf "$WORK_DIR"
 
 }
 
