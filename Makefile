@@ -35,8 +35,7 @@ copy-binaries: build
 endif
 
 official-containers: copy-binaries
-	cd container-build && \
-		../build-scripts/docker/build-connector-image.sh
+	./build-scripts/docker/build-connector-image.sh
 
 METADATA_OUT=metadata.json
 metadata:
