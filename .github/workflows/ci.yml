@@ -200,9 +200,6 @@ jobs:
           DOCKERFILE_PATH: ./container-build/dockerfiles/test-connector
           # IMAGE_NAME: ${{ matrix.image-name }}
         run: make official-containers
-
-
-
       - name: Upload tarball as artifact
         uses: actions/upload-artifact@v2
         with:

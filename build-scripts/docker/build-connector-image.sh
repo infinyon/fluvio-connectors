@@ -62,7 +62,7 @@ function main() {
     k3d image import -k -c fluvio "${DOCKER_IMAGE_TAR}"
   else
     # shellcheck disable=SC2086
-    docker buildx build -o type=docker,dest=- $IMAGE_TAGS $BUILD_ARGS $DOCKERFILE_PATH > ${DOCKER_IMAGE_TAR}
+    docker buildx build -o type=docker,dest=- $IMAGE_TAGS $BUILD_ARGS . > ${DOCKER_IMAGE_TAR}
   fi
   popd
 
