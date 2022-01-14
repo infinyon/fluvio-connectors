@@ -19,8 +19,6 @@ CONNECTOR_PATH=$(shell cargo metadata --format-version 1 | jq '.workspace_member
 #IMAGE_NAME?=infinyon/fluvio-connect-$(CONNECTOR_NAME)
 CONNECTOR_BIN=$(if $(TARGET),./target/$(TARGET)/$(BUILD_PROFILE)/$(CONNECTOR_NAME),./target/$(BUILD_PROFILE)/$(CONNECTOR_NAME))
 
-CONNECTOR_LIST=http test-connector
-
 smoke-test:
 	$(CARGO_BUILDER) run --bin fluvio-connector start ./test-connector/config.yaml
 
