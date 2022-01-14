@@ -197,7 +197,7 @@ jobs:
           TARGET: ${{ matrix.rust-target }}
           CONNECTOR_NAME: ${{ matrix.connector-name }}
           COMMIT_HASH: ${{ github.sha }}
-          DOCKERFILE_PATH: ./container-build/dockerfiles/test-connector
+          DOCKERFILE_PATH: ./container-build/dockerfiles/test-connector/Dockerfile
           # IMAGE_NAME: ${{ matrix.image-name }}
         run: make official-containers
       - name: Upload tarball as artifact
