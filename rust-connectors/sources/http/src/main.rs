@@ -1,5 +1,5 @@
+use fluvio_connectors_common::fluvio::RecordKey;
 use fluvio_connectors_common::opt::CommonSourceOpt;
-use fluvio_connectors_common::RecordKey;
 use schemars::{schema_for, JsonSchema};
 use structopt::StructOpt;
 use tokio_stream::StreamExt;
