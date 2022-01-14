@@ -114,7 +114,7 @@ jobs:
 
   build_containers:
     name: Build image ${{ matrix.connector-name }} for ${{ matrix.rust-target }}
-    needs: build_connector_bins
+    needs: [check, build_connector_bins]
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -183,12 +183,25 @@ jobs:
       # The build script will export the resulting image to
       # /tmp/infinyon-fluvio-connector-${{ matrix.connector-name }}-${{ matrix.rust-target }}.tar
       - name: Build containers
+        if: ${{ matrix.connector-name != "test-connector" }}
         env:
           TARGET: ${{ matrix.rust-target }}
           CONNECTOR_NAME: ${{ matrix.connector-name }}
           COMMIT_HASH: ${{ github.sha }}
           # IMAGE_NAME: ${{ matrix.image-name }}
         run: make official-containers
+
+      - name: Build Test-connector
+        if: ${{ matrix.connector-name == "test-connector" }}
+        env:
+          TARGET: ${{ matrix.rust-target }}
+          CONNECTOR_NAME: ${{ matrix.connector-name }}
+          COMMIT_HASH: ${{ github.sha }}
+          DOCKERFILE_PATH: ./container-build/dockerfiles/test-connector
+          # IMAGE_NAME: ${{ matrix.image-name }}
+        run: make official-containers
+
+
 
       - name: Upload tarball as artifact
         uses: actions/upload-artifact@v2
