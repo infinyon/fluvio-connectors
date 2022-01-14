@@ -183,7 +183,7 @@ jobs:
       # The build script will export the resulting image to
       # /tmp/infinyon-fluvio-connector-${{ matrix.connector-name }}-${{ matrix.rust-target }}.tar
       - name: Build containers
-        if: ${{ matrix.connector-name != "test-connector" }}
+        if: matrix.connector-name != 'test-connector'
         env:
           TARGET: ${{ matrix.rust-target }}
           CONNECTOR_NAME: ${{ matrix.connector-name }}
@@ -192,7 +192,7 @@ jobs:
         run: make official-containers
 
       - name: Build Test-connector
-        if: ${{ matrix.connector-name == "test-connector" }}
+        if: matrix.connector-name == 'test-connector'
         env:
           TARGET: ${{ matrix.rust-target }}
           CONNECTOR_NAME: ${{ matrix.connector-name }}
