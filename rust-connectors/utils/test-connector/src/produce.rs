@@ -1,5 +1,5 @@
 use crate::opts::TestConnectorOpts;
-use fluvio_connectors_common::RecordKey;
+use fluvio_connectors_common::fluvio::RecordKey;
 
 pub async fn produce(opts: TestConnectorOpts) -> anyhow::Result<()> {
     let producer = opts
