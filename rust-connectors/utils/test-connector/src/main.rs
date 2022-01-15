@@ -31,7 +31,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut fluvio_test_args = Vec::new();
 
         if let Some(runner_opts) = fluvio_test_opts.runner_opts {
-            let opts : Vec<String> = runner_opts.split_whitespace().map(|s| s.to_string()).collect();
+            let opts: Vec<String> = runner_opts
+                .split_whitespace()
+                .map(|s| s.to_string())
+                .collect();
             fluvio_test_args.extend(opts)
         };
 
@@ -39,7 +42,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         fluvio_test_args.push("--".to_string());
 
         if let Some(test_opts) = fluvio_test_opts.test_opts {
-            let opts : Vec<String> = test_opts.split_whitespace().map(|s| s.to_string()).collect();
+            let opts: Vec<String> = test_opts
+                .split_whitespace()
+                .map(|s| s.to_string())
+                .collect();
             fluvio_test_args.extend(opts)
         };
 
