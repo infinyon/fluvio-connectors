@@ -68,6 +68,7 @@ function main() {
 
 
   ## Cleans up staging directory
+  # TODO: convert this cleanup step to trap on EXIT. Opt-out when SKIP_CLEAN=true
   popd
   echo "Cleaning up work dir"
   rm -rf "$WORK_DIR"
