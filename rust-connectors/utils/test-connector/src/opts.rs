@@ -14,3 +14,17 @@ pub struct TestConnectorOpts {
     #[structopt(long)]
     pub timeout: Option<u64>,
 }
+
+#[derive(StructOpt, Debug)]
+pub struct FluvioTestOpts {
+    #[structopt(long, default_value = "./fluvio-test")]
+    pub fluvio_test_path: String,
+    #[structopt(long)]
+    pub runner_opts: Option<String>,
+    #[structopt(long)]
+    pub test_name: String,
+    #[structopt(long)]
+    pub test_opts: Option<String>,
+    #[structopt(long)]
+    pub skip_loop: bool,
+}
