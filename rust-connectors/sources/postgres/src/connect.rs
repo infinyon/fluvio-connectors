@@ -45,7 +45,6 @@ impl PgConnector {
 
         let admin = fluvio.admin().await;
 
-
         let topics = admin.list::<TopicSpec, _>(vec![]).await?;
         let topic_exists = topics.iter().any(|t| t.name == config.common.fluvio_topic);
         if !topic_exists {
@@ -107,11 +106,15 @@ impl PgConnector {
         tokio::spawn(conn);
         let slot = &config.slot;
         tracing::info!("Querying replication slots");
-        let replication_slots_query = "SELECT slot_name FROM pg_replication_slots where slot_name=$1";
-        let replication_slots  = pg_client.query(replication_slots_query, &[&slot]).await?;
-        if replication_slots.len() == 0 {
+        let replication_slots_query =
+            "SELECT slot_name FROM pg_replication_slots where slot_name=$1";
+        let replication_slots = pg_client.query(replication_slots_query, &[&slot]).await?;
+        if replication_slots.is_empty() {
             tracing::info!("Creating replication slot");
-            let query = format!("SELECT pg_create_logical_replication_slot('{}', 'pgoutput')", config.slot);
+            let query = format!(
+                "SELECT pg_create_logical_replication_slot('{}', 'pgoutput')",
+                config.slot
+            );
             let _query_out = pg_client.query(query.as_str(), &[]).await?;
             tracing::info!("Created replication slot");
         }
@@ -120,7 +123,7 @@ impl PgConnector {
         tracing::info!("Querying publications {publication}");
         let publications_query = "select * from pg_publication where pubname=$1";
         let publications = pg_client.query(publications_query, &[&publication]).await?;
-        if publications.len() == 0 {
+        if publications.is_empty() {
             tracing::info!("Creating publication {publication}");
 
             let query = format!("CREATE PUBLICATION \"{}\" FOR ALL TABLES", publication);
