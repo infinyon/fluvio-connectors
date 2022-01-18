@@ -25,6 +25,6 @@ pub struct FluvioTestOpts {
     pub test_name: String,
     #[structopt(long)]
     pub test_opts: Option<String>,
-    #[structopt(long)]
-    pub skip_loop: bool,
+    #[structopt(long, default_value = "false")]
+    pub skip_loop: String,
 }

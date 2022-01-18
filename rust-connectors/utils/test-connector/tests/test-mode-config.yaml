@@ -6,8 +6,8 @@ topic: longevity
 create_topic: true
 direction: source
 parameters:
-  runner-opts:
+  #runner-opts:
   test-name: longevity 
   test-opts: --runtime-seconds=30 --producers 1 --consumers 1
-  skip-loop:
+  skip-loop: "true"
   

@@ -59,8 +59,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let _ = child_proc.wait_with_output();
             }
 
-            if fluvio_test_opts.skip_loop {
-                break;
+            if &fluvio_test_opts.skip_loop.to_lowercase() == "true" {
+                    break;
             }
         }
     } else {
