@@ -92,7 +92,7 @@ async fn main() -> Result<()> {
         let response = req.send().await?;
         let response_text = response.text().await?;
 
-        tracing::info!("Producing: {}", response_text);
+        tracing::debug!(%response_text, "Producing");
         producer.send(RecordKey::NULL, response_text).await?;
     }
 
