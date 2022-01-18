@@ -211,6 +211,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     needs: [build_containers]
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest]
         rust: [stable]
