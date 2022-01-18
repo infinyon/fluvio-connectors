@@ -6,10 +6,7 @@ use std::io::{self, BufRead};
 use std::path::Path;
 use structopt::StructOpt;
 
-use fluvio::{
-    metadata::topic::{TopicReplicaParam, TopicSpec},
-    Fluvio,
-};
+use fluvio::{metadata::topic::TopicSpec, Fluvio};
 #[derive(StructOpt, Debug)]
 pub struct ProducerOpts {
     /// If this connector is acts as a server, we use this bind address
@@ -45,7 +42,7 @@ impl ProducerOpts {
                 .create(
                     topic.clone(),
                     false,
-                    TopicSpec::Computed(TopicReplicaParam::new(1, 1, false)),
+                    TopicSpec::new_computed(1, 1, Some(false)),
                 )
                 .await?;
         }
