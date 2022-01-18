@@ -60,7 +60,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
 
             if &fluvio_test_opts.skip_loop.to_lowercase() == "true" {
-                    break;
+                break;
             }
         }
     } else {
