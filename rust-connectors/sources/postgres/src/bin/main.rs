@@ -1,9 +1,10 @@
-use postgres::{PgConnector, PgConnectorOpt};
+use postgres_source::{PgConnector, PgConnectorOpt};
 use schemars::schema_for;
 use structopt::StructOpt;
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
+    color_backtrace::install();
     let _ = dotenv::dotenv();
     std::env::set_var("RUST_BACKTRACE", "full");
 

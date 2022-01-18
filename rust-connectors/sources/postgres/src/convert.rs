@@ -136,7 +136,10 @@ pub fn convert_replication_message(
             };
             LogicalReplicationMessage::Truncate(body)
         }
-        _ => return Err(Error::UnexpectedMessage),
+        e => {
+            tracing::error!("Unexpected message! {:?}", e);
+            return Err(Error::UnexpectedMessage)
+        },
     };
     Ok(logical_replication_message)
 }

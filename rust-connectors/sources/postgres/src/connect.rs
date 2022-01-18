@@ -39,6 +39,9 @@ impl PgConnector {
         tracing::info!("Initializing PgConnector");
         let fluvio = Fluvio::connect().await?;
         tracing::info!("Connected to Fluvio");
+        if !config.skip_setup {
+            let _ = Self::create_replication_slot(&config).await?;
+        }
 
         let admin = fluvio.admin().await;
 
@@ -94,6 +97,37 @@ impl PgConnector {
             relations: BTreeMap::default(),
         })
     }
+    pub async fn create_replication_slot(config: &PgConnectorOpt) -> eyre::Result<()> {
+        let (pg_client, conn) = config
+            .url
+            .as_str()
+            .parse::<tokio_postgres::Config>()?
+            .connect(NoTls)
+            .await?;
+        tokio::spawn(conn);
+        let slot = &config.slot;
+        tracing::info!("Querying replication slots");
+        let replication_slots_query = "SELECT slot_name FROM pg_replication_slots where slot_name=$1";
+        let replication_slots  = pg_client.query(replication_slots_query, &[&slot]).await?;
+        if replication_slots.len() == 0 {
+            tracing::info!("Creating replication slot");
+            let query = format!("SELECT pg_create_logical_replication_slot('{}', 'pgoutput')", config.slot);
+            let _query_out = pg_client.query(query.as_str(), &[]).await?;
+            tracing::info!("Created replication slot");
+        }
+
+        let publication = &config.publication;
+        tracing::info!("Querying publications {publication}");
+        let publications_query = "select * from pg_publication where pubname=$1";
+        let publications = pg_client.query(publications_query, &[&publication]).await?;
+        if publications.len() == 0 {
+            tracing::info!("Creating publication {publication}");
+
+            let query = format!("CREATE PUBLICATION \"{}\" FOR ALL TABLES", publication);
+            let _query_out = pg_client.query(query.as_str(), &[]).await?;
+        }
+        Ok(())
+    }
 
     pub async fn process_stream(&mut self) -> eyre::Result<()> {
         let mut last_lsn = self.lsn.unwrap_or_else(|| PgLsn::from(0));
@@ -107,6 +141,7 @@ impl PgConnector {
             r#"START_REPLICATION SLOT "{}" LOGICAL {} {}"#,
             self.config.slot, last_lsn, options
         );
+        println!("Running replication query - {}", query);
         let copy_stream = self
             .pg_client
             .copy_both_simple::<bytes::Bytes>(&query)
@@ -166,7 +201,9 @@ impl PgConnector {
                         .await?;
                 }
             }
-            _ => (),
+            e => {
+                tracing::info!("Unhandled event {:?}", e);
+            }
         }
 
         Ok(())

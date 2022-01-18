@@ -15,6 +15,7 @@ jobs:
       - uses: styfle/cancel-workflow-action@0.9.1
         with:
           access_token: ${{ secrets.GITHUB_TOKEN }}
+
   check:
     name: Rust Check - ${{ matrix.check }}
     runs-on: ${{ matrix.os }}
@@ -215,7 +216,6 @@ jobs:
           - test-connector
           - mqtt
           - http
-          - postgres
     env:
       RUST_BACKTRACE: full
     steps:
@@ -338,6 +338,57 @@ jobs:
             docker manifest push "docker.io/${{ matrix.image-name }}:${TAG}"
           done
 
+  # Label of the container job
+  postgres_integration_tests:
+    # Containers must run in Linux based operating systems
+    runs-on: ubuntu-latest
+    # Service containers to run with `container-job`
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres
+        # Provide the password for postgres
+        env:
+          POSTGRES_PASSWORD: fluviopassword
+          POSTGRES_USER: fluvio
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          --wal_level logical
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+    steps:
+      - uses: AbsaOSS/k3d-action@v2
+        name: "Create fluvio k3d Cluster"
+        with:
+          cluster-name: "fluvio"
+      - name: Sleep 20 to ensure k3d cluster is ready
+        run: sleep 20
+      - name: Install Fluvio Local Cluster
+        uses: infinyon/fluvio@master
+        with:
+          cluster-type: k3d
+          version: latest
+      - name: Check Fluvio Installation
+        run: |
+          fluvio version
+          fluvio topic list
+          fluvio topic create foobar
+          sleep 3
+          echo foo | fluvio produce foobar
+          fluvio consume foobar -o 0 -d
+      - uses: actions/checkout@v2
+      - name: cargo test on postgres crate
+        env:
+          FLUVIO_PG_DATABASE_URL: postgres://fluvio:fluviopassword@localhost:5432
+        run: |
+          cargo test -p postgres-source
+
   ## Job that follows the success of all required jobs in this workflow.
   ## Used by Bors to detect that all required jobs have completed successfully
   done:
@@ -346,6 +397,7 @@ jobs:
     needs:
       - check
       - docker_push
+      - postgres_integration_tests
     runs-on: ubuntu-latest
     steps:
       - name: Done
