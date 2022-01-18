@@ -1,12 +1,12 @@
 [package]
 name = "test-connector"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-fluvio = "0.9"
+fluvio = "0.12"
 async-std = { version = "1.8.0", default-features = false, features = ["attributes"] }
 fluvio-connectors-common = { path = "../../common" }
 #fluvio-dataplane-protocol = { path = "../../fluvio/crates/fluvio-dataplane-protocol"}
