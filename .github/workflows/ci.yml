@@ -272,6 +272,17 @@ jobs:
         run: make test
         env:
           CONNECTOR_NAME: ${{ matrix.connector-name }}
+      - name: Run diagnostics
+        if: ${{ !success() }}
+        timeout-minutes: 5
+        run: fluvio cluster diagnostics
+      - name: Upload diagnostics
+        uses: actions/upload-artifact@v2
+        timeout-minutes: 5
+        if: ${{ !success() }}
+        with:
+          name: integration_${{ matrix.connector-name }}
+          path: diagnostics*.gz
 
   docker_push:
     name: Publish ${{ matrix.connector-name }} images to Docker Hub
