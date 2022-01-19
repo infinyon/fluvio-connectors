@@ -41,7 +41,7 @@ jobs:
       - name: Cargo test
         if: ${{ matrix.check == 'test' }}
         run: |
-          cargo test
+          cargo test -- --skip postgres_simple
 
       - name: Cargo check
         if: ${{ matrix.check == 'check' }}
@@ -141,10 +141,10 @@ jobs:
             connector-name: http
             rust-target: aarch64-unknown-linux-musl
           - os: ubuntu-latest
-            connector-name: postgres
+            connector-name: postgres-source
             rust-target: x86_64-unknown-linux-musl
           - os: ubuntu-latest
-            connector-name: postgres
+            connector-name: postgres-source
             rust-target: aarch64-unknown-linux-musl
     env:
       RUSTV: ${{ matrix.rust }}
@@ -291,8 +291,8 @@ jobs:
             connector-name: http
             image-name: infinyon/fluvio-connect-http
           - os: ubuntu-latest
-            connector-name: postgres
-            image-name: infinyon/fluvio-connect-postgres
+            connector-name: postgres-source
+            image-name: infinyon/fluvio-connect-postgres-source
     steps:
       - name: Download ${{ matrix.connector-name }} x86_64-unknown-linux-musl Docker Image as Artifact
         uses: actions/download-artifact@v2
@@ -367,8 +367,6 @@ jobs:
           docker exec ${{ job.services.postgres.id }} sh -c 'cat /var/lib/postgresql/data/postgresql.conf'
           docker exec ${{ job.services.postgres.id }} sh -c 'echo "wal_level=logical" >> /var/lib/postgresql/data/postgresql.conf'
           docker kill --signal=SIGHUP ${{ job.services.postgres.id }}
-          #docker exec ${{ job.services.postgres.id }} sh -c 'echo "full_page_writes=off" >> /var/lib/postgresql/data/postgresql.conf'
-          #docker exec ${{ job.services.postgres.id }} sh -c 'echo "synchronous_commit=off" >> /var/lib/postgresql/data/postgresql.conf'
       - uses: AbsaOSS/k3d-action@v2
         name: "Create fluvio k3d Cluster"
         with:
@@ -388,7 +386,13 @@ jobs:
           sleep 3
           echo foo | fluvio produce foobar
           fluvio consume foobar -o 0 -d
-      - uses: actions/checkout@v2
+      - name: Install Rust stable
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          components: clippy
+
       - name: cargo test on postgres crate
         env:
           FLUVIO_PG_DATABASE_URL: postgres://fluvio:fluviopassword@localhost:5432

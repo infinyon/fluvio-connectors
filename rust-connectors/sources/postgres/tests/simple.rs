@@ -7,14 +7,12 @@ use tokio_stream::StreamExt;
 use url::Url;
 
 #[tokio::test]
-async fn simple_test() -> eyre::Result<()> {
+async fn postgres_simple() -> eyre::Result<()> {
     fluvio_future::subscriber::init_logger();
-    //let postgres_url = "postgres://fluvio:fluviopassword@172.17.0.2:5432";
     let postgres_url = std::env::var("FLUVIO_PG_DATABASE_URL")
         .expect("No FLUVIO_PG_DATABASE_URL environment variable found");
 
     let fluvio_topic = "postgres".to_string();
-    //let fluvio_topic = uuid::Uuid::new_v4().to_string().replace("-", "");
     let slot = uuid::Uuid::new_v4().to_string().replace("-", "");
     let publication = uuid::Uuid::new_v4().to_string().replace("-", "");
 
