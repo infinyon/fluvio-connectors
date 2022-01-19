@@ -72,7 +72,7 @@ jobs:
           - test-connector
           - mqtt
           - http
-          - postgres
+          - postgres-source
         rust: [stable]
     env:
       RUST_BACKTRACE: full
