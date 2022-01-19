@@ -1,5 +1,7 @@
 use anyhow::Error as AnyhowError;
-use fluvio::FluvioError;
+
+use fluvio_connectors_common::fluvio::FluvioError;
+
 use rumqttc::Error as MqttError;
 use rumqttc::{ClientError as MqttClientError, ConnectionError as MqttConnectionError};
 use serde_json::Error as SerdeJsonError;

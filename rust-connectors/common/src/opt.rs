@@ -3,7 +3,7 @@ use schemars::JsonSchema;
 use structopt::clap::AppSettings;
 use structopt::StructOpt;
 
-pub use fluvio::{Fluvio, TopicProducer};
+pub use fluvio::{consumer, Fluvio, PartitionConsumer, TopicProducer};
 
 use fluvio_controlplane_metadata::smartmodule::SmartModuleSpec;
 
@@ -103,5 +103,14 @@ impl CommonSourceOpt {
                 Ok(buffer)
             }
         }
+    }
+
+    pub async fn create_consumer(
+        &self,
+        topic: &str,
+        partition: i32,
+    ) -> anyhow::Result<PartitionConsumer> {
+        let consumer = consumer(topic, partition).await?;
+        Ok(consumer)
     }
 }

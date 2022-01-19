@@ -1,5 +1,5 @@
+use fluvio_connectors_common::fluvio::RecordKey;
 use fluvio_connectors_common::opt::CommonSourceOpt;
-use fluvio_connectors_common::RecordKey;
 
 mod error;
 use error::MqttConnectorError;
@@ -81,12 +81,13 @@ fn main() -> Result<(), MqttConnectorError> {
 
         let mut mqttoptions = MqttOptions::new("rumqtt-async", mqtt_url, 1883);
         mqttoptions.set_keep_alive(timeout);
+        let producer = opts.common.create_producer().await?;
+
         loop {
             let (client, mut eventloop) = AsyncClient::new(mqttoptions.clone(), 10);
             client
                 .subscribe(mqtt_topic.clone(), QoS::AtMostOnce)
                 .await?;
-            let producer = opts.common.create_producer().await?;
             tracing::info!("Connected to Fluvio");
             loop {
                 let notification = match eventloop.poll().await {
@@ -101,11 +102,12 @@ fn main() -> Result<(), MqttConnectorError> {
                     debug!("Record before smartstream {}", fluvio_record);
                     if let Err(e) = producer.send(RecordKey::NULL, fluvio_record).await {
                         error!("Fluvio error! {:?}", e);
+                        producer.clear_errors().await;
                         break;
                     }
                 }
             }
-            std::thread::sleep(std::time::Duration::from_secs(5));
+            fluvio_future::timer::sleep(std::time::Duration::from_secs(5)).await;
             debug!("reconnecting to mqtt and fluvio");
         }
     })

@@ -1,5 +1,5 @@
+use fluvio_connectors_common::fluvio::RecordKey;
 use fluvio_connectors_common::opt::CommonSourceOpt;
-use fluvio_connectors_common::RecordKey;
 use schemars::{schema_for, JsonSchema};
 use structopt::StructOpt;
 use tokio_stream::StreamExt;
@@ -92,7 +92,7 @@ async fn main() -> Result<()> {
         let response = req.send().await?;
         let response_text = response.text().await?;
 
-        tracing::info!("Producing: {}", response_text);
+        tracing::debug!(%response_text, "Producing");
         producer.send(RecordKey::NULL, response_text).await?;
     }
 
