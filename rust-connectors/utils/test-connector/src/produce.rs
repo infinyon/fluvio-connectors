@@ -19,5 +19,6 @@ pub async fn produce(opts: TestConnectorOpts) -> anyhow::Result<()> {
         producer.send(RecordKey::NULL, value).await?;
         async_std::task::sleep(std::time::Duration::from_millis(timeout)).await;
     }
+    producer.flush().await?;
     Ok(())
 }
