@@ -3,7 +3,7 @@ use schemars::JsonSchema;
 use structopt::clap::AppSettings;
 use structopt::StructOpt;
 
-use fluvio::{Fluvio, TopicProducer};
+pub use fluvio::{Fluvio, TopicProducer};
 
 use fluvio_controlplane_metadata::smartmodule::SmartModuleSpec;
 
