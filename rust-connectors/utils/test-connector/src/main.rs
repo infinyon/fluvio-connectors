@@ -7,7 +7,7 @@ use structopt::StructOpt;
 mod produce;
 use produce::produce;
 mod opts;
-use opts::{FluvioTestOpts, TestConnectorOpts};
+use opts::{TestConnectorOpts, TestConnectorSubCmd};
 
 #[derive(Debug, Serialize)]
 struct MySchema {
@@ -27,10 +27,29 @@ enum ConnectorDirection {
 
 #[async_std::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    if let Ok(fluvio_test_opts) = FluvioTestOpts::from_args_safe() {
+    // Handle the subcommand
+    if let Ok(TestConnectorSubCmd::Metadata) = TestConnectorSubCmd::from_args_safe() {
+        let schema = schema_for!(TestConnectorOpts);
+        let mqtt_schema = MySchema {
+            name: env!("CARGO_PKG_NAME"),
+            version: env!("CARGO_PKG_VERSION"),
+            description: env!("CARGO_PKG_DESCRIPTION"),
+            direction: ConnectorDirection::Source, // When this works as a two way connector, this needs to be updated.
+            schema,
+        };
+        println!("{}", serde_json::to_string(&mqtt_schema).unwrap());
+        return Ok(());
+    };
+
+    // Otherwise parse the CLI flags to determine the running mode
+    let opts = TestConnectorOpts::from_args();
+    println!("{opts:?}");
+
+    // If we provide a test name then we are running `fluvio-test`
+    if opts.test_opts.test_name.is_some() {
         let mut fluvio_test_args = Vec::new();
 
-        if let Some(runner_opts) = fluvio_test_opts.runner_opts {
+        if let Some(runner_opts) = opts.test_opts.runner_opts {
             let opts: Vec<String> = runner_opts
                 .split_whitespace()
                 .map(|s| s.to_string())
@@ -38,10 +57,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             fluvio_test_args.extend(opts)
         };
 
-        fluvio_test_args.push(fluvio_test_opts.test_name);
+        fluvio_test_args.push(opts.test_opts.test_name.unwrap_or_default());
         fluvio_test_args.push("--".to_string());
 
-        if let Some(test_opts) = fluvio_test_opts.test_opts {
+        if let Some(test_opts) = opts.test_opts.test_opts {
             let opts: Vec<String> = test_opts
                 .split_whitespace()
                 .map(|s| s.to_string())
@@ -51,7 +70,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         // Run this command in a loop
         loop {
-            if let Ok(child_proc) = Command::new(fluvio_test_opts.fluvio_test_path.clone())
+            if let Ok(child_proc) = Command::new(opts.test_opts.fluvio_test_path.clone())
                 .args(fluvio_test_args.clone())
                 .spawn()
             {
@@ -59,32 +78,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let _ = child_proc.wait_with_output();
             }
 
-            if &fluvio_test_opts.skip_loop.to_lowercase() == "true" {
+            if &opts.test_opts.skip_loop.to_lowercase() == "true" {
+                println!("Break out of loop by request");
                 break;
             }
+
+            let test_buffer_sec = 10;
+            println!("Pausing {test_buffer_sec} seconds before restarting test");
+            std::thread::sleep(std::time::Duration::from_secs(test_buffer_sec));
         }
     } else {
-        // Otherwise,
-        let arguments: Vec<String> = std::env::args().collect();
-        let opts = match arguments.get(1) {
-            Some(schema) if schema == "metadata" => {
-                let schema = schema_for!(TestConnectorOpts);
-                let mqtt_schema = MySchema {
-                    name: env!("CARGO_PKG_NAME"),
-                    version: env!("CARGO_PKG_VERSION"),
-                    description: env!("CARGO_PKG_DESCRIPTION"),
-                    direction: ConnectorDirection::Source, // When this works as a two way connector, this needs to be updated.
-                    schema,
-                };
-                println!("{}", serde_json::to_string(&mqtt_schema).unwrap());
-                return Ok(());
-            }
-            _ => {
-                println!("cmd args: {:?}", arguments);
-                TestConnectorOpts::from_args()
-            }
-        };
-        let _ = produce(opts).await?;
+        // Otherwise run Hello, Fluvio
+        println!("cmd args: {:?}", opts);
+        produce(opts).await?;
     }
+
     Ok(())
 }
