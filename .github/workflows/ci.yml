@@ -393,6 +393,7 @@ jobs:
           override: true
           components: clippy
 
+      - uses: actions/checkout@v2
       - name: cargo test on postgres crate
         env:
           FLUVIO_PG_DATABASE_URL: postgres://fluvio:fluviopassword@localhost:5432
