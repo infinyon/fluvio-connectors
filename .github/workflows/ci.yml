@@ -369,6 +369,7 @@ jobs:
           docker exec ${{ job.services.postgres.id }} sh -c 'cat /var/lib/postgresql/data/postgresql.conf'
           docker exec ${{ job.services.postgres.id }} sh -c 'echo "wal_level=logical" >> /var/lib/postgresql/data/postgresql.conf'
           docker kill --signal=SIGHUP ${{ job.services.postgres.id }}
+          docker exec ${{ job.services.postgres.id }} sh -c 'cat /var/lib/postgresql/data/postgresql.conf'
       - uses: AbsaOSS/k3d-action@v2
         name: "Create fluvio k3d Cluster"
         with:
