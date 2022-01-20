@@ -358,12 +358,14 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+          --mount type=tmpfs,destination=/var/lib/postgresql/data
         ports:
           # Maps tcp port 5432 on service container to the host
           - 5432:5432
     steps:
       - name: "Set some postgres settings"
         run: |
+          # https://github.community/t/how-do-i-properly-override-a-service-entrypoint/17435/8
           docker exec ${{ job.services.postgres.id }} sh -c 'cat /var/lib/postgresql/data/postgresql.conf'
           docker exec ${{ job.services.postgres.id }} sh -c 'echo "wal_level=logical" >> /var/lib/postgresql/data/postgresql.conf'
           docker kill --signal=SIGHUP ${{ job.services.postgres.id }}
