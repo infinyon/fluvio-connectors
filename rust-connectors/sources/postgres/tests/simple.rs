@@ -21,7 +21,7 @@ async fn postgres_simple() -> eyre::Result<()> {
         .create(
             fluvio_topic.clone(),
             false,
-            TopicSpec::Computed(TopicReplicaParam::new(1, 1, false)),
+            TopicSpec::default()),
         )
         .await;
     let config = PgConnectorOpt {
