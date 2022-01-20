@@ -3,7 +3,7 @@ name = "postgres-source"
 version = "0.0.0"
 edition = "2021"
 [[bin]]
-name = "postgres"
+name = "postgres-source"
 path = "src/bin/main.rs"
 
 
