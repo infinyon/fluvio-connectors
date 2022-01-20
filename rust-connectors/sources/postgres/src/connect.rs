@@ -1,8 +1,7 @@
 use crate::convert::convert_replication_event;
 use crate::{Error, PgConnectorOpt};
 use fluvio::metadata::topic::TopicSpec;
-use fluvio::{Fluvio, Offset};
-use fluvio_connectors_common::opt::TopicProducer;
+use fluvio::{Fluvio, Offset, TopicProducer};
 use fluvio_model_postgres::{Column, LogicalReplicationMessage, ReplicationEvent};
 use once_cell::sync::Lazy;
 use postgres_protocol::message::backend::{

@@ -1,4 +1,4 @@
-use fluvio::metadata::topic::{TopicReplicaParam, TopicSpec};
+use fluvio::metadata::topic::TopicSpec;
 use fluvio_connectors_common::opt::CommonSourceOpt;
 use fluvio_model_postgres::ReplicationEvent;
 use postgres_source::{PgConnector, PgConnectorOpt};
@@ -18,11 +18,7 @@ async fn postgres_simple() -> eyre::Result<()> {
 
     let admin = fluvio::FluvioAdmin::connect().await?;
     let _ = admin
-        .create(
-            fluvio_topic.clone(),
-            false,
-            TopicSpec::default()),
-        )
+        .create(fluvio_topic.clone(), false, TopicSpec::default())
         .await;
     let config = PgConnectorOpt {
         url: Url::parse(&postgres_url).expect("Failed to parse connector url"),
