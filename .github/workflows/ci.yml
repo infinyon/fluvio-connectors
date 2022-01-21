@@ -343,7 +343,8 @@ jobs:
     # Containers must run in Linux based operating systems
     runs-on: ubuntu-latest
     steps:
-      - name: "Set some postgres settings"
+      - uses: actions/checkout@v2
+      - name: "Start postgres instance"
         run: |
           make -C ./rust-connectors/sources/postgres postgres-docker
       - uses: AbsaOSS/k3d-action@v2
@@ -372,7 +373,6 @@ jobs:
           override: true
           components: clippy
 
-      - uses: actions/checkout@v2
       - name: cargo test on postgres crate
         run: |
           make -C ./rust-connectors/sources/postgres test-dev
