@@ -27,7 +27,7 @@ pub struct TestConnectorOpts {
 #[derive(StructOpt, Debug, JsonSchema)]
 pub struct FluvioTestOpts {
     /// File path to a `fluvio-test` binary
-    #[structopt(long, default_value = "./fluvio-test")]
+    #[structopt(long, default_value = "/usr/local/bin/fluvio-test")]
     pub fluvio_test_path: String,
     /// CLI opts for `fluvio-test`
     #[structopt(long)]
