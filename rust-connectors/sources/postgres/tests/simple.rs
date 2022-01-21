@@ -18,7 +18,7 @@ async fn postgres_simple() -> eyre::Result<()> {
 
     let admin = fluvio::FluvioAdmin::connect().await?;
     let _ = admin
-        .create(fluvio_topic.clone(), false, TopicSpec::default())
+        .create(fluvio_topic.clone(), false,  TopicSpec::new_computed(1, 1, Some(false)))
         .await;
     let config = PgConnectorOpt {
         url: Url::parse(&postgres_url).expect("Failed to parse connector url"),
