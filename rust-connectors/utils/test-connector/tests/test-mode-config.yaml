@@ -1,5 +1,5 @@
-version: v1
-connector_version: dev
+version: dev
+#connector_version: dev 
 name: test-connector-name-fluvio-test
 type: test-connector
 topic: longevity 
@@ -9,5 +9,4 @@ parameters:
   #runner-opts:
   test-name: longevity 
   test-opts: --runtime-seconds=30 --producers 1 --consumers 1
-  skip-loop: "true"
   
