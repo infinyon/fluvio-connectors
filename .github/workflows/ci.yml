@@ -342,26 +342,6 @@ jobs:
   postgres_integration_tests:
     # Containers must run in Linux based operating systems
     runs-on: ubuntu-latest
-    # Service containers to run with `container-job`
-    services:
-      # Label used to access the service container
-      postgres:
-        # Docker Hub image
-        image: postgres
-        # Provide the password for postgres
-        env:
-          POSTGRES_PASSWORD: fluviopassword
-          POSTGRES_USER: fluvio
-        # Set health checks to wait until postgres has started
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-          --mount type=tmpfs,destination=/var/lib/postgresql/data
-        ports:
-          # Maps tcp port 5432 on service container to the host
-          - 5432:5432
     steps:
       - name: "Set some postgres settings"
         run: |
@@ -372,6 +352,7 @@ jobs:
           sleep 10
           docker logs ${{ job.services.postgres.id }}
           #PGPASSWORD=fluviopassword psql -U fluvio -c "select name,setting from pg_settings where name=wal_level";
+          make -C ./rust-connectors/sources/postgres postgres-docker
       - uses: AbsaOSS/k3d-action@v2
         name: "Create fluvio k3d Cluster"
         with:
@@ -400,10 +381,8 @@ jobs:
 
       - uses: actions/checkout@v2
       - name: cargo test on postgres crate
-        env:
-          FLUVIO_PG_DATABASE_URL: postgres://fluvio:fluviopassword@localhost:5432
         run: |
-          cargo test -p postgres-source
+          make -C ./rust-connectors/sources/postgres test-dev
 
   ## Job that follows the success of all required jobs in this workflow.
   ## Used by Bors to detect that all required jobs have completed successfully
