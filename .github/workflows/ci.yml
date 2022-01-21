@@ -371,7 +371,7 @@ jobs:
           docker exec ${{ job.services.postgres.id }} sh -c 'cat /var/lib/postgresql/data/postgresql.conf'
           sleep 10
           docker logs ${{ job.services.postgres.id }}
-          PGPASSWORD=fluviopassword psql -U fluvio -H localhost:5432 -c "select name,setting from pg_settings where name=wal_level";
+          #PGPASSWORD=fluviopassword psql -U fluvio -c "select name,setting from pg_settings where name=wal_level";
       - uses: AbsaOSS/k3d-action@v2
         name: "Create fluvio k3d Cluster"
         with:
