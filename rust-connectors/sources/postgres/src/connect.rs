@@ -142,10 +142,7 @@ impl PgConnector {
         let publication = &config.publication;
         let query = format!("DROP PUBLICATION IF EXISTS \"{}\"", publication);
         let _query_out = pg_client.query(query.as_str(), &[]).await?;
-        let query = format!(
-            "SELECT pg_drop_replication_slot('{}')",
-            config.slot
-        );
+        let query = format!("SELECT pg_drop_replication_slot('{}')", config.slot);
         let _query_out = pg_client.query(query.as_str(), &[]).await?;
         Ok(())
     }
