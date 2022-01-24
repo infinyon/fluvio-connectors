@@ -38,7 +38,7 @@ async fn postgres_simple() -> eyre::Result<()> {
             arraymap: None,
         },
     };
-    let mut connector = PgConnector::new(config)
+    let mut connector = PgConnector::new(config.clone())
         .await
         .expect("PgConnector failed to initialize");
     let _stream = fluvio_future::task::spawn(async move {
@@ -73,6 +73,7 @@ async fn postgres_simple() -> eyre::Result<()> {
     let table_drop = "DROP TABLE foo";
     let _ = pg_client.execute(table_drop, &[]).await?;
     let admin = fluvio::FluvioAdmin::connect().await?;
+    let _ = PgConnector::delete_replication_slot(&config).await?;
     let _ = admin.delete::<TopicSpec, String>(fluvio_topic).await;
 
     Ok(())

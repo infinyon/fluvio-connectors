@@ -10,7 +10,7 @@ use structopt::StructOpt;
 use url::Url;
 
 /// The Postgres CDC Connector for Fluvio.
-#[derive(StructOpt, Debug, JsonSchema)]
+#[derive(StructOpt, Debug, JsonSchema, Clone)]
 #[structopt(settings = &[structopt::clap::AppSettings::DeriveDisplayOrder])]
 pub struct PgConnectorOpt {
     /// The URL of the postgres leader database to stream from

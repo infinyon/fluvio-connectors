@@ -131,6 +131,24 @@ impl PgConnector {
         }
         Ok(())
     }
+    pub async fn delete_replication_slot(config: &PgConnectorOpt) -> eyre::Result<()> {
+        let (pg_client, conn) = config
+            .url
+            .as_str()
+            .parse::<tokio_postgres::Config>()?
+            .connect(NoTls)
+            .await?;
+        tokio::spawn(conn);
+        let publication = &config.publication;
+        let query = format!("DROP PUBLICATION IF EXISTS \"{}\"", publication);
+        let _query_out = pg_client.query(query.as_str(), &[]).await?;
+        let query = format!(
+            "SELECT pg_drop_replication_slot('{}')",
+            config.slot
+        );
+        let _query_out = pg_client.query(query.as_str(), &[]).await?;
+        Ok(())
+    }
 
     pub async fn process_stream(&mut self) -> eyre::Result<()> {
         let mut last_lsn = self.lsn.unwrap_or_else(|| PgLsn::from(0));
