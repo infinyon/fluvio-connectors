@@ -15,7 +15,9 @@ pub struct CommonSourceOpt {
     #[schemars(skip)]
     pub fluvio_topic: String,
 
-    /// The rust log level.
+    /// The rust log level. If it is not defined, `RUST_LOG` environment variable
+    /// will be used. If environment variable is not defined,
+    /// then INFO level will be used.
     #[structopt(long)]
     #[schemars(skip)]
     pub rust_log: Option<String>,
@@ -46,6 +48,9 @@ impl CommonSourceOpt {
     pub fn enable_logging(&self) {
         if let Some(ref rust_log) = self.rust_log {
             std::env::set_var("RUST_LOG", rust_log);
+        }
+        if std::env::var("RUST_LOG").is_err() {
+            std::env::set_var("RUST_LOG", "info")
         }
         fluvio_future::subscriber::init_logger();
     }
