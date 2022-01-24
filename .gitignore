@@ -11,3 +11,7 @@ Cargo.lock
 
 # Editors
 .idea/
+
+/container-build/test-connector
+/container-build/mqtt
+/container-build/syslog
