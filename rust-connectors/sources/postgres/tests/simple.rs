@@ -1,6 +1,7 @@
 use fluvio::metadata::topic::TopicSpec;
 use fluvio_connectors_common::opt::CommonSourceOpt;
 use fluvio_model_postgres::ReplicationEvent;
+use fluvio_model_postgres::{LogicalReplicationMessage, TupleData};
 use postgres_source::{PgConnector, PgConnectorOpt};
 use tokio_postgres::NoTls;
 use tokio_stream::StreamExt;
@@ -52,29 +53,112 @@ async fn postgres_simple() -> eyre::Result<()> {
         .connect(NoTls)
         .await?;
     tokio::spawn(conn);
+
     let table_create =
         r#"CREATE TABLE IF NOT EXISTS foo(ID SERIAL PRIMARY KEY, NAME TEXT NOT NULL)"#;
     let _ = pg_client.execute(table_create, &[]).await?;
     let consumer = fluvio::consumer(fluvio_topic.clone(), 0).await?;
     let mut stream = consumer.stream(fluvio::Offset::beginning()).await?;
-
-    for i in 1..10 {
-        let query = "INSERT INTO foo (NAME) VALUES($1)";
-        let name = format!("Fluvio - {}", i);
-        let _ = pg_client.query(query, &[&name]).await?;
+    let query = "INSERT INTO foo (NAME) VALUES($1)";
+    let name = format!("Fluvio - {}", 1);
+    let _ = pg_client.query(query, &[&name]).await?;
+    let mut received_relation = false;
+    let mut received_first_insert = false;
+    for i in 0..8 {
         let next = stream
             .next()
             .await
             .expect("Failed to get next fluvio steram")?;
         let next = next.value();
         let event: ReplicationEvent = serde_json::de::from_slice(next)?;
-        fluvio_future::tracing::info!("FLUVIO EVENT: {:?}", event)
+        println!("EVENT: {:?} COUNT : {:?}", event, i);
+        match event.message {
+            LogicalReplicationMessage::Relation(_relation) => {
+                received_relation = true;
+            }
+            LogicalReplicationMessage::Insert(insert) => {
+                received_first_insert = true;
+                let id = insert.tuple.0.get(0).expect("No first ID in tuple");
+                let out_name = insert.tuple.0.get(1).expect("No first ID in tuple");
+                match (id, out_name) {
+                    (TupleData::Int4(id), TupleData::String(out_name)) => {
+                        assert_eq!(
+                            &name, out_name,
+                            "insert name {} doesn't match fluvio stream name {}",
+                            name, out_name
+                        );
+                        assert_eq!(id, &1, "insert id {} doesn't match expected {}", name, 1);
+                    }
+                    other => {
+                        panic!("Unexpected tuple type {:?}", other);
+                    }
+                }
+            }
+            _other => {}
+        }
+    }
+    assert_eq!(
+        received_relation, true,
+        "Verifying that the fluvio stream has the table create"
+    );
+    assert_eq!(
+        received_first_insert, true,
+        "Verifying that the fluvio stream has first insert"
+    );
+
+    for i in 2..10 {
+        let query = "INSERT INTO foo (NAME) VALUES($1)";
+        let name = format!("Fluvio - {}", i);
+        let _ = pg_client.query(query, &[&name]).await?;
+    }
+    for i in 2..10 {
+        let _next = stream
+            .next()
+            .await
+            .expect("Failed to get next fluvio steram")?;
+        let next = stream
+            .next()
+            .await
+            .expect("Failed to get next fluvio steram")?;
+
+        let next = next.value();
+        let event: ReplicationEvent = serde_json::de::from_slice(next)?;
+        println!("FLUVIO EVENT: {:?}", event);
+        let name = format!("Fluvio - {}", i);
+        match event.message {
+            LogicalReplicationMessage::Insert(insert) => {
+                let id = insert.tuple.0.get(0).expect("No first ID in tuple");
+                let out_name = insert.tuple.0.get(1).expect("No first ID in tuple");
+                match (id, out_name) {
+                    (TupleData::Int4(id), TupleData::String(out_name)) => {
+                        assert_eq!(
+                            &name, out_name,
+                            "insert name {} doesn't match fluvio stream name {}",
+                            name, out_name
+                        );
+                        assert_eq!(id, &i, "insert id {} doesn't match expected {}", name, i);
+                    }
+                    other => {
+                        panic!("Unexpected tuple type {:?}", other);
+                    }
+                }
+            }
+            other => {
+                panic!("Received unexpected event {:?}", other);
+            }
+        }
+        let _next = stream
+            .next()
+            .await
+            .expect("Failed to get next fluvio steram")?;
     }
     let table_drop = "DROP TABLE foo";
     let _ = pg_client.execute(table_drop, &[]).await?;
+    /*
     let admin = fluvio::FluvioAdmin::connect().await?;
-    let _ = PgConnector::delete_replication_slot(&config).await?;
     let _ = admin.delete::<TopicSpec, String>(fluvio_topic).await;
+    let _ = PgConnector::delete_replication_slot(&config).await?;
+    */
 
     Ok(())
 }

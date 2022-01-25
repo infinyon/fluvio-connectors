@@ -10,7 +10,7 @@ run-dev:
 	FLUVIO_PG_DATABASE_URL=postgres://fluvio:fluviopassword@$(FLUVIO_PG_DATABASE_IP):5432 cargo run -- --fluvio-topic postgres
 
 test-dev:
-	FLUVIO_PG_DATABASE_URL=postgres://fluvio:fluviopassword@$(FLUVIO_PG_DATABASE_IP):5432 cargo test -- --nocapture
+	FLUVIO_PG_DATABASE_URL=postgres://fluvio:fluviopassword@$(FLUVIO_PG_DATABASE_IP):5432 RUST_BACKTRACE=full cargo test -- --nocapture
 
 psql:
 	docker exec -it fluvio-postgres psql -U fluvio
