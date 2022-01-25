@@ -8,7 +8,7 @@ use tokio_stream::StreamExt;
 use url::Url;
 
 #[tokio::test]
-async fn postgres_simple() -> eyre::Result<()> {
+async fn postgres_inserts() -> eyre::Result<()> {
     fluvio_future::subscriber::init_logger();
     let postgres_url = std::env::var("FLUVIO_PG_DATABASE_URL")
         .expect("No FLUVIO_PG_DATABASE_URL environment variable found");
@@ -154,11 +154,8 @@ async fn postgres_simple() -> eyre::Result<()> {
     }
     let table_drop = "DROP TABLE foo";
     let _ = pg_client.execute(table_drop, &[]).await?;
-    /*
     let admin = fluvio::FluvioAdmin::connect().await?;
     let _ = admin.delete::<TopicSpec, String>(fluvio_topic).await;
-    let _ = PgConnector::delete_replication_slot(&config).await?;
-    */
 
     Ok(())
 }

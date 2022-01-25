@@ -41,7 +41,7 @@ jobs:
       - name: Cargo test
         if: ${{ matrix.check == 'test' }}
         run: |
-          cargo test -- --skip postgres_simple
+          cargo test -- --skip postgres_
 
       - name: Cargo check
         if: ${{ matrix.check == 'check' }}
