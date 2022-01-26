@@ -1,0 +1,9 @@
+version: v1
+connector_version: dev
+name: fluvio-postgres
+type: postgres
+topic: postgres
+parameters:
+  url: postgres://postgres:mysecretpassword@postgres-leader-service:5432
+  publication: fluvio
+  slot: fluvio

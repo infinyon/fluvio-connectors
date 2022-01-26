@@ -1,0 +1,52 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-conf
+data:
+  postgres.conf: |
+    listen_addresses = '*'
+    wal_level = logical			# minimal, replica, or logical
+    max_wal_senders = 1		# max number of walsender processes
+    max_replication_slots = 1	# max number of replication slots
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "postgres-leader"
+  labels:
+    app: PostgresLeader
+spec:
+  containers:
+  - name: postgres-leader
+    image: "postgres:14.0"
+    args:
+      - "-c"
+      - "config_file=/etc/postgresql/postgres.conf"
+    env:
+    - name: POSTGRES_PASSWORD
+      value: mysecretpassword
+    volumeMounts:
+    - name: postgres-conf
+      mountPath: /etc/postgresql/
+  volumes:
+  - name: postgres-conf
+    configMap:
+      name: postgres-conf
+      items:
+      - key: postgres.conf
+        path: postgres.conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "postgres-leader-service"
+spec:
+  type: NodePort
+  selector:
+    app: PostgresLeader
+  ports:
+  - name: "postgres-leader-port"
+    protocol: TCP
+    nodePort: 5432
+    port: 5432

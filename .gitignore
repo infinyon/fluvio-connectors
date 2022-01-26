@@ -12,6 +12,8 @@ Cargo.lock
 # Editors
 .idea/
 
+# Other
+.env
 /container-build/test-connector
 /container-build/mqtt
 /container-build/syslog

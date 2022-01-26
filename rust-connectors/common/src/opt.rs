@@ -3,11 +3,11 @@ use schemars::JsonSchema;
 use structopt::clap::AppSettings;
 use structopt::StructOpt;
 
-use fluvio::{consumer, Fluvio, PartitionConsumer, TopicProducer};
+pub use fluvio::{consumer, Fluvio, PartitionConsumer, TopicProducer};
 
 use fluvio_controlplane_metadata::smartmodule::SmartModuleSpec;
 
-#[derive(StructOpt, Debug, JsonSchema)]
+#[derive(StructOpt, Debug, JsonSchema, Clone)]
 #[structopt(settings = &[AppSettings::DeriveDisplayOrder])]
 pub struct CommonSourceOpt {
     /// The topic where this connector sends or receives records
