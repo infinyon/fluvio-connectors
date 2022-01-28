@@ -23,6 +23,9 @@ struct MqttOpts {
     #[structopt(long)]
     mqtt_topic: String,
 
+    #[structopt(long)]
+    client_id: Option<String>,
+
     #[structopt(flatten)]
     #[schemars(flatten)]
     common: CommonSourceOpt,
@@ -62,24 +65,29 @@ fn main() -> Result<(), MqttConnectorError> {
     };
     // Enable logging, setting default RUST_LOG if not given
     opts.common.enable_logging();
-    if let Err(_) | Ok("") = std::env::var("RUST_LOG").as_deref() {
-        std::env::set_var("RUST_LOG", "mqtt=info");
-    }
+
     info!("Initializing MQTT connector");
 
     async_global_executor::block_on(async move {
         let mqtt_timeout_seconds = opts.timeout.unwrap_or(60);
-        let mqtt_url = opts.mqtt_url; //"mqtt.hsl.fi";
-        let mqtt_topic = opts.mqtt_topic; //"/hfp/v2/journey/#";
+        let mqtt_url = opts.mqtt_url;
+        let mqtt_topic = opts.mqtt_topic;
+
+        let client_id = opts
+            .client_id
+            .unwrap_or_else(|| uuid::Uuid::new_v4().to_string());
 
         info!(
-            "Using timeout={}s, url={}, fluvio-topic={}, mqtt-topic={}",
-            mqtt_timeout_seconds, mqtt_url, opts.common.fluvio_topic, mqtt_topic,
+            %mqtt_timeout_seconds,
+            %mqtt_url,
+            fluvio_topic=%opts.common.fluvio_topic,
+            %mqtt_topic,
+            %client_id
         );
 
         let timeout = std::time::Duration::from_secs(mqtt_timeout_seconds);
 
-        let mut mqttoptions = MqttOptions::new("rumqtt-async", mqtt_url, 1883);
+        let mut mqttoptions = MqttOptions::new(client_id, mqtt_url, 1883);
         mqttoptions.set_keep_alive(timeout);
         let producer = opts.common.create_producer().await?;
 
