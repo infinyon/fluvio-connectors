@@ -1,37 +1,35 @@
 use fluvio_connectors_common::fluvio::RecordKey;
-use fluvio_connectors_common::opt::CommonSourceOpt;
-use schemars::{schema_for, JsonSchema};
-use structopt::StructOpt;
 use tokio_stream::StreamExt;
 
 type Result<T, E = Box<dyn std::error::Error + Send + Sync + 'static>> = core::result::Result<T, E>;
 
-#[derive(StructOpt, Debug, JsonSchema)]
-pub struct HttpOpt {
-    /// Endpoint for the http connector
-    #[structopt(long)]
-    endpoint: String,
+//use reqwest::header::HeaderMap;
+use ::http::HttpOpt;
+use schemars::schema_for;
+use structopt::StructOpt;
 
-    /// HTTP body for the request
-    #[structopt(long)]
-    body: Option<String>,
+// Prototype function, using slow format!() - evaluate using ufmt
+/*
+fn format_headers(hdr_map: &HeaderMap) -> String {
+    let mut hdr_vec = Vec::with_capacity(hdr_map.len());
 
-    /// HTTP method used in the request. Eg. GET, POST, PUT...
-    #[structopt(long, default_value = "GET")]
-    method: String,
+    for (hdr_key, hdr_val) in hdr_map.iter() {
+        let mut hdr_kv_str: Vec<&str> = Vec::with_capacity(2);
+        hdr_kv_str.push(hdr_key.as_str());
 
-    /// Interval between each request
-    #[structopt(long, default_value = "300")]
-    interval: u64,
+        match hdr_val.to_str() {
+            Ok(v) => hdr_kv_str.push(v),
+            // Should we spend effort on lossy header when it isn't valid String?
+            Err(e) => hdr_kv_str.push(""),
+        };
 
-    /// Headers to include in the HTTP request, in "Key=Value" format
-    #[structopt(long = "header", alias = "headers")]
-    headers: Vec<String>,
+        hdr_vec.push(hdr_kv_str.join(": "));
+    }
 
-    #[structopt(flatten)]
-    #[schemars(flatten)]
-    common: CommonSourceOpt,
-}
+    hdr_vec.join("\n")
+} */
+
+use ::http::error::Error;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -59,9 +57,10 @@ async fn main() -> Result<()> {
 
     tracing::info!("Initializing HTTP connector");
     tracing::info!(
-        "Using interval={}s, method={}, topic={}, endpoint={}",
+        "Using interval={}s, method={}, output_format={}, topic={}, endpoint={}",
         opts.interval,
         opts.method,
+        opts.output_format,
         opts.common.fluvio_topic,
         opts.endpoint
     );
@@ -89,11 +88,30 @@ async fn main() -> Result<()> {
         if let Some(ref body) = opts.body {
             req = req.body(body.clone());
         }
-        let response = req.send().await?;
-        let response_text = response.text().await?;
+        let response = req.send().await.map_err(|e| Error::Request(e))?;
 
-        tracing::debug!(%response_text, "Producing");
-        producer.send(RecordKey::NULL, response_text).await?;
+        let response_version = format!("{:?}", response.version());
+        let response_status = response.status().to_string();
+        let response_headers_full = ::http::formatter::format_reqwest_headers(response.headers());
+        let response_headers_count = response.headers().len();
+
+        let response_body = response.text().await.map_err(|e| Error::ResponseBody(e))?;
+
+        let record_out = match opts.output_format.as_str() {
+            "full" => ::http::formatter::format_full_record(
+                &response_version,
+                &response_status,
+                response_headers_count,
+                &response_headers_full,
+                &response_body,
+            ),
+
+            _ => response_body,
+        };
+
+        tracing::debug!(%record_out, "Producing");
+
+        producer.send(RecordKey::NULL, record_out).await?;
     }
 
     Ok(())
