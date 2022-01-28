@@ -3,31 +3,9 @@ use tokio_stream::StreamExt;
 
 type Result<T, E = Box<dyn std::error::Error + Send + Sync + 'static>> = core::result::Result<T, E>;
 
-//use reqwest::header::HeaderMap;
 use ::http::HttpOpt;
 use schemars::schema_for;
 use structopt::StructOpt;
-
-// Prototype function, using slow format!() - evaluate using ufmt
-/*
-fn format_headers(hdr_map: &HeaderMap) -> String {
-    let mut hdr_vec = Vec::with_capacity(hdr_map.len());
-
-    for (hdr_key, hdr_val) in hdr_map.iter() {
-        let mut hdr_kv_str: Vec<&str> = Vec::with_capacity(2);
-        hdr_kv_str.push(hdr_key.as_str());
-
-        match hdr_val.to_str() {
-            Ok(v) => hdr_kv_str.push(v),
-            // Should we spend effort on lossy header when it isn't valid String?
-            Err(e) => hdr_kv_str.push(""),
-        };
-
-        hdr_vec.push(hdr_kv_str.join(": "));
-    }
-
-    hdr_vec.join("\n")
-} */
 
 use ::http::error::Error;
 
