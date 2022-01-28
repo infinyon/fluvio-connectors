@@ -1,10 +1,9 @@
 test:
 	bats ./tests/simple.bats
 
-POSTGRES_NAME=fluvio-postgres-source
-
+POSTGRES_NAME=fluvio-postgres-sink
 postgres:
-	docker run --name $(POSTGRES_NAME) -e POSTGRES_PASSWORD=fluviopassword -e POSTGRES_USER=fluvio -d postgres -c 'wal_level=logical'
+	docker run --name $(POSTGRES_NAME) -e POSTGRES_PASSWORD=fluviopassword -e POSTGRES_USER=fluvio -d postgres
 
 FLUVIO_PG_DATABASE_IP=$(shell docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(POSTGRES_NAME))
 
