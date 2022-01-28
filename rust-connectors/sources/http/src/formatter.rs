@@ -1,3 +1,6 @@
+// Pre-Allocations ::with_capacity()
+#![allow(clippy::vec_init_then_push)]
+
 /// Assembles and allocates the final full Record string
 pub fn format_full_record(
     version: &str,
