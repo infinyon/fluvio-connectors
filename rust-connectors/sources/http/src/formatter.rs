@@ -38,3 +38,47 @@ pub fn format_reqwest_headers(hdr_map: &reqwest::header::HeaderMap) -> String {
 
     hdr_vec.join("\n")
 }
+
+#[cfg(test)]
+#[allow(unused_imports)]
+mod tests {
+    use super::*;
+
+    use reqwest::header::{HeaderName, HeaderValue};
+
+    use rstest::rstest;
+    use rstest_reuse::{self, *};
+
+    fn data_test_header(
+        k_prefix: &str,
+        v_prefix: &str,
+        count_header: usize,
+    ) -> (reqwest::header::HeaderMap, String) {
+        let mut test_header_input = reqwest::header::HeaderMap::new();
+        let mut expect_output_vec: Vec<String> = Vec::with_capacity(count_header);
+
+        if count_header > 0 {
+            for x in 1..count_header {
+                let hdr_value = HeaderValue::from_str(&format!("{}-val-{}", v_prefix, x))
+                    .expect("data_test_header hdr_value Error");
+
+                let hdr_name =
+                    HeaderName::from_lowercase(format!("{}-key-{}", k_prefix, x).as_bytes())
+                        .expect("data_test_header hdr_name Error");
+
+                if test_header_input.append(hdr_name, hdr_value) == false {
+                    panic!("data_test_header ret.append() -> false!");
+                }
+                expect_output_vec.push(format!("{}-key: {}-val", k_prefix, v_prefix));
+            }
+        }
+
+        (test_header_input, expect_output_vec.join("\n"))
+    }
+
+    #[rstest(fuzz_input, case("basic"), case("🦄"))]
+    fn test_valid_format_reqwest_one_header(fuzz_input: &str) {
+        let (test_header_map, expected_result) = data_test_header(fuzz_input, fuzz_input, 1);
+        assert_eq!(format_reqwest_headers(&test_header_map), expected_result);
+    }
+}
