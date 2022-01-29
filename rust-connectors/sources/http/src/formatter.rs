@@ -58,27 +58,61 @@ mod tests {
         let mut expect_output_vec: Vec<String> = Vec::with_capacity(count_header);
 
         if count_header > 0 {
-            for x in 1..count_header {
-                let hdr_value = HeaderValue::from_str(&format!("{}-val-{}", v_prefix, x))
-                    .expect("data_test_header hdr_value Error");
+            for x in 0..count_header {
+                let (hdr_key, hdr_val) = (
+                    format!("x-{}-key-{}", k_prefix, x),
+                    format!("x-{}-val-{}", v_prefix, x),
+                );
 
-                let hdr_name =
-                    HeaderName::from_lowercase(format!("{}-key-{}", k_prefix, x).as_bytes())
-                        .expect("data_test_header hdr_name Error");
+                let hdr_value =
+                    HeaderValue::from_str(&hdr_val).expect("data_test_header hdr_value Error");
 
-                if test_header_input.append(hdr_name, hdr_value) == false {
-                    panic!("data_test_header ret.append() -> false!");
+                let hdr_name = HeaderName::from_bytes(&hdr_key.as_bytes())
+                    .expect("data_test_header hdr_name Error");
+
+                if test_header_input.append(hdr_name, hdr_value) == true {
+                    panic!("data_test_header ret.append -> true! duplicate?!");
                 }
-                expect_output_vec.push(format!("{}-key: {}-val", k_prefix, v_prefix));
+                expect_output_vec.push(format!("{}: {}", hdr_key, hdr_val));
             }
         }
 
         (test_header_input, expect_output_vec.join("\n"))
     }
 
-    #[rstest(fuzz_input, case("basic"), case("🦄"))]
+    #[rstest(fuzz_input, case("basic"))]
     fn test_valid_format_reqwest_one_header(fuzz_input: &str) {
         let (test_header_map, expected_result) = data_test_header(fuzz_input, fuzz_input, 1);
         assert_eq!(format_reqwest_headers(&test_header_map), expected_result);
+    }
+    // Unicorns not welcome as headers :(
+    #[rstest(fuzz_input, case("🦄"))]
+    #[should_panic]
+    fn test_invalid_format_reqwest_one_header(fuzz_input: &str) {
+        let (test_header_map, expected_result) = data_test_header(fuzz_input, fuzz_input, 1);
+        assert_eq!(format_reqwest_headers(&test_header_map), expected_result);
+    }
+
+    #[rstest(fuzz_body_input, case("basic"), case("🦄"))]
+    fn test_valid_format_full_record(fuzz_body_input: &str) {
+        let header_count = 1;
+
+        let (_, expected_headers) = data_test_header("basic", "basic", header_count);
+
+        let (version, status) = ("HTTP/1.1", "200");
+
+        let expected_record = format!(
+            "{} {}\n{}\n\n{}",
+            version, status, expected_headers, fuzz_body_input
+        );
+        let got_record = format_full_record(
+            version,
+            status,
+            header_count,
+            &expected_headers,
+            fuzz_body_input,
+        );
+
+        assert_eq!(got_record, expected_record);
     }
 }
