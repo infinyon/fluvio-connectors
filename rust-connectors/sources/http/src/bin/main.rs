@@ -38,12 +38,11 @@ async fn main() -> Result<()> {
 
     tracing::info!("Initializing HTTP connector");
     tracing::info!(
-        "Using interval={}s, method={}, output_format={}, topic={}, endpoint={}",
-        opts.interval,
-        opts.method,
-        opts.output_format,
-        opts.common.fluvio_topic,
-        opts.endpoint
+        interval = %opts.interval,
+        method = %opts.method,
+    topic = %opts.common.fluvio_topic,
+    output_format = %opts.output_format,
+    endpoint = %opts.endpoint
     );
 
     let timer = tokio::time::interval(tokio::time::Duration::from_secs(opts.interval));

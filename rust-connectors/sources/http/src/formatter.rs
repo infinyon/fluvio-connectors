@@ -1,5 +1,4 @@
-// Pre-Allocations ::with_capacity()
-#![allow(clippy::vec_init_then_push)]
+//! Output Record Formatting
 
 /// Assembles and allocates the final full Record string
 pub fn format_full_record(
@@ -10,9 +9,7 @@ pub fn format_full_record(
     body: &str,
 ) -> String {
     let mut record_out_parts: Vec<String> = Vec::with_capacity(4);
-    let mut status_line: Vec<String> = Vec::with_capacity(2);
-    status_line.push(version.to_owned());
-    status_line.push(status.to_owned());
+    let status_line: Vec<String> = vec![version.to_owned(), status.to_owned()];
     record_out_parts.push(status_line.join(" "));
     if header_count > 0 {
         record_out_parts.push(headers.to_owned());
