@@ -40,9 +40,9 @@ async fn main() -> Result<()> {
     tracing::info!(
         interval = %opts.interval,
         method = %opts.method,
-    topic = %opts.common.fluvio_topic,
-    output_format = %opts.output_format,
-    endpoint = %opts.endpoint
+        topic = %opts.common.fluvio_topic,
+        output_format = %opts.output_format,
+        endpoint = %opts.endpoint
     );
 
     let timer = tokio::time::interval(tokio::time::Duration::from_secs(opts.interval));
@@ -78,6 +78,7 @@ async fn main() -> Result<()> {
         let response_body = response.text().await.map_err(|e| Error::ResponseBody(e))?;
 
         let record_out = match opts.output_format.as_str() {
+            "body" => response_body,
             "full" => ::http::formatter::format_full_record(
                 &response_version,
                 &response_status,
@@ -86,7 +87,7 @@ async fn main() -> Result<()> {
                 &response_body,
             ),
 
-            _ => response_body,
+            _ => panic!("Unsupported output_format: {}", opts.output_format.as_str()),
         };
 
         tracing::debug!(%record_out, "Producing");
