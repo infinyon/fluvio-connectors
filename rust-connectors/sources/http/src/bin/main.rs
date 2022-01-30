@@ -70,23 +70,19 @@ async fn main() -> Result<()> {
         }
         let response = req.send().await.map_err(|e| Error::Request(e))?;
 
-        let response_version = format!("{:?}", response.version());
-        let response_status = response.status().to_string();
-        let response_headers_full = ::http::formatter::format_reqwest_headers(response.headers());
-        let response_headers_count = response.headers().len();
+        let formatter = match opts.output_format.as_str() {
+            "full" => Some(
+                ::http::formatter::HttpResponseRecord::try_from(&response)
+                    .map_err(|e| Error::Record(e))?,
+            ),
+            _ => None,
+        };
 
         let response_body = response.text().await.map_err(|e| Error::ResponseBody(e))?;
 
         let record_out = match opts.output_format.as_str() {
             "body" => response_body,
-            "full" => ::http::formatter::format_full_record(
-                &response_version,
-                &response_status,
-                response_headers_count,
-                &response_headers_full,
-                &response_body,
-            ),
-
+            "full" => formatter.unwrap().record(Some(&response_body)),
             _ => panic!("Unsupported output_format: {}", opts.output_format.as_str()),
         };
 
