@@ -1,37 +1,16 @@
+// Techdebt: Granular errors
+#![allow(clippy::redundant_closure)]
+
 use fluvio_connectors_common::fluvio::RecordKey;
-use fluvio_connectors_common::opt::CommonSourceOpt;
-use schemars::{schema_for, JsonSchema};
-use structopt::StructOpt;
 use tokio_stream::StreamExt;
 
 type Result<T, E = Box<dyn std::error::Error + Send + Sync + 'static>> = core::result::Result<T, E>;
 
-#[derive(StructOpt, Debug, JsonSchema)]
-pub struct HttpOpt {
-    /// Endpoint for the http connector
-    #[structopt(long)]
-    endpoint: String,
+use ::http::HttpOpt;
+use schemars::schema_for;
+use structopt::StructOpt;
 
-    /// HTTP body for the request
-    #[structopt(long)]
-    body: Option<String>,
-
-    /// HTTP method used in the request. Eg. GET, POST, PUT...
-    #[structopt(long, default_value = "GET")]
-    method: String,
-
-    /// Interval between each request
-    #[structopt(long, default_value = "300")]
-    interval: u64,
-
-    /// Headers to include in the HTTP request, in "Key=Value" format
-    #[structopt(long = "header", alias = "headers")]
-    headers: Vec<String>,
-
-    #[structopt(flatten)]
-    #[schemars(flatten)]
-    common: CommonSourceOpt,
-}
+use ::http::error::Error;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -59,11 +38,11 @@ async fn main() -> Result<()> {
 
     tracing::info!("Initializing HTTP connector");
     tracing::info!(
-        "Using interval={}s, method={}, topic={}, endpoint={}",
-        opts.interval,
-        opts.method,
-        opts.common.fluvio_topic,
-        opts.endpoint
+        interval = %opts.interval,
+        method = %opts.method,
+        topic = %opts.common.fluvio_topic,
+        output_format = %opts.output_format,
+        endpoint = %opts.endpoint
     );
 
     let timer = tokio::time::interval(tokio::time::Duration::from_secs(opts.interval));
@@ -89,11 +68,27 @@ async fn main() -> Result<()> {
         if let Some(ref body) = opts.body {
             req = req.body(body.clone());
         }
-        let response = req.send().await?;
-        let response_text = response.text().await?;
+        let response = req.send().await.map_err(|e| Error::Request(e))?;
 
-        tracing::debug!(%response_text, "Producing");
-        producer.send(RecordKey::NULL, response_text).await?;
+        let formatter = match opts.output_format.as_str() {
+            "full" => Some(
+                ::http::formatter::HttpResponseRecord::try_from(&response)
+                    .map_err(|e| Error::Record(e))?,
+            ),
+            _ => None,
+        };
+
+        let response_body = response.text().await.map_err(|e| Error::ResponseBody(e))?;
+
+        let record_out = match opts.output_format.as_str() {
+            "body" => response_body,
+            "full" => formatter.unwrap().record(Some(&response_body)),
+            _ => panic!("Unsupported output_format: {}", opts.output_format.as_str()),
+        };
+
+        tracing::debug!(%record_out, "Producing");
+
+        producer.send(RecordKey::NULL, record_out).await?;
     }
 
     Ok(())
