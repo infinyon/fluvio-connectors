@@ -1,0 +1,6 @@
+version: dev
+name: cat-facts-connector
+type: cat-facts
+create_topic: true
+topic: cat-facts-random
+direction: source
