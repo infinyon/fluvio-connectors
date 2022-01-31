@@ -75,6 +75,7 @@ pub struct PgConnector {
     relations: BTreeMap<u32, Table>,
 }
 
+#[derive(Debug)]
 pub struct Table {
     name: String,
     columns: Vec<Column>,
@@ -107,7 +108,6 @@ impl PgConnector {
             let event: ReplicationEvent = serde_json::de::from_slice(next)?;
             match event.message {
                 LogicalReplicationMessage::Insert(insert) => {
-                    tracing::error!("Insert: {:?}", insert);
                     if let Some(table) = self.relations.get(&insert.rel_id) {
                         let sql = Self::to_table_insert(table, &insert);
                         if let Err(e) = self.pg_client.execute(sql.as_str(), &[]).await {
@@ -125,6 +125,8 @@ impl PgConnector {
                         columns: rel.columns,
                     };
                     if let Some(old_table) = self.relations.get_mut(&rel.rel_id) {
+                        tracing::error!("TABLE ALTER for : {:?} to {:?}", new_table, *old_table);
+
                         *old_table = new_table;
                     } else {
                         let sql = Self::to_table_create(&new_table);
@@ -147,31 +149,29 @@ impl PgConnector {
     }
     pub fn to_table_insert(table: &Table, insert: &InsertBody) -> String {
         use fluvio_model_postgres::TupleData;
-        let mut sql = format!("INSERT INTO {} VALUES (", table.name);
-        for (count, (_column, tuple)) in table.columns.iter().zip(insert.tuple.0.iter()).enumerate() {
+        let mut values : Vec<String> = Vec::new();
+        let mut col_names: Vec<String> = Vec::new();
+        for (column, tuple) in table.columns.iter().zip(insert.tuple.0.iter()) {
             match tuple {
-                TupleData::Bool(v) => sql.push_str(&format!("{v}")),
-                TupleData::Char(c) => sql.push_str(&format!("{c}")),
-                TupleData::Int2(i) => sql.push_str(&format!("{i}")),
-                TupleData::Int4(i) => sql.push_str(&format!("{i}")),
-                TupleData::Int8(i) => sql.push_str(&format!("{i}")),
-                TupleData::Oid(i)  => sql.push_str(&format!("{i}")),
-                TupleData::Float4(i)  => sql.push_str(&format!("{i}")),
-                TupleData::Float8(i)  => sql.push_str(&format!("{i}")),
-                TupleData::String(i)  => sql.push_str(&format!("'{i}'")),
+                TupleData::Bool(v)    => values.push(format!("{v}")),
+                TupleData::Char(c)    => values.push(format!("{c}")),
+                TupleData::Int2(i)    => values.push(format!("{i}")),
+                TupleData::Int4(i)    => values.push(format!("{i}")),
+                TupleData::Int8(i)    => values.push(format!("{i}")),
+                TupleData::Oid(i)     => values.push(format!("{i}")),
+                TupleData::Float4(i)  => values.push(format!("{i}")),
+                TupleData::Float8(i)  => values.push(format!("{i}")),
+                TupleData::String(i)  => values.push(format!("'{i}'")),
                 other => {
                     tracing::error!("Uncaugh tuple type {:?}", other);
                     continue;
                 }
             }
-
-            if count < table.columns.len() - 1 {
-                sql.push_str(",");
-            }
+            col_names.push(column.name.clone());
         }
-
-        sql.push_str(")");
-        sql
+        let values = values.join(",");
+        let columns = col_names.join(",");
+        format!("INSERT INTO {} ({}) VALUES ({})", table.name, columns, values)
     }
 
     pub fn to_table_create(table: &Table) -> String {
@@ -216,8 +216,8 @@ impl PgConnector {
                 ]
                 );
 
-        let mut sql = format!("CREATE TABLE {}(", table.name);
-        let mut primary_keys = Vec::new();
+        let mut primary_keys : Vec<String> = Vec::new();
+        let mut columns : Vec<String> = Vec::new();
         for (count, column) in table.columns.iter().enumerate() {
 
             let column_type = if let Some(column_type) = type_map.get(&column.type_id) {
@@ -228,15 +228,16 @@ impl PgConnector {
             };
             let column_name = &column.name;
             if column.flags == 1 {
-                primary_keys.push(column_name);
+                primary_keys.push(column_name.clone());
             }
-            sql.push_str(&format!("{} {}", column_name, column_type));
-            if count < table.columns.len() - 1 {
-                sql.push_str(",");
-            }
+            columns.push(format!("{} {}", column_name, column_type));
         }
-
-        sql.push_str(")");
-        sql
+        /*
+        if !primary_keys.is_empty() {
+            columns.push(format!("PRIMARY KEY ({})", primary_keys.join(",")));
+        }
+        */
+        let columns = columns.join(",");
+        format!("CREATE TABLE {}({})", table.name, columns)
     }
 }
