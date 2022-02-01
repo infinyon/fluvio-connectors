@@ -1,13 +1,14 @@
 # Github Workflow
 
-Conventional commits are preferred for the commit messages:
-https://www.conventionalcommits.org/en/
+For commits messages contributor can choose a style or use the conventional commits:
+- https://www.conventionalcommits.org/en/
 
 The below should be run in the development environment:
 
 - cargo fmt
 - cargo test
-- make test  _integration tests_
+- cargo clippy
+- make test                _integration tests_
 
 Bors is used with the squash-merge functionality to keep the combined commit log clean.
 
