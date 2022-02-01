@@ -1,3 +1,22 @@
+# Github Workflow
+
+Conventional commits are preferred for the commit messages:
+https://www.conventionalcommits.org/en/
+
+The below should be run in the development environment:
+
+- cargo fmt
+- cargo test
+- make test  _integration tests_
+
+Bors is used with the squash-merge functionality to keep the combined commit log clean.
+
+This means that each originating PR is closed and it's commits are combined into a separate PR.
+
+This will not affect contribution statistics as the new bors PR is owned by the original contributor.
+
+The originating PR will be closed with the informational prefix [Merged by Bors] 
+
 # Adding a new connector
 
 A given connector must have a `metadata` subcommand. This subcommand will
