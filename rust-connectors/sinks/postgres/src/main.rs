@@ -1,9 +1,6 @@
+use postgres_sink::{PgConnector, PgConnectorOpt};
 use schemars::schema_for;
 use structopt::StructOpt;
-use postgres_sink::{
-    PgConnectorOpt,
-    PgConnector,
-};
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {

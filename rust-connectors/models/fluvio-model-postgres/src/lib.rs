@@ -42,7 +42,7 @@ pub enum LogicalReplicationMessage {
 pub struct Tuple(pub Vec<TupleData>);
 
 /// A column as it appears in the replication stream
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Column {
     /// Currently may be 0 or 1, representing whether this column is part of the key.
     pub flags: i8,
@@ -185,7 +185,7 @@ pub struct DeleteBody {
     pub rel_id: u32,
     /// The tuple of data that used to belong in this row.
     pub old_tuple: Option<Tuple>,
-    /// A tuple of the key columns of htis relation.
+    /// A tuple of the key columns of this relation.
     pub key_tuple: Option<Tuple>,
 }
 

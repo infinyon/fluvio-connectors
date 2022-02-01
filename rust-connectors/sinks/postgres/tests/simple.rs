@@ -1,16 +1,12 @@
-
 use fluvio::metadata::topic::TopicSpec;
 use fluvio_connectors_common::opt::CommonSourceOpt;
 use fluvio_model_postgres::ReplicationEvent;
 use fluvio_model_postgres::{LogicalReplicationMessage, TupleData};
 //use postgres_source::{PgConnector, PgConnectorOpt};
 //use tokio_postgres::NoTls;
+use postgres_sink::{PgConnector, PgConnectorOpt};
 use tokio_stream::StreamExt;
 use url::Url;
-use postgres_sink::{
-    PgConnector,
-    PgConnectorOpt,
-};
 
 #[tokio::test]
 async fn postgres_inserts() -> eyre::Result<()> {
@@ -29,23 +25,20 @@ async fn postgres_inserts() -> eyre::Result<()> {
         )
         .await;
     let producer = fluvio.topic_producer(fluvio_topic.clone()).await?;
-    let mut connector = PgConnector::new(
-        PgConnectorOpt {
-            url: Url::parse(&postgres_url).expect("Failed to parse connector url"),
-            resume_timeout: 1000,
-            skip_setup: false,
-            common: CommonSourceOpt {
-                fluvio_topic: fluvio_topic.clone(),
-                rust_log: None,
-                filter: None,
-                map: None,
-                arraymap: None,
-            },
-        }
-    ).await?;
-    tokio::spawn(async move {
-        connector.start().await
-    });
+    let mut connector = PgConnector::new(PgConnectorOpt {
+        url: Url::parse(&postgres_url).expect("Failed to parse connector url"),
+        resume_timeout: 1000,
+        skip_setup: false,
+        common: CommonSourceOpt {
+            fluvio_topic: fluvio_topic.clone(),
+            rust_log: None,
+            filter: None,
+            map: None,
+            arraymap: None,
+        },
+    })
+    .await?;
+    tokio::spawn(async move { connector.start().await });
 
     for line in JUMBO_TABLE.lines() {
         producer.send(fluvio::RecordKey::NULL, line).await?;
@@ -54,7 +47,7 @@ async fn postgres_inserts() -> eyre::Result<()> {
     Ok(())
 }
 
-const _INPUT_RECORDS : &'static str = r#"{"wal_start":24097928,"wal_end":24097928,"timestamp":696613621467512,"message":{"type":"begin","final_lsn":24098592,"timestamp":696613620215019,"xid":735}}
+const _INPUT_RECORDS: &'static str = r#"{"wal_start":24097928,"wal_end":24097928,"timestamp":696613621467512,"message":{"type":"begin","final_lsn":24098592,"timestamp":696613620215019,"xid":735}}
 {"wal_start":24098696,"wal_end":24098696,"timestamp":696613621467676,"message":{"type":"commit","flags":0,"commit_lsn":24098592,"end_lsn":24098696,"timestamp":696613620215019}}
 {"wal_start":24098744,"wal_end":24098744,"timestamp":696613621732391,"message":{"type":"begin","final_lsn":24266912,"timestamp":696613621710969,"xid":736}}
 {"wal_start":24268712,"wal_end":24268712,"timestamp":696613621732916,"message":{"type":"commit","flags":0,"commit_lsn":24266912,"end_lsn":24268712,"timestamp":696613621710969}}
@@ -86,7 +79,7 @@ const _INPUT_RECORDS : &'static str = r#"{"wal_start":24097928,"wal_end":2409792
 {"wal_start":24270384,"wal_end":24270384,"timestamp":696613621923021,"message":{"type":"begin","final_lsn":24270520,"timestamp":696613621915257,"xid":745}}
 {"wal_start":24270384,"wal_end":24270384,"timestamp":696613621923033,"message":{"type":"insert","rel_id":16387,"tuple":[{"Int4":9},{"String":"Fluvio - 9"}]}}
 {"wal_start":24270568,"wal_end":24270568,"timestamp":696613621923037,"message":{"type":"commit","flags":0,"commit_lsn":24270520,"end_lsn":24270568,"timestamp":696613621915257}}"#;
-const JUMBO_TABLE : &'static str = r#"
+const JUMBO_TABLE: &'static str = r#"
 {"wal_start":0,"wal_end":0,"timestamp":696700315397034,"message":{"type":"relation","rel_id":16431,"namespace":"public","name":"better_big_table","replica_identity":"Default","columns":[{"flags":0,"name":"bigint_col","type_id":20,"type_modifier":-1},{"flags":0,"name":"bigserial_col","type_id":20,"type_modifier":-1},{"flags":0,"name":"bit_col","type_id":1560,"type_modifier":1},{"flags":0,"name":"boolean_col","type_id":16,"type_modifier":-1},{"flags":0,"name":"box_col","type_id":603,"type_modifier":-1},{"flags":0,"name":"bytea_col","type_id":17,"type_modifier":-1},{"flags":0,"name":"character_col","type_id":1042,"type_modifier":5},{"flags":0,"name":"cidr_col","type_id":650,"type_modifier":-1},{"flags":0,"name":"circle_col","type_id":718,"type_modifier":-1},{"flags":0,"name":"date_col","type_id":1082,"type_modifier":-1},{"flags":0,"name":"inet_col","type_id":869,"type_modifier":-1},{"flags":0,"name":"integer_col","type_id":23,"type_modifier":-1},{"flags":0,"name":"interval_col","type_id":1186,"type_modifier":-1},{"flags":0,"name":"json_col","type_id":114,"type_modifier":-1},{"flags":0,"name":"jsonb_col","type_id":3802,"type_modifier":-1},{"flags":0,"name":"line_col","type_id":628,"type_modifier":-1},{"flags":0,"name":"lseg_col","type_id":601,"type_modifier":-1},{"flags":0,"name":"macaddr_col","type_id":829,"type_modifier":-1},{"flags":0,"name":"money_col","type_id":790,"type_modifier":-1},{"flags":0,"name":"numeric_col","type_id":1700,"type_modifier":-1},{"flags":0,"name":"path_col","type_id":602,"type_modifier":-1},{"flags":0,"name":"pg_lsn_col","type_id":3220,"type_modifier":-1},{"flags":0,"name":"point_col","type_id":600,"type_modifier":-1},{"flags":0,"name":"polygon_col","type_id":604,"type_modifier":-1},{"flags":0,"name":"real_col","type_id":700,"type_modifier":-1},{"flags":0,"name":"smallint_col","type_id":21,"type_modifier":-1},{"flags":0,"name":"smallserial_col","type_id":21,"type_modifier":-1},{"flags":0,"name":"text_col","type_id":25,"type_modifier":-1},{"flags":0,"name":"time_col","type_id":1083,"type_modifier":-1},{"flags":0,"name":"timestamp_col","type_id":1114,"type_modifier":-1},{"flags":0,"name":"tsquery_col","type_id":3615,"type_modifier":-1},{"flags":0,"name":"tsvector_col","type_id":3614,"type_modifier":-1},{"flags":0,"name":"txid_snapshot_col","type_id":2970,"type_modifier":-1},{"flags":0,"name":"uuid_col","type_id":2950,"type_modifier":-1},{"flags":0,"name":"xml_col","type_id":142,"type_modifier":-1}]}}
 {"wal_start":25030928,"wal_end":25030928,"timestamp":696700315397162,"message":{"type":"insert","rel_id":16431,"tuple":[{"Int8":10},{"Int8":1},"Null","Null","Null","Null","Null","Null","Null","Null","Null","Null","Null","Null","Null","Null","Null","Null","Null","Null","Null","Null","Null","Null","Null","Null",{"Int2":1},"Null","Null","Null","Null","Null","Null","Null","Null"]}}
 "#;

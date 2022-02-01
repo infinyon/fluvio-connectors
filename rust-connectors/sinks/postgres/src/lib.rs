@@ -1,6 +1,5 @@
+#[macro_use]
+extern crate lazy_static;
 
 mod opt;
-pub use opt::{
-    PgConnectorOpt,
-    PgConnector,
-};
+pub use opt::{PgConnector, PgConnectorOpt};

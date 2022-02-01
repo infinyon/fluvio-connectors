@@ -26,3 +26,4 @@ color-backtrace = { version = "0.5" }
 # TODO: Remove these
 tokio-postgres = { git = "https://github.com/MaterializeInc/rust-postgres", branch = "mz-0.7.2" }
 postgres-protocol = { git = "https://github.com/MaterializeInc/rust-postgres", branch = "mz-0.7.2" }
+lazy_static = "1.4.0"
