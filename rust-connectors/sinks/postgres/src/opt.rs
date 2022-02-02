@@ -1,10 +1,10 @@
 use fluvio_connectors_common::opt::CommonSourceOpt;
 use schemars::JsonSchema;
+use std::cmp::Ordering;
 use std::collections::HashMap;
 use structopt::StructOpt;
 use url::Url;
 
-use fluvio::metadata::topic::TopicSpec;
 use fluvio::{Fluvio, Offset, PartitionConsumer};
 use fluvio_model_postgres::{
     Column, DeleteBody, InsertBody, LogicalReplicationMessage, ReplicationEvent, TupleData,
@@ -53,8 +53,6 @@ impl PgConnectorOpt {}
 
 /// A Fluvio connector for Postgres CDC.
 pub struct PgConnector {
-    /// The connector configuration.
-    config: PgConnectorOpt,
     /// The Postgres client for streaming replication changes.
     pg_client: Client,
     /// The Fluvio producer for recording change events.
@@ -86,7 +84,6 @@ impl PgConnector {
         tokio::spawn(conn);
         Ok(Self {
             consumer,
-            config,
             pg_client,
             relations: BTreeMap::new(),
         })
@@ -154,76 +151,81 @@ impl PgConnector {
     }
     pub fn to_table_alter(new_table: &Table, old_table: &Table) -> Vec<String> {
         let mut alters: Vec<String> = Vec::new();
-        if new_table.columns.len() == old_table.columns.len() {
-            if new_table.name != old_table.name {
-                alters.push(format!(
-                    "ALTER TABLE {} RENAME TO {}",
-                    old_table.name, new_table.name
-                ));
-            } else {
-                for (new_col, old_col) in new_table.columns.iter().zip(old_table.columns.iter()) {
-                    if new_col.name != old_col.name {
-                        alters.push(format!(
-                            "ALTER TABLE {} RENAME COLUMN {} TO {}",
-                            new_table.name, old_col.name, new_col.name
-                        ));
-                    }
-                    if new_col.type_id != old_col.type_id {
-                        let column_type = if let Some(column_type) = TYPE_MAP.get(&new_col.type_id)
-                        {
-                            column_type
-                        } else {
-                            tracing::error!(
-                                "Failed to find type id: {:?} for column alter",
-                                new_col.type_id
-                            );
-                            continue;
-                        };
-                        alters.push(format!(
-                            "ALTER TABLE {} ALTER COLUMN {} TYPE {}",
-                            new_table.name, new_col.name, column_type
-                        ));
+        match new_table.columns.len().cmp(&old_table.columns.len()) {
+            Ordering::Equal => {
+                if new_table.name != old_table.name {
+                    alters.push(format!(
+                        "ALTER TABLE {} RENAME TO {}",
+                        old_table.name, new_table.name
+                    ));
+                } else {
+                    for (new_col, old_col) in new_table.columns.iter().zip(old_table.columns.iter())
+                    {
+                        if new_col.name != old_col.name {
+                            alters.push(format!(
+                                "ALTER TABLE {} RENAME COLUMN {} TO {}",
+                                new_table.name, old_col.name, new_col.name
+                            ));
+                        }
+                        if new_col.type_id != old_col.type_id {
+                            let column_type =
+                                if let Some(column_type) = TYPE_MAP.get(&new_col.type_id) {
+                                    column_type
+                                } else {
+                                    tracing::error!(
+                                        "Failed to find type id: {:?} for column alter",
+                                        new_col.type_id
+                                    );
+                                    continue;
+                                };
+                            alters.push(format!(
+                                "ALTER TABLE {} ALTER COLUMN {} TYPE {}",
+                                new_table.name, new_col.name, column_type
+                            ));
+                        }
                     }
                 }
             }
-        } else if new_table.columns.len() > old_table.columns.len() {
-            // This is a ADD column
-            let old_cols: Vec<String> = old_table.columns.iter().map(|c| c.name.clone()).collect();
-            let new_columns: Vec<Column> = new_table
-                .columns
-                .clone()
-                .into_iter()
-                .filter(|col| !old_cols.contains(&col.name))
-                .collect();
-            for column in new_columns {
-                let column_type = if let Some(column_type) = TYPE_MAP.get(&column.type_id) {
-                    column_type
-                } else {
-                    tracing::error!("Failed to find type id: {:?}", column.type_id);
-                    continue;
-                };
-                alters.push(format!(
-                    "ALTER TABLE {} ADD COLUMN {} {}",
-                    new_table.name, column.name, column_type
-                ));
+            Ordering::Greater => {
+                // This is a ADD column
+                let old_cols: Vec<String> =
+                    old_table.columns.iter().map(|c| c.name.clone()).collect();
+                let new_columns: Vec<Column> = new_table
+                    .columns
+                    .clone()
+                    .into_iter()
+                    .filter(|col| !old_cols.contains(&col.name))
+                    .collect();
+                for column in new_columns {
+                    let column_type = if let Some(column_type) = TYPE_MAP.get(&column.type_id) {
+                        column_type
+                    } else {
+                        tracing::error!("Failed to find type id: {:?}", column.type_id);
+                        continue;
+                    };
+                    alters.push(format!(
+                        "ALTER TABLE {} ADD COLUMN {} {}",
+                        new_table.name, column.name, column_type
+                    ));
+                }
             }
-        } else if new_table.columns.len() < old_table.columns.len() {
-            // This is a DROP column
-            let new_cols: Vec<String> = new_table.columns.iter().map(|c| c.name.clone()).collect();
-            let deleted_columns: Vec<Column> = old_table
-                .columns
-                .clone()
-                .into_iter()
-                .filter(|col| !new_cols.contains(&col.name))
-                .collect();
-            for i in deleted_columns {
-                alters.push(format!(
-                    "ALTER TABLE {} DROP COLUMN {}",
-                    new_table.name, i.name
-                ));
+            Ordering::Less => {
+                // This is a DROP column
+                let new_cols: Vec<String> =
+                    new_table.columns.iter().map(|c| c.name.clone()).collect();
+                let deleted_columns: Vec<Column> = old_table
+                    .columns
+                    .clone()
+                    .into_iter()
+                    .filter(|col| !new_cols.contains(&col.name))
+                    .collect();
+                for i in deleted_columns {
+                    alters.push(format!(
+                        "ALTER TABLE {} DROP COLUMN {}",
+                        new_table.name, i.name
+                    ));
+                }
             }
-        } else {
-            unreachable!("Column lengths not checked correctly!");
         }
         alters
     }

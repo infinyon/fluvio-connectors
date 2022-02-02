@@ -369,9 +369,7 @@ jobs:
             docker manifest push "docker.io/${{ matrix.image-name }}:${TAG}"
           done
 
-  # Label of the container job
-  postgres_integration_tests:
-    # Containers must run in Linux based operating systems
+  postgres_source_integration_tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -404,11 +402,49 @@ jobs:
         with:
           toolchain: stable
           override: true
-          components: clippy
+          components: minimal
 
       - name: cargo test on postgres crate
         run: |
           make -C ./rust-connectors/sources/postgres test-dev
+
+  postgres_sink_and_source_integration_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Start postgres instance"
+        run: |
+          make -C ./rust-connectors/sinks/postgres postgres-docker
+      - uses: AbsaOSS/k3d-action@v2
+        name: "Create fluvio k3d Cluster"
+        with:
+          cluster-name: "fluvio"
+      - name: Sleep 20 to ensure k3d cluster is ready
+        run: sleep 20
+      - name: Install Fluvio Local Cluster
+        uses: infinyon/fluvio@master
+        with:
+          cluster-type: k3d
+          version: latest
+      - name: Check Fluvio Installation
+        run: |
+          fluvio version
+          fluvio topic list
+          fluvio topic create foobar
+          sleep 3
+          echo foo | fluvio produce foobar
+          fluvio consume foobar -o 0 -d
+      - name: Install Rust stable
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          components: minimal
+
+      - name: cargo test on postgres crate
+        run: |
+          make -C ./rust-connectors/sinks/postgres test-dev
+
 
   ## Job that follows the success of all required jobs in this workflow.
   ## Used by Bors to detect that all required jobs have completed successfully
@@ -418,7 +454,8 @@ jobs:
     needs:
       - check
       - docker_push
-      - postgres_integration_tests
+      - postgres_sink_and_source_integration_tests
+      - postgres_source_integration_tests
     runs-on: ubuntu-latest
     steps:
       - name: Done
