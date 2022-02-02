@@ -1,5 +1,8 @@
 #!/usr/bin/env bats
 
+load '../../../utils/bats-helpers/bats-support/load'
+load '../../../utils/bats-helpers/bats-assert/load'
+
 setup() {
     cargo build -p http-json-mock
     ../../../target/debug/http-json-mock & disown
@@ -24,17 +27,15 @@ teardown() {
 @test "http-connector-get-full-test" {
     count=1
     echo "Starting consumer on topic $TOPIC"
-    sleep 13
+    sleep 10
 
-    fluvio consume -o 0 -d $TOPIC | while read input; do
-        expected="Hello, Fluvio! - $count"
-        echo $input = $expected
-        [ "$input" = "$expected" ]
-        count=$(($count + 1))
-        if [ $count -eq 10 ]; then
-            break;
-        fi
-    done
+    run fluvio consume -o 0 --end-offset 0 -d $TOPIC
+    assert_output --partial 'HTTP/1.1 200 OK'
 
+    run fluvio consume -o 0 --end-offset 0 -d $TOPIC
+    assert_output --partial 'content-type: text/plain;charset=utf-8'
+
+    run fluvio consume -o 1 --end-offset 1 -d $TOPIC
+    assert_output --partial 'Hello, Fluvio! - ' 
 }
 
