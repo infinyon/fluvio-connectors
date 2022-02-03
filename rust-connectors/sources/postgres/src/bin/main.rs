@@ -1,6 +1,9 @@
+use adaptive_backoff::prelude::*;
+use eyre::eyre;
 use postgres_source::{PgConnector, PgConnectorOpt};
 use schemars::schema_for;
 use structopt::StructOpt;
+use tracing::{error, info};
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
@@ -29,7 +32,42 @@ async fn main() -> eyre::Result<()> {
     }
 
     let config: PgConnectorOpt = PgConnectorOpt::from_args();
-    let mut connector = PgConnector::new(config).await?;
-    connector.process_stream().await?;
+    if let Err(err) = run_connector(&config).await {
+        error!(%err,"error running connector");
+    }
+
     Ok(())
+}
+
+async fn run_connector(config: &PgConnectorOpt) -> eyre::Result<()> {
+    let mut backoff = ExponentialBackoffBuilder::default()
+        .min(std::time::Duration::from_secs(1))
+        .max(std::time::Duration::from_secs(60))
+        .build()
+        .map_err(|err| eyre!("{}", err))?;
+
+    loop {
+        let mut connector = match PgConnector::new(config.clone()).await {
+            Ok(connector) => {
+                backoff.reset();
+                connector
+            }
+            Err(e) => {
+                error!(%e,"error creating postgres connection");
+                wait_adapatitive_backoff(&mut backoff).await;
+                continue;
+            }
+        };
+
+        if let Err(err) = connector.process_stream().await {
+            error!(%err, "error handling postgres stream");
+        }
+        wait_adapatitive_backoff(&mut backoff).await;
+    }
+}
+
+async fn wait_adapatitive_backoff(backoff: &mut ExponentialBackoff) {
+    let wait_time = backoff.wait();
+    info!(wait_time_seconds=%wait_time.as_secs(), "Waiting before retrying");
+    fluvio_future::timer::sleep(wait_time).await;
 }
