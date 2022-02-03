@@ -7,7 +7,7 @@ use url::Url;
 
 use fluvio::{Fluvio, Offset, PartitionConsumer};
 use fluvio_model_postgres::{
-    Column, DeleteBody, InsertBody, LogicalReplicationMessage, ReplicationEvent, TupleData,
+    Column, DeleteBody, InsertBody, LogicalReplicationMessage, ReplicationEvent, TupleData, TruncateBody,
 };
 use tokio_stream::StreamExt;
 
@@ -111,7 +111,6 @@ impl PgConnector {
                         columns: rel.columns,
                     };
                     if let Some(old_table) = self.relations.get_mut(&rel.rel_id) {
-                        tracing::error!("TABLE ALTER for : {:?} to {:?}", new_table, *old_table);
                         let alters = Self::to_table_alter(&new_table, old_table);
                         for sql in alters {
                             tracing::info!("TABLE ALTER: {:?}", sql);
@@ -142,12 +141,33 @@ impl PgConnector {
                         tracing::error!("Failed to find table for delete: {:?}", delete);
                     }
                 }
+                LogicalReplicationMessage::Update(update) => {
+                }
+                LogicalReplicationMessage::Truncate(trunk) => {
+                    let sql = Self::to_table_trucate(&self.relations, trunk);
+                    tracing::info!("TABLE delete: {:?}", sql);
+                    if let Err(e) = self.pg_client.execute(sql.as_str(), &[]).await {
+                        tracing::error!("Error with delete: {:?}", e);
+                    }
+
+                }
                 other => {
                     tracing::error!("Uncaught replication message: {:?}", other);
                 }
             }
         }
         Ok(())
+    }
+
+    pub fn to_table_trucate(relations: &BTreeMap<u32, Table>, trunk: TruncateBody) -> String {
+        let table_names : Vec<String> = trunk.rel_ids.iter().filter_map(|rel_id| relations.get(&rel_id).map(|table| table.name.clone())).collect();
+        let mut sql = format!("TRUNCATE {}", table_names.join(","));
+        if trunk.options == 1 {
+            sql.push_str(" CASCADE");
+        } else if trunk.options == 2 {
+            sql.push_str(" RESTART IDENTITY");
+        }
+        sql
     }
     pub fn to_table_alter(new_table: &Table, old_table: &Table) -> Vec<String> {
         let mut alters: Vec<String> = Vec::new();

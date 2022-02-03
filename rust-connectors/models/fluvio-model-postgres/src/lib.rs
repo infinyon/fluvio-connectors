@@ -192,6 +192,7 @@ pub struct DeleteBody {
 /// A TRUNCATE statement
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TruncateBody {
+    /// Option bits for TRUNCATE: 1 for CASCADE, 2 for RESTART IDENTITY
     pub options: i8,
     /// The IDs of the relations being truncated (i.e. table OIDs).
     pub rel_ids: Vec<u32>,

@@ -223,8 +223,39 @@ async fn postgres_sink_and_source() -> eyre::Result<()> {
         assert_eq!(id, i, "id field doesn't match");
         assert_eq!(out_name, name, "name field doesn't match");
     }
-    let table_create = r#"DROP TABLE old_names"#;
-    let _ = pg_source_client.execute(table_create, &[]).await?;
+
+    //UPDATE names SET email='foo@foo.com' WHERE name = 'foo';
+    for i in 500..600 {
+        let query = "UPDATE old_names SET name=$1 WHERE name=$2";
+        let old_name = format!("Fluvio_{}", i);
+        let new_name = format!("Fluvio_fluvio_{}", i);
+        let _ = pg_source_client.query(query, &[&old_name, &new_name]).await?;
+    }
+    for i in 500..600 {
+        let query = "SELECT * FROM old_names WHERE name=$1";
+        let name = format!("Fluvio_fluvio_{}", i);
+        let sink_name = pg_sink_client.query(query, &[&name]).await?;
+        assert_eq!(
+            sink_name.len(),
+            1,
+            "Found more than one result for select query {} - {}",
+            query,
+            name
+        );
+        let row = sink_name.first().unwrap();
+        let columns = row.columns();
+        assert_eq!(
+            columns.len(),
+            2,
+            "Number of columns in name result is unexpected"
+        );
+        let id: i32 = row.get("id");
+        let out_name: String = row.get("name");
+        assert_eq!(id, i, "id field doesn't match");
+        assert_eq!(out_name, name, "name field doesn't match");
+    }
+    //let table_create = r#"DROP TABLE old_names"#;
+    //let _ = pg_source_client.execute(table_create, &[]).await?;
     sink_handle.abort();
     source_handle.abort();
 
