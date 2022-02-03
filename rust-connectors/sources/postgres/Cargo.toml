@@ -37,6 +37,7 @@ color-backtrace = { version = "0.5" }
 #postgres-protocol = { git = "https://github.com/infinyon/rust-postgres", rev = "4e86fffc7e8d4ee10c7751a58398a172a4963bfc" }
 tokio-postgres = { git = "https://github.com/MaterializeInc/rust-postgres", branch = "mz-0.7.2" }
 postgres-protocol = { git = "https://github.com/MaterializeInc/rust-postgres", branch = "mz-0.7.2" }
+adaptive_backoff = "0.2.1"
 #postgres-protocol = "0.6.3"
 #tokio-postgres = "0.7.5"
 
