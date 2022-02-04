@@ -5,6 +5,7 @@ use tokio::time::{sleep, Duration};
 use tokio_postgres::{Client, NoTls};
 use url::Url;
 
+
 #[tokio::test]
 async fn postgres_sink_and_source() -> eyre::Result<()> {
     fluvio_future::subscriber::init_logger();
@@ -22,7 +23,7 @@ async fn postgres_sink_and_source() -> eyre::Result<()> {
     let (source_handle, pg_source_client) = start_pg_source(fluvio_topic.clone()).await?;
 
     // Create table
-    let table_create = r#"CREATE TABLE names(ID SERIAL PRIMARY KEY, NAME TEXT NOT NULL)"#;
+    let table_create = r#"CREATE TABLE names(ID SERIAL, NAME TEXT NOT NULL)"#;
     let _ = pg_source_client.execute(table_create, &[]).await?;
 
     // Insert into those rows
@@ -31,6 +32,7 @@ async fn postgres_sink_and_source() -> eyre::Result<()> {
         let name = format!("Fluvio_{}", i);
         let _ = pg_source_client.query(query, &[&name]).await?;
     }
+    sleep(Duration::from_millis(100)).await;
     for i in 1..100 {
         let query = "SELECT * FROM names WHERE name=$1";
         let name = format!("Fluvio_{}", i);
@@ -61,6 +63,7 @@ async fn postgres_sink_and_source() -> eyre::Result<()> {
         let email = format!("{}@gmail.com", name);
         let _ = pg_source_client.query(query, &[&name, &email]).await?;
     }
+    sleep(Duration::from_millis(100)).await;
     for i in 100..200 {
         let query = "SELECT * FROM names WHERE name=$1";
         let name = format!("Fluvio_{}", i);
@@ -85,6 +88,7 @@ async fn postgres_sink_and_source() -> eyre::Result<()> {
         assert_eq!(out_name, name, "name field doesn't match");
         assert_eq!(out_email, email, "email field doesn't match");
     }
+    sleep(Duration::from_millis(100)).await;
     let table_alter = "ALTER TABLE names RENAME COLUMN name TO fluvio_id";
     let _ = pg_source_client.execute(table_alter, &[]).await?;
     for i in 200..300 {
@@ -93,6 +97,7 @@ async fn postgres_sink_and_source() -> eyre::Result<()> {
         let email = format!("{}@gmail.com", name);
         let _ = pg_source_client.query(query, &[&name, &email]).await?;
     }
+    sleep(Duration::from_millis(500)).await;
 
     for i in 200..300 {
         let query = "SELECT * FROM names WHERE fluvio_id=$1";
@@ -120,6 +125,8 @@ async fn postgres_sink_and_source() -> eyre::Result<()> {
     }
     let table_alter = "ALTER TABLE names RENAME COLUMN fluvio_id TO name";
     let _ = pg_source_client.execute(table_alter, &[]).await?;
+    let table_alter = "ALTER TABLE names REPLICA IDENTITY FULL;";
+    let _ = pg_source_client.execute(table_alter, &[]).await?;
 
     let table_alter = "DELETE FROM names";
     let _ = pg_source_client.execute(table_alter, &[]).await?;
@@ -129,9 +136,14 @@ async fn postgres_sink_and_source() -> eyre::Result<()> {
         let email = format!("{}@gmail.com", name);
         let _ = pg_source_client.query(query, &[&name, &email]).await?;
     }
-    sleep(Duration::from_millis(1000)).await;
+    sleep(Duration::from_millis(5000)).await;
+    let query = "SELECT COUNT(*) FROM names";
+    let count_query = pg_sink_client.query(query, &[]).await?;
+    let count: i64 = count_query.first().unwrap().get("count");
+    assert_eq!(count, 100, "Count does not match");
 
     for i in 300..400 {
+
         let query = "SELECT * FROM names WHERE name=$1";
         let name = format!("Fluvio_{}", i);
         let email = format!("{}@gmail.com", name);
@@ -166,6 +178,7 @@ async fn postgres_sink_and_source() -> eyre::Result<()> {
         let email = format!("{}@gmail.com", name);
         let _ = pg_source_client.query(query, &[&name, &email]).await?;
     }
+    sleep(Duration::from_millis(500)).await;
     for i in 400..500 {
         let query = "SELECT * FROM old_names WHERE name=$1";
         let name = format!("Fluvio_{}", i);
@@ -192,16 +205,20 @@ async fn postgres_sink_and_source() -> eyre::Result<()> {
         assert_eq!(out_name, name, "name field doesn't match");
         assert_eq!(out_email, email, "email field doesn't match");
     }
-
-    let table_alter = "ALTER TABLE old_names DROP COLUMN Email";
+    let table_alter = "ALTER TABLE old_names RENAME TO names";
     let _ = pg_source_client.execute(table_alter, &[]).await?;
+
+    let table_alter = "ALTER TABLE names DROP COLUMN Email";
+    let _ = pg_source_client.execute(table_alter, &[]).await?;
+
     for i in 500..600 {
-        let query = "INSERT INTO old_names (name) VALUES($1)";
+        let query = "INSERT INTO names (name) VALUES($1)";
         let name = format!("Fluvio_{}", i);
         let _ = pg_source_client.query(query, &[&name]).await?;
     }
+    sleep(Duration::from_millis(1000)).await;
     for i in 500..600 {
-        let query = "SELECT * FROM old_names WHERE name=$1";
+        let query = "SELECT * FROM names WHERE name=$1";
         let name = format!("Fluvio_{}", i);
         let sink_name = pg_sink_client.query(query, &[&name]).await?;
         assert_eq!(
@@ -224,15 +241,16 @@ async fn postgres_sink_and_source() -> eyre::Result<()> {
         assert_eq!(out_name, name, "name field doesn't match");
     }
 
-    //UPDATE names SET email='foo@foo.com' WHERE name = 'foo';
-    for i in 500..600 {
-        let query = "UPDATE old_names SET name=$1 WHERE name=$2";
-        let old_name = format!("Fluvio_{}", i);
+    for i in 300..600 {
         let new_name = format!("Fluvio_fluvio_{}", i);
-        let _ = pg_source_client.query(query, &[&old_name, &new_name]).await?;
+        //let query = "UPDATE names SET name=$1 WHERE name=$2";
+        let query = format!("UPDATE names SET name='{}' WHERE id={}", new_name, i);
+        let query = query.as_str();
+        let _update = pg_source_client.query(query, &[]).await?;
     }
-    for i in 500..600 {
-        let query = "SELECT * FROM old_names WHERE name=$1";
+    sleep(Duration::from_millis(5000)).await;
+    for i in 300..600 {
+        let query = "SELECT * FROM names WHERE name=$1";
         let name = format!("Fluvio_fluvio_{}", i);
         let sink_name = pg_sink_client.query(query, &[&name]).await?;
         assert_eq!(
@@ -254,8 +272,13 @@ async fn postgres_sink_and_source() -> eyre::Result<()> {
         assert_eq!(id, i, "id field doesn't match");
         assert_eq!(out_name, name, "name field doesn't match");
     }
-    //let table_create = r#"DROP TABLE old_names"#;
-    //let _ = pg_source_client.execute(table_create, &[]).await?;
+    let table_truncate = "TRUNCATE names";
+    let _ = pg_source_client.execute(table_truncate, &[]).await?;
+    sleep(Duration::from_millis(500)).await;
+    let query = "SELECT COUNT(*) FROM names";
+    let count_query = pg_sink_client.query(query, &[]).await?;
+    let count: i64 = count_query.first().unwrap().get("count");
+    assert_eq!(count, 0, "Count does not match");
     sink_handle.abort();
     source_handle.abort();
 
@@ -285,6 +308,7 @@ async fn start_pg_sink(fluvio_topic: String) -> eyre::Result<(JoinHandle<()>, Cl
         .connect(NoTls)
         .await?;
     tokio::spawn(conn);
+    let _ = pg_sink_client.execute("DROP TABLE IF EXISTS names", &[]).await?;
     let handle = tokio::spawn(async move {
         connector.start().await.expect("process stream failed");
     });
@@ -320,6 +344,7 @@ async fn start_pg_source(fluvio_topic: String) -> eyre::Result<(JoinHandle<()>, 
         .await
         .expect("PgConnector failed to initialize");
     tokio::spawn(conn);
+    let _ = pg_source_client.execute("DROP TABLE IF EXISTS names", &[]).await?;
     let handle = tokio::spawn(async move {
         connector
             .process_stream()

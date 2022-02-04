@@ -7,7 +7,7 @@ use url::Url;
 
 use fluvio::{Fluvio, Offset, PartitionConsumer};
 use fluvio_model_postgres::{
-    Column, DeleteBody, InsertBody, LogicalReplicationMessage, ReplicationEvent, TupleData, TruncateBody,
+    Column, DeleteBody, InsertBody, LogicalReplicationMessage, ReplicationEvent, TupleData, TruncateBody, UpdateBody,
 };
 use tokio_stream::StreamExt;
 
@@ -98,7 +98,7 @@ impl PgConnector {
                     if let Some(table) = self.relations.get(&insert.rel_id) {
                         let sql = Self::to_table_insert(table, &insert);
                         if let Err(e) = self.pg_client.execute(sql.as_str(), &[]).await {
-                            tracing::error!("Error with insert: {:?}", e);
+                            tracing::error!("Error with insert: {:?} - SQL WAS {}", e, sql);
                         }
                         tracing::info!("TABLE insert: {:?}", sql);
                     } else {
@@ -115,7 +115,7 @@ impl PgConnector {
                         for sql in alters {
                             tracing::info!("TABLE ALTER: {:?}", sql);
                             if let Err(e) = self.pg_client.execute(sql.as_str(), &[]).await {
-                                tracing::error!("Error with table create: {:?}", e);
+                                tracing::error!("Error with table alter: {:?} - SQL WAS {}", e, sql);
                             }
                         }
 
@@ -124,7 +124,7 @@ impl PgConnector {
                         let sql = Self::to_table_create(&new_table);
                         tracing::info!("TABLE CREATE: {:?}", sql);
                         if let Err(e) = self.pg_client.execute(sql.as_str(), &[]).await {
-                            tracing::error!("Error with table create: {:?}", e);
+                            tracing::error!("Error with table create: {:?} - SQL WAS {}", e, sql);
                         }
                         self.relations.insert(rel.rel_id, new_table);
                     }
@@ -135,19 +135,28 @@ impl PgConnector {
                         let sql = Self::to_delete(table, &delete);
                         tracing::info!("TABLE delete: {:?}", sql);
                         if let Err(e) = self.pg_client.execute(sql.as_str(), &[]).await {
-                            tracing::error!("Error with delete: {:?}", e);
+                            tracing::error!("Error with delete: {:?} SQL WAS {}", e, sql);
                         }
                     } else {
                         tracing::error!("Failed to find table for delete: {:?}", delete);
                     }
                 }
                 LogicalReplicationMessage::Update(update) => {
+                    if let Some(table) = self.relations.get_mut(&update.rel_id) {
+                        let sql = Self::to_update(table, &update);
+                        tracing::debug!("TABLE update: {:?}", sql);
+                        if let Err(e) = self.pg_client.execute(sql.as_str(), &[]).await {
+                            tracing::error!("Error with delete: {:?} SQL WAS {}", e, sql);
+                        }
+                    } else {
+                        tracing::error!("Failed to find table for update: {:?}", update);
+                    }
                 }
                 LogicalReplicationMessage::Truncate(trunk) => {
                     let sql = Self::to_table_trucate(&self.relations, trunk);
                     tracing::info!("TABLE delete: {:?}", sql);
                     if let Err(e) = self.pg_client.execute(sql.as_str(), &[]).await {
-                        tracing::error!("Error with delete: {:?}", e);
+                        tracing::error!("Error with delete: {:?} - SQL WAS {}", e, sql);
                     }
 
                 }
@@ -171,38 +180,37 @@ impl PgConnector {
     }
     pub fn to_table_alter(new_table: &Table, old_table: &Table) -> Vec<String> {
         let mut alters: Vec<String> = Vec::new();
+        if new_table.name != old_table.name {
+            alters.push(format!(
+                    "ALTER TABLE {} RENAME TO {}",
+                    old_table.name, new_table.name
+            ));
+        }
         match new_table.columns.len().cmp(&old_table.columns.len()) {
             Ordering::Equal => {
-                if new_table.name != old_table.name {
-                    alters.push(format!(
-                        "ALTER TABLE {} RENAME TO {}",
-                        old_table.name, new_table.name
-                    ));
-                } else {
-                    for (new_col, old_col) in new_table.columns.iter().zip(old_table.columns.iter())
-                    {
-                        if new_col.name != old_col.name {
-                            alters.push(format!(
+                for (new_col, old_col) in new_table.columns.iter().zip(old_table.columns.iter())
+                {
+                    if new_col.name != old_col.name {
+                        alters.push(format!(
                                 "ALTER TABLE {} RENAME COLUMN {} TO {}",
                                 new_table.name, old_col.name, new_col.name
-                            ));
-                        }
-                        if new_col.type_id != old_col.type_id {
-                            let column_type =
-                                if let Some(column_type) = TYPE_MAP.get(&new_col.type_id) {
-                                    column_type
-                                } else {
-                                    tracing::error!(
-                                        "Failed to find type id: {:?} for column alter",
-                                        new_col.type_id
-                                    );
-                                    continue;
-                                };
-                            alters.push(format!(
+                        ));
+                    }
+                    if new_col.type_id != old_col.type_id {
+                        let column_type =
+                            if let Some(column_type) = TYPE_MAP.get(&new_col.type_id) {
+                                column_type
+                            } else {
+                                tracing::error!(
+                                    "Failed to find type id: {:?} for column alter",
+                                    new_col.type_id
+                                );
+                                continue;
+                            };
+                        alters.push(format!(
                                 "ALTER TABLE {} ALTER COLUMN {} TYPE {}",
                                 new_table.name, new_col.name, column_type
-                            ));
-                        }
+                        ));
                     }
                 }
             }
@@ -249,29 +257,93 @@ impl PgConnector {
         }
         alters
     }
+    pub fn to_update(table: &Table, update: &UpdateBody) -> String {
+        // {"wal_start":24359872,"wal_end":24359872,"timestamp":697257155476954,"message":{"type":"update","rel_id":16387,"old_tuple":[{"Int4":599},{"String":"Fluvio_599"}],"key_tuple":null,"new_tuple":[{"Int4":599},{"String":"fluvio_fluvio_599"}]}}
+        // "UPDATE names SET name=$1 WHERE name=$2"
+        let filter_tuple = match (&update.key_tuple, &update.old_tuple) {
+            (Some(tuple), None) => tuple,
+            (None, Some(tuple)) => tuple,
+            (Some(tuple), Some(_old_tuple)) => {
+                tracing::info!("Delete had both key_tuple and old_tuple {:?}", update);
+                tuple
+            },
+            other => {
+                unreachable!("This delete case was not handled {:?}", other);
+            }
+        };
+        let mut update_vals : Vec<String> = Vec::new();
+        for (column, new_data) in table.columns.iter().zip(update.new_tuple.0.iter()) {
+            let val = match new_data {
+                TupleData::Bool(v) => format!("{v}"),
+                TupleData::Char(c) => format!("{c}"),
+                TupleData::Int2(i) => format!("{i}"),
+                TupleData::Int4(i) => format!("{i}"),
+                TupleData::Int8(i) => format!("{i}"),
+                TupleData::Oid(i) => format!("{i}"),
+                TupleData::Float4(i) => format!("{i}"),
+                TupleData::Float8(i) => format!("{i}"),
+                TupleData::String(i) => format!("'{i}'"),
+                other => {
+                    tracing::error!("Uncaugh tuple type {:?}", other);
+                    continue;
+                }
+            };
+            update_vals.push(format!("{}={}", column.name, val));
+        }
+
+        let mut where_vals : Vec<String> = Vec::new();
+        for (column, filter) in table.columns.iter().zip(filter_tuple.0.iter()) {
+            let val = match filter {
+                TupleData::Bool(v) => format!("{v}"),
+                TupleData::Char(c) => format!("{c}"),
+                TupleData::Int2(i) => format!("{i}"),
+                TupleData::Int4(i) => format!("{i}"),
+                TupleData::Int8(i) => format!("{i}"),
+                TupleData::Oid(i) => format!("{i}"),
+                TupleData::Float4(i) => format!("{i}"),
+                TupleData::Float8(i) => format!("{i}"),
+                TupleData::String(i) => format!("'{i}'"),
+                other => {
+                    tracing::error!("Uncaugh tuple type {:?}", other);
+                    continue;
+                }
+            };
+            where_vals.push(format!("{}={}", column.name, val));
+        }
+        format!("UPDATE {} SET {} WHERE {}", table.name, update_vals.join(","), where_vals.join(" AND "))
+
+
+    }
     pub fn to_delete(table: &Table, delete: &DeleteBody) -> String {
         let mut where_clauses: Vec<String> = Vec::new();
-        if let Some(key_tuple) = &delete.key_tuple {
-            for (column, tuple) in table.columns.iter().zip(key_tuple.0.iter()) {
-                let val = match tuple {
-                    TupleData::Bool(v) => format!("{v}"),
-                    TupleData::Char(c) => format!("{c}"),
-                    TupleData::Int2(i) => format!("{i}"),
-                    TupleData::Int4(i) => format!("{i}"),
-                    TupleData::Int8(i) => format!("{i}"),
-                    TupleData::Oid(i) => format!("{i}"),
-                    TupleData::Float4(i) => format!("{i}"),
-                    TupleData::Float8(i) => format!("{i}"),
-                    TupleData::String(i) => format!("'{i}'"),
-                    other => {
-                        tracing::error!("Uncaugh tuple type {:?}", other);
-                        continue;
-                    }
-                };
-                where_clauses.push(format!("{}={}", column.name, val));
+        let tuple = match (&delete.key_tuple, &delete.old_tuple) {
+            (Some(tuple), None) => tuple,
+            (None, Some(tuple)) => tuple,
+            (Some(tuple), Some(_old_tuple)) => {
+                tracing::info!("Delete had both key_tuple and old_tuple {:?}", delete);
+                tuple
+            },
+            other => {
+                unreachable!("This delete case was not handled {:?}", other);
             }
-        } else {
-            unreachable!("This delete case was not handled for {:?}", delete);
+        };
+        for (column, tuple) in table.columns.iter().zip(tuple.0.iter()) {
+            let val = match tuple {
+                TupleData::Bool(v) => format!("{v}"),
+                TupleData::Char(c) => format!("{c}"),
+                TupleData::Int2(i) => format!("{i}"),
+                TupleData::Int4(i) => format!("{i}"),
+                TupleData::Int8(i) => format!("{i}"),
+                TupleData::Oid(i) => format!("{i}"),
+                TupleData::Float4(i) => format!("{i}"),
+                TupleData::Float8(i) => format!("{i}"),
+                TupleData::String(i) => format!("'{i}'"),
+                other => {
+                    tracing::error!("Uncaugh tuple type {:?}", other);
+                    continue;
+                }
+            };
+            where_clauses.push(format!("{}={}", column.name, val));
         }
         format!(
             "DELETE FROM {} WHERE {}",

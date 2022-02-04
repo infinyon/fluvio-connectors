@@ -11,6 +11,9 @@ postgres:
 	docker run --name $(POSTGRES_SINK_NAME) -p $(FLUVIO_PG_SINK_ENDPOINT):5432/tcp -e POSTGRES_PASSWORD=fluviopassword -e POSTGRES_USER=fluvio -d postgres -c 'wal_level=logical'
 	docker run --name $(POSTGRES_SOURCE_NAME) -p $(FLUVIO_PG_SOURCE_ENDPOINT):5432/tcp -e POSTGRES_PASSWORD=fluviopassword -e POSTGRES_USER=fluvio -d postgres -c 'wal_level=logical'
 
+postgres-clean:
+	docker rm -f $(POSTGRES_SINK_NAME) $(POSTGRES_SOURCE_NAME)
+
 
 run-dev:
 	FLUVIO_PG_DATABASE_URL=postgres://fluvio:fluviopassword@$(FLUVIO_PG_SINK_ENDPOINT) cargo run -- --fluvio-topic postgres
@@ -23,6 +26,9 @@ psql-sink:
 
 psql-source:
 	PGPASSWORD=fluviopassword psql -h $(FLUVIO_PG_DATABASE_IP) -p 5432 -U fluvio
+
+watch-tests:
+	cargo watch -s 'make postgres-clean ; make postgres && fluvio topic delete postgres ; fluvio topic create postgres && sleep 5 && make test-dev'
 
 .EXPORT_ALL_VARIABLES:
 FLUVIO_PG_PUBLICATION=fluvio
