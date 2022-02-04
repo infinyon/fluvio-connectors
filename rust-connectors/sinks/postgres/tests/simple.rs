@@ -5,7 +5,6 @@ use tokio::time::{sleep, Duration};
 use tokio_postgres::{Client, NoTls};
 use url::Url;
 
-
 #[tokio::test]
 async fn postgres_sink_and_source() -> eyre::Result<()> {
     fluvio_future::subscriber::init_logger();
@@ -143,7 +142,6 @@ async fn postgres_sink_and_source() -> eyre::Result<()> {
     assert_eq!(count, 100, "Count does not match");
 
     for i in 300..400 {
-
         let query = "SELECT * FROM names WHERE name=$1";
         let name = format!("Fluvio_{}", i);
         let email = format!("{}@gmail.com", name);
@@ -308,7 +306,9 @@ async fn start_pg_sink(fluvio_topic: String) -> eyre::Result<(JoinHandle<()>, Cl
         .connect(NoTls)
         .await?;
     tokio::spawn(conn);
-    let _ = pg_sink_client.execute("DROP TABLE IF EXISTS names", &[]).await?;
+    let _ = pg_sink_client
+        .execute("DROP TABLE IF EXISTS names", &[])
+        .await?;
     let handle = tokio::spawn(async move {
         connector.start().await.expect("process stream failed");
     });
@@ -344,7 +344,9 @@ async fn start_pg_source(fluvio_topic: String) -> eyre::Result<(JoinHandle<()>, 
         .await
         .expect("PgConnector failed to initialize");
     tokio::spawn(conn);
-    let _ = pg_source_client.execute("DROP TABLE IF EXISTS names", &[]).await?;
+    let _ = pg_source_client
+        .execute("DROP TABLE IF EXISTS names", &[])
+        .await?;
     let handle = tokio::spawn(async move {
         connector
             .process_stream()

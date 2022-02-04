@@ -7,7 +7,8 @@ use url::Url;
 
 use fluvio::{Fluvio, Offset, PartitionConsumer};
 use fluvio_model_postgres::{
-    Column, DeleteBody, InsertBody, LogicalReplicationMessage, ReplicationEvent, TupleData, TruncateBody, UpdateBody,
+    Column, DeleteBody, InsertBody, LogicalReplicationMessage, ReplicationEvent, TruncateBody,
+    TupleData, UpdateBody,
 };
 use tokio_stream::StreamExt;
 
@@ -115,7 +116,11 @@ impl PgConnector {
                         for sql in alters {
                             tracing::info!("TABLE ALTER: {:?}", sql);
                             if let Err(e) = self.pg_client.execute(sql.as_str(), &[]).await {
-                                tracing::error!("Error with table alter: {:?} - SQL WAS {}", e, sql);
+                                tracing::error!(
+                                    "Error with table alter: {:?} - SQL WAS {}",
+                                    e,
+                                    sql
+                                );
                             }
                         }
 
@@ -158,7 +163,6 @@ impl PgConnector {
                     if let Err(e) = self.pg_client.execute(sql.as_str(), &[]).await {
                         tracing::error!("Error with delete: {:?} - SQL WAS {}", e, sql);
                     }
-
                 }
                 other => {
                     tracing::error!("Uncaught replication message: {:?}", other);
@@ -169,7 +173,11 @@ impl PgConnector {
     }
 
     pub fn to_table_trucate(relations: &BTreeMap<u32, Table>, trunk: TruncateBody) -> String {
-        let table_names : Vec<String> = trunk.rel_ids.iter().filter_map(|rel_id| relations.get(&rel_id).map(|table| table.name.clone())).collect();
+        let table_names: Vec<String> = trunk
+            .rel_ids
+            .iter()
+            .filter_map(|rel_id| relations.get(rel_id).map(|table| table.name.clone()))
+            .collect();
         let mut sql = format!("TRUNCATE {}", table_names.join(","));
         if trunk.options == 1 {
             sql.push_str(" CASCADE");
@@ -182,34 +190,33 @@ impl PgConnector {
         let mut alters: Vec<String> = Vec::new();
         if new_table.name != old_table.name {
             alters.push(format!(
-                    "ALTER TABLE {} RENAME TO {}",
-                    old_table.name, new_table.name
+                "ALTER TABLE {} RENAME TO {}",
+                old_table.name, new_table.name
             ));
         }
         match new_table.columns.len().cmp(&old_table.columns.len()) {
             Ordering::Equal => {
-                for (new_col, old_col) in new_table.columns.iter().zip(old_table.columns.iter())
-                {
+                for (new_col, old_col) in new_table.columns.iter().zip(old_table.columns.iter()) {
                     if new_col.name != old_col.name {
                         alters.push(format!(
-                                "ALTER TABLE {} RENAME COLUMN {} TO {}",
-                                new_table.name, old_col.name, new_col.name
+                            "ALTER TABLE {} RENAME COLUMN {} TO {}",
+                            new_table.name, old_col.name, new_col.name
                         ));
                     }
                     if new_col.type_id != old_col.type_id {
-                        let column_type =
-                            if let Some(column_type) = TYPE_MAP.get(&new_col.type_id) {
-                                column_type
-                            } else {
-                                tracing::error!(
-                                    "Failed to find type id: {:?} for column alter",
-                                    new_col.type_id
-                                );
-                                continue;
-                            };
+                        let column_type = if let Some(column_type) = TYPE_MAP.get(&new_col.type_id)
+                        {
+                            column_type
+                        } else {
+                            tracing::error!(
+                                "Failed to find type id: {:?} for column alter",
+                                new_col.type_id
+                            );
+                            continue;
+                        };
                         alters.push(format!(
-                                "ALTER TABLE {} ALTER COLUMN {} TYPE {}",
-                                new_table.name, new_col.name, column_type
+                            "ALTER TABLE {} ALTER COLUMN {} TYPE {}",
+                            new_table.name, new_col.name, column_type
                         ));
                     }
                 }
@@ -266,12 +273,12 @@ impl PgConnector {
             (Some(tuple), Some(_old_tuple)) => {
                 tracing::info!("Delete had both key_tuple and old_tuple {:?}", update);
                 tuple
-            },
+            }
             other => {
                 unreachable!("This delete case was not handled {:?}", other);
             }
         };
-        let mut update_vals : Vec<String> = Vec::new();
+        let mut update_vals: Vec<String> = Vec::new();
         for (column, new_data) in table.columns.iter().zip(update.new_tuple.0.iter()) {
             let val = match new_data {
                 TupleData::Bool(v) => format!("{v}"),
@@ -291,7 +298,7 @@ impl PgConnector {
             update_vals.push(format!("{}={}", column.name, val));
         }
 
-        let mut where_vals : Vec<String> = Vec::new();
+        let mut where_vals: Vec<String> = Vec::new();
         for (column, filter) in table.columns.iter().zip(filter_tuple.0.iter()) {
             let val = match filter {
                 TupleData::Bool(v) => format!("{v}"),
@@ -310,9 +317,12 @@ impl PgConnector {
             };
             where_vals.push(format!("{}={}", column.name, val));
         }
-        format!("UPDATE {} SET {} WHERE {}", table.name, update_vals.join(","), where_vals.join(" AND "))
-
-
+        format!(
+            "UPDATE {} SET {} WHERE {}",
+            table.name,
+            update_vals.join(","),
+            where_vals.join(" AND ")
+        )
     }
     pub fn to_delete(table: &Table, delete: &DeleteBody) -> String {
         let mut where_clauses: Vec<String> = Vec::new();
@@ -322,7 +332,7 @@ impl PgConnector {
             (Some(tuple), Some(_old_tuple)) => {
                 tracing::info!("Delete had both key_tuple and old_tuple {:?}", delete);
                 tuple
-            },
+            }
             other => {
                 unreachable!("This delete case was not handled {:?}", other);
             }
