@@ -73,6 +73,7 @@ jobs:
           - mqtt
           - http
           - postgres-source
+          - postgres-sink
         rust: [stable]
     env:
       RUST_BACKTRACE: full
@@ -146,6 +147,12 @@ jobs:
             rust-target: x86_64-unknown-linux-musl
           - os: ubuntu-latest
             connector-name: postgres-source
+            rust-target: aarch64-unknown-linux-musl
+          - os: ubuntu-latest
+            connector-name: postgres-sink
+            rust-target: x86_64-unknown-linux-musl
+          - os: ubuntu-latest
+            connector-name: postgres-sink
             rust-target: aarch64-unknown-linux-musl
     env:
       RUSTV: ${{ matrix.rust }}
@@ -324,6 +331,9 @@ jobs:
           - os: ubuntu-latest
             connector-name: postgres-source
             image-name: infinyon/fluvio-connect-postgres-source
+          - os: ubuntu-latest
+            connector-name: postgres-sink
+            image-name: infinyon/fluvio-connect-postgres-sink
     steps:
       - name: Download ${{ matrix.connector-name }} x86_64-unknown-linux-musl Docker Image as Artifact
         uses: actions/download-artifact@v2
