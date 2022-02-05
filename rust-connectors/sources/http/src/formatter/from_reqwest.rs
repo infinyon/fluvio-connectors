@@ -11,10 +11,13 @@ impl TryFrom<&reqwest::Response> for HttpResponseRecord {
         let (status_code, status_string) = status(&response.status());
 
         Ok(Self {
-            version: version(&response.version()),
+            version: Some(version(&response.version())),
             status_code,
             status_string,
             headers: Some(headers(response.headers())),
+            body: None,
+            output_type: None,
+            output_parts: None,
         })
     }
 }
@@ -25,12 +28,12 @@ fn version(version: &reqwest::Version) -> String {
 }
 
 // Reqwest Response TryFrom helper impl.
-fn status(status: &reqwest::StatusCode) -> (u16, Option<String>) {
+fn status(status: &reqwest::StatusCode) -> (Option<u16>, Option<String>) {
     let status_code = status.as_u16();
 
     let status_string = status.canonical_reason().map(|s| s.to_string());
 
-    (status_code, status_string)
+    (Some(status_code), status_string)
 }
 
 // Reqwest Response TryFrom helper impl.

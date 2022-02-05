@@ -36,12 +36,18 @@ async fn main() -> Result<()> {
         std::env::set_var("RUST_LOG", "http=info");
     }
 
+    // Error on deprecated metadata options
+    if opts.output_format.is_some() {
+        panic!("ERROR: output_format has been deprecated and renamed as output_parts");
+    }
+
     tracing::info!("Initializing HTTP connector");
     tracing::info!(
         interval = %opts.interval,
         method = %opts.method,
         topic = %opts.common.fluvio_topic,
-        output_format = %opts.output_format,
+        output_parts = %opts.output_parts,
+        output_type = %opts.output_type,
         endpoint = %opts.endpoint
     );
 
@@ -70,21 +76,16 @@ async fn main() -> Result<()> {
         }
         let response = req.send().await.map_err(|e| Error::Request(e))?;
 
-        let formatter = match opts.output_format.as_str() {
-            "full" => Some(
-                ::http::formatter::HttpResponseRecord::try_from(&response)
-                    .map_err(|e| Error::Record(e))?,
-            ),
-            _ => None,
-        };
+        let mut formatter = ::http::formatter::HttpResponseRecord::try_from(&response)
+            .map_err(|e| Error::Record(e))?;
+
+        formatter
+            .configure_output(&opts.output_type, &opts.output_parts)
+            .expect("Unable to configure output type/parts");
 
         let response_body = response.text().await.map_err(|e| Error::ResponseBody(e))?;
 
-        let record_out = match opts.output_format.as_str() {
-            "body" => response_body,
-            "full" => formatter.unwrap().record(Some(&response_body)),
-            _ => panic!("Unsupported output_format: {}", opts.output_format.as_str()),
-        };
+        let record_out = formatter.record(Some(&response_body));
 
         tracing::debug!(%record_out, "Producing");
 

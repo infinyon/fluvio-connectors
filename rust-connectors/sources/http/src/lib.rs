@@ -24,9 +24,17 @@ pub struct HttpOpt {
     #[structopt(long = "header", alias = "headers")]
     pub headers: Vec<String>,
 
-    /// Response output format: body | full    
+    /// DEPRECATED: Response output parts: body | full
+    #[structopt(long, hidden(true))]
+    pub output_format: Option<String>,
+
+    /// Response output parts: body | full    
     #[structopt(long, default_value = "body")]
-    pub output_format: String,
+    pub output_parts: String,
+
+    /// Response output type: text | json    
+    #[structopt(long, default_value = "text")]
+    pub output_type: String,
 
     #[structopt(flatten)]
     #[schemars(flatten)]
