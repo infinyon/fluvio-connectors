@@ -1,16 +1,16 @@
 use fluvio_connectors_common::opt::CommonSourceOpt;
 use schemars::JsonSchema;
 use std::cmp::Ordering;
-use std::collections::HashMap;
 use structopt::StructOpt;
 use url::Url;
 
 use fluvio::{Fluvio, Offset, PartitionConsumer};
 use fluvio_model_postgres::{
     Column, DeleteBody, InsertBody, LogicalReplicationMessage, ReplicationEvent, TruncateBody,
-    TupleData, UpdateBody,
+    UpdateBody,
 };
 use tokio_stream::StreamExt;
+use postgres_types::Type;
 
 use std::collections::BTreeMap;
 use tokio_postgres::{Client, NoTls};
@@ -191,16 +191,14 @@ impl PgConnector {
                         ));
                     }
                     if new_col.type_id != old_col.type_id {
-                        let column_type = if let Some(column_type) = TYPE_MAP.get(&new_col.type_id)
-                        {
+                        let type_id = new_col.type_id.clone() as u32;
+                        let column_type = if let Some(column_type) = Type::from_oid(type_id) {
                             column_type
                         } else {
-                            tracing::error!(
-                                "Failed to find type id: {:?} for column alter",
-                                new_col.type_id
-                            );
+                            tracing::error!("Failed to find type id: {:?}", new_col.type_id);
                             continue;
                         };
+                        let column_type = column_type.name();
                         alters.push(format!(
                             "ALTER TABLE {} ALTER COLUMN {} TYPE {}",
                             new_table.name, new_col.name, column_type
@@ -219,12 +217,14 @@ impl PgConnector {
                     .filter(|col| !old_cols.contains(&col.name))
                     .collect();
                 for column in new_columns {
-                    let column_type = if let Some(column_type) = TYPE_MAP.get(&column.type_id) {
+                    let type_id = column.type_id.clone() as u32;
+                    let column_type = if let Some(column_type) = Type::from_oid(type_id) {
                         column_type
                     } else {
                         tracing::error!("Failed to find type id: {:?}", column.type_id);
                         continue;
                     };
+                    let column_type = column_type.name();
                     alters.push(format!(
                         "ALTER TABLE {} ADD COLUMN {} {}",
                         new_table.name, column.name, column_type
@@ -265,40 +265,22 @@ impl PgConnector {
         };
         let mut update_vals: Vec<String> = Vec::new();
         for (column, new_data) in table.columns.iter().zip(update.new_tuple.0.iter()) {
-            let val = match new_data {
-                TupleData::Bool(v) => format!("{v}"),
-                TupleData::Char(c) => format!("{c}"),
-                TupleData::Int2(i) => format!("{i}"),
-                TupleData::Int4(i) => format!("{i}"),
-                TupleData::Int8(i) => format!("{i}"),
-                TupleData::Oid(i) => format!("{i}"),
-                TupleData::Float4(i) => format!("{i}"),
-                TupleData::Float8(i) => format!("{i}"),
-                TupleData::String(i) => format!("'{i}'"),
-                other => {
-                    tracing::error!("Uncaugh tuple type {:?}", other);
-                    continue;
-                }
+            let val : String = if let Ok(val) = new_data.try_into() {
+                val
+            } else {
+                tracing::error!("Uncaugh tuple type {:?}", new_data);
+                continue;
             };
             update_vals.push(format!("{}={}", column.name, val));
         }
 
         let mut where_vals: Vec<String> = Vec::new();
         for (column, filter) in table.columns.iter().zip(filter_tuple.0.iter()) {
-            let val = match filter {
-                TupleData::Bool(v) => format!("{v}"),
-                TupleData::Char(c) => format!("{c}"),
-                TupleData::Int2(i) => format!("{i}"),
-                TupleData::Int4(i) => format!("{i}"),
-                TupleData::Int8(i) => format!("{i}"),
-                TupleData::Oid(i) => format!("{i}"),
-                TupleData::Float4(i) => format!("{i}"),
-                TupleData::Float8(i) => format!("{i}"),
-                TupleData::String(i) => format!("'{i}'"),
-                other => {
-                    tracing::error!("Uncaugh tuple type {:?}", other);
-                    continue;
-                }
+            let val : String = if let Ok(val) = filter.try_into() {
+                val
+            } else {
+                tracing::error!("Uncaugh tuple type {:?}", filter);
+                continue;
             };
             where_vals.push(format!("{}={}", column.name, val));
         }
@@ -323,20 +305,11 @@ impl PgConnector {
             }
         };
         for (column, tuple) in table.columns.iter().zip(tuple.0.iter()) {
-            let val = match tuple {
-                TupleData::Bool(v) => format!("{v}"),
-                TupleData::Char(c) => format!("{c}"),
-                TupleData::Int2(i) => format!("{i}"),
-                TupleData::Int4(i) => format!("{i}"),
-                TupleData::Int8(i) => format!("{i}"),
-                TupleData::Oid(i) => format!("{i}"),
-                TupleData::Float4(i) => format!("{i}"),
-                TupleData::Float8(i) => format!("{i}"),
-                TupleData::String(i) => format!("'{i}'"),
-                other => {
-                    tracing::error!("Uncaugh tuple type {:?}", other);
-                    continue;
-                }
+            let val : String = if let Ok(val) = tuple.try_into() {
+                val
+            } else {
+                tracing::error!("Uncaugh tuple type {:?}", tuple);
+                continue;
             };
             where_clauses.push(format!("{}={}", column.name, val));
         }
@@ -350,21 +323,13 @@ impl PgConnector {
         let mut values: Vec<String> = Vec::new();
         let mut col_names: Vec<String> = Vec::new();
         for (column, tuple) in table.columns.iter().zip(insert.tuple.0.iter()) {
-            match tuple {
-                TupleData::Bool(v) => values.push(format!("{v}")),
-                TupleData::Char(c) => values.push(format!("{c}")),
-                TupleData::Int2(i) => values.push(format!("{i}")),
-                TupleData::Int4(i) => values.push(format!("{i}")),
-                TupleData::Int8(i) => values.push(format!("{i}")),
-                TupleData::Oid(i) => values.push(format!("{i}")),
-                TupleData::Float4(i) => values.push(format!("{i}")),
-                TupleData::Float8(i) => values.push(format!("{i}")),
-                TupleData::String(i) => values.push(format!("'{i}'")),
-                other => {
-                    tracing::error!("Uncaugh tuple type {:?}", other);
-                    continue;
-                }
-            }
+            let val : String = if let Ok(val) = tuple.try_into() {
+                val
+            } else {
+                tracing::error!("Uncaugh tuple type {:?}", tuple);
+                continue;
+            };
+            values.push(val);
             col_names.push(column.name.clone());
         }
         let values = values.join(",");
@@ -379,12 +344,15 @@ impl PgConnector {
         let mut primary_keys: Vec<String> = Vec::new();
         let mut columns: Vec<String> = Vec::new();
         for column in table.columns.iter() {
-            let column_type = if let Some(column_type) = TYPE_MAP.get(&column.type_id) {
+            let type_id = column.type_id.clone() as u32;
+
+            let column_type = if let Some(column_type) = Type::from_oid(type_id) {
                 column_type
             } else {
                 tracing::error!("Failed to find type id: {:?}", column.type_id);
                 continue;
             };
+            let column_type = column_type.name();
             let column_name = &column.name;
             if column.flags == 1 {
                 primary_keys.push(column_name.clone());
@@ -397,46 +365,4 @@ impl PgConnector {
         let columns = columns.join(",");
         format!("CREATE TABLE {}({})", table.name, columns)
     }
-}
-
-lazy_static! {
-    static ref TYPE_MAP: HashMap<i32, &'static str> = HashMap::from([
-        (16, "boolean"),
-        (17, "bytea"),
-        (20, "bigint"),
-        (20, "bigserial"),
-        (21, "smallint"),
-        (21, "smallserial"),
-        (23, "integer"),
-        (25, "text"),
-        (114, "json"),
-        (142, "xml"),
-        (600, "point"),
-        (601, "lseg"),
-        (602, "path"),
-        (603, "box"),
-        (604, "polygon"),
-        (628, "line"),
-        (650, "cidr"),
-        (700, "real"),
-        (701, "float8"),
-        (718, "circle"),
-        (790, "money"),
-        (829, "macaddr"),
-        (869, "inet"),
-        (1042, "character"),
-        (1043, "varchar"),
-        (1082, "date"),
-        (1083, "time"),
-        (1114, "timestamp"),
-        (1186, "interval"),
-        (1560, "bit"),
-        (1700, "numeric"),
-        (2950, "uuid"),
-        (2970, "txid_snapshot"),
-        (3220, "pg_lsn"),
-        (3614, "tsvector"),
-        (3615, "tsquery"),
-        (3802, "jsonb"),
-    ]);
 }
