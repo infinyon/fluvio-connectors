@@ -299,7 +299,7 @@ jobs:
         with:
           name: integration_${{ matrix.connector-name }}
           path: diagnostics*.gz
-          retention-days: 1
+          retention-days: 10
 
   docker_push:
     name: Publish ${{ matrix.connector-name }} images to Docker Hub
