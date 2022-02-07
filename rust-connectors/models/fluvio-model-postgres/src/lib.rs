@@ -87,22 +87,19 @@ impl TryInto<String> for &TupleData {
     type Error = String;
     fn try_into(self) -> Result<String, Self::Error> {
         match self {
-            TupleData::Bool(v)   => Ok(format!("{v}")),
-            TupleData::Char(c)   => Ok(format!("{c}")),
-            TupleData::Int2(i)   => Ok(format!("{i}")),
-            TupleData::Int4(i)   => Ok(format!("{i}")),
-            TupleData::Int8(i)   => Ok(format!("{i}")),
-            TupleData::Oid(i)    => Ok(format!("{i}")),
+            TupleData::Bool(v) => Ok(format!("{v}")),
+            TupleData::Char(c) => Ok(format!("{c}")),
+            TupleData::Int2(i) => Ok(format!("{i}")),
+            TupleData::Int4(i) => Ok(format!("{i}")),
+            TupleData::Int8(i) => Ok(format!("{i}")),
+            TupleData::Oid(i) => Ok(format!("{i}")),
             TupleData::Float4(i) => Ok(format!("{i}")),
             TupleData::Float8(i) => Ok(format!("{i}")),
             TupleData::String(i) => Ok(format!("'{i}'")),
-            other => {
-                Err(format!("Unsupported tupple type {:?}", other))
-            }
+            other => Err(format!("Unsupported tupple type {:?}", other)),
         }
     }
 }
-
 
 /// A BEGIN statement
 #[derive(Debug, Serialize, Deserialize)]
