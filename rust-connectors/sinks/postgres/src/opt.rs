@@ -24,20 +24,7 @@ pub struct PgConnectorOpt {
     /// Ex: postgres://user:password@localhost:5432/database_name
     #[structopt(long, env = "FLUVIO_PG_DATABASE_URL", hide_env_values = true)]
     pub url: Url,
-    /*
-    /// The name of the PUBLICATION in the leader database to monitor
-    ///
-    /// Ex: fluvio_cdc
-    ///
-    /// Before using this connector, you will need to create a publication
-    /// in your leader database, using a SQL command such as
-    /// "CREATE PUBLICATION fluvio_cdc FOR ALL TABLES;"
-    #[structopt(long, env = "FLUVIO_PG_PUBLICATION")]
-    pub publication: String,
-    /// The name of the logical replication slot to stream changes from
-    #[structopt(long, env = "FLUVIO_PG_SLOT")]
-    pub slot: String,
-    */
+
     /// The time (in millis) to wait while fetching latest Fluvio record to resume
     #[structopt(long, env = "FLUVIO_PG_RESUME_TIMEOUT", default_value = "1000")]
     pub resume_timeout: u64,
@@ -265,8 +252,6 @@ impl PgConnector {
         alters
     }
     pub fn to_update(table: &Table, update: &UpdateBody) -> String {
-        // {"wal_start":24359872,"wal_end":24359872,"timestamp":697257155476954,"message":{"type":"update","rel_id":16387,"old_tuple":[{"Int4":599},{"String":"Fluvio_599"}],"key_tuple":null,"new_tuple":[{"Int4":599},{"String":"fluvio_fluvio_599"}]}}
-        // "UPDATE names SET name=$1 WHERE name=$2"
         let filter_tuple = match (&update.key_tuple, &update.old_tuple) {
             (Some(tuple), None) => tuple,
             (None, Some(tuple)) => tuple,
@@ -406,11 +391,9 @@ impl PgConnector {
             }
             columns.push(format!("{} {}", column_name, column_type));
         }
-        /*
         if !primary_keys.is_empty() {
             columns.push(format!("PRIMARY KEY ({})", primary_keys.join(",")));
         }
-        */
         let columns = columns.join(",");
         format!("CREATE TABLE {}({})", table.name, columns)
     }
