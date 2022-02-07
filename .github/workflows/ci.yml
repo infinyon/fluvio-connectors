@@ -230,11 +230,12 @@ jobs:
     env:
       RUST_BACKTRACE: full
     steps:
+      - name: Ensure k3d cluster is ready
       - uses: AbsaOSS/k3d-action@v2
         name: "Create fluvio k3d Cluster"
         with:
           cluster-name: "fluvio"
-      - name: Ensure k3d cluster is ready
+      - uses: actions/checkout@v2
         run: |
           sleep 5
           ./actions/kd3-check.sh
