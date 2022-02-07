@@ -9,8 +9,8 @@ use fluvio_model_postgres::{
     Column, DeleteBody, InsertBody, LogicalReplicationMessage, ReplicationEvent, TruncateBody,
     UpdateBody,
 };
-use tokio_stream::StreamExt;
 use postgres_types::Type;
+use tokio_stream::StreamExt;
 
 use std::collections::BTreeMap;
 use tokio_postgres::{Client, NoTls};
@@ -191,7 +191,7 @@ impl PgConnector {
                         ));
                     }
                     if new_col.type_id != old_col.type_id {
-                        let type_id = new_col.type_id.clone() as u32;
+                        let type_id = new_col.type_id as u32;
                         let column_type = if let Some(column_type) = Type::from_oid(type_id) {
                             column_type
                         } else {
@@ -217,7 +217,7 @@ impl PgConnector {
                     .filter(|col| !old_cols.contains(&col.name))
                     .collect();
                 for column in new_columns {
-                    let type_id = column.type_id.clone() as u32;
+                    let type_id = column.type_id as u32;
                     let column_type = if let Some(column_type) = Type::from_oid(type_id) {
                         column_type
                     } else {
@@ -265,7 +265,7 @@ impl PgConnector {
         };
         let mut update_vals: Vec<String> = Vec::new();
         for (column, new_data) in table.columns.iter().zip(update.new_tuple.0.iter()) {
-            let val : String = if let Ok(val) = new_data.try_into() {
+            let val: String = if let Ok(val) = new_data.try_into() {
                 val
             } else {
                 tracing::error!("Uncaugh tuple type {:?}", new_data);
@@ -276,7 +276,7 @@ impl PgConnector {
 
         let mut where_vals: Vec<String> = Vec::new();
         for (column, filter) in table.columns.iter().zip(filter_tuple.0.iter()) {
-            let val : String = if let Ok(val) = filter.try_into() {
+            let val: String = if let Ok(val) = filter.try_into() {
                 val
             } else {
                 tracing::error!("Uncaugh tuple type {:?}", filter);
@@ -305,7 +305,7 @@ impl PgConnector {
             }
         };
         for (column, tuple) in table.columns.iter().zip(tuple.0.iter()) {
-            let val : String = if let Ok(val) = tuple.try_into() {
+            let val: String = if let Ok(val) = tuple.try_into() {
                 val
             } else {
                 tracing::error!("Uncaugh tuple type {:?}", tuple);
@@ -323,7 +323,7 @@ impl PgConnector {
         let mut values: Vec<String> = Vec::new();
         let mut col_names: Vec<String> = Vec::new();
         for (column, tuple) in table.columns.iter().zip(insert.tuple.0.iter()) {
-            let val : String = if let Ok(val) = tuple.try_into() {
+            let val: String = if let Ok(val) = tuple.try_into() {
                 val
             } else {
                 tracing::error!("Uncaugh tuple type {:?}", tuple);
@@ -344,7 +344,7 @@ impl PgConnector {
         let mut primary_keys: Vec<String> = Vec::new();
         let mut columns: Vec<String> = Vec::new();
         for column in table.columns.iter() {
-            let type_id = column.type_id.clone() as u32;
+            let type_id = column.type_id as u32;
 
             let column_type = if let Some(column_type) = Type::from_oid(type_id) {
                 column_type
