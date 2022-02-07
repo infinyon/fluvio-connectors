@@ -113,6 +113,7 @@ jobs:
         with:
           name: ${{ matrix.connector-name }}-${{ matrix.rust-target }}
           path: ${{ env.RUST_BIN_DIR }}/${{ matrix.connector-name }}
+          retention-days: 1
 
   build_containers:
     name: Build image ${{ matrix.connector-name }} for ${{ matrix.rust-target }}
@@ -213,6 +214,7 @@ jobs:
         with:
           name: infinyon-fluvio-connector-${{ matrix.connector-name }}-${{ matrix.rust-target }}.tar
           path: /tmp/infinyon-fluvio-connector-${{ matrix.connector-name }}-${{ matrix.rust-target }}.tar
+          retention-days: 1
 
   integration_tests:
     name: Integration testing on - ${{ matrix.os }} for ${{ matrix.connector-name }} connector.
@@ -297,6 +299,7 @@ jobs:
         with:
           name: integration_${{ matrix.connector-name }}
           path: diagnostics*.gz
+          retention-days: 1
 
   docker_push:
     name: Publish ${{ matrix.connector-name }} images to Docker Hub
