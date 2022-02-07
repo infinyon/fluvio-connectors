@@ -232,12 +232,12 @@ jobs:
     env:
       RUST_BACKTRACE: full
     steps:
-      - name: Ensure k3d cluster is ready
+      - uses: actions/checkout@v2
       - uses: AbsaOSS/k3d-action@v2
         name: "Create fluvio k3d Cluster"
         with:
           cluster-name: "fluvio"
-      - uses: actions/checkout@v2
+      - name: Ensure k3d cluster is ready
         run: |
           sleep 5
           ./actions/kd3-check.sh
@@ -299,7 +299,7 @@ jobs:
         with:
           name: integration_${{ matrix.connector-name }}
           path: diagnostics*.gz
-          retention-days: 10
+          retention-days: 5
 
   docker_push:
     name: Publish ${{ matrix.connector-name }} images to Docker Hub
