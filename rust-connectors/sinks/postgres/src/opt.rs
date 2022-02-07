@@ -94,23 +94,28 @@ impl PgConnector {
         }
     }
     pub async fn update_offset(&self, current_offset: i64) -> eyre::Result<()> {
-        let sql = format!("UPDATE fluvio.\"offset\" SET current_offset={} where id = 1", current_offset);
+        let sql = format!(
+            "UPDATE fluvio.\"offset\" SET current_offset={} where id = 1",
+            current_offset
+        );
         //let _ = self.pg_client.prepare(sql.as_str()).await?;
         let _ = self.pg_client.execute(sql.as_str(), &[]).await?;
         Ok(())
     }
     pub async fn start(&mut self) -> eyre::Result<()> {
         let offset = self.get_offset().await?;
-        let mut stream = self.consumer.stream(Offset::from_beginning(offset.try_into().unwrap())).await?;
+        let mut stream = self
+            .consumer
+            .stream(Offset::from_beginning(offset.try_into().unwrap()))
+            .await?;
         while let Some(Ok(next)) = stream.next().await {
             let offset = next.offset;
             let next = next.value();
             let event: ReplicationEvent = serde_json::de::from_slice(next)?;
-            let mut sql_statements : Vec<String> = Vec::new();
+            let mut sql_statements: Vec<String> = Vec::new();
             match event.message {
                 LogicalReplicationMessage::Insert(insert) => {
                     if let Some(table) = self.relations.get(&insert.rel_id) {
-
                         let sql = Self::to_table_insert(table, &insert);
                         tracing::info!("TABLE insert: {:?}", sql);
                         sql_statements.push(sql);
