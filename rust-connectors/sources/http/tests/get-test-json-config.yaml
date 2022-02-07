@@ -7,6 +7,6 @@ direction: source
 parameters:
   endpoint: http://IP_ADDRESS:8080/get
   method: GET
-  output_parts: full
+  output_type: json
   body: ''
   interval: 1
