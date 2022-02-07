@@ -76,19 +76,44 @@ impl PgConnector {
             relations: BTreeMap::new(),
         })
     }
+    pub async fn get_offset(&self) -> eyre::Result<i64> {
+        let schema_create = "CREATE SCHEMA IF NOT EXISTS fluvio";
+        let _ = self.pg_client.execute(schema_create, &[]).await?;
+        let table_create = "CREATE TABLE IF NOT EXISTS fluvio.offset (id INT8 PRIMARY KEY, current_offset INT8 NOT NULL)";
+        let _ = self.pg_client.execute(table_create, &[]).await?;
+        let sql = "select * from fluvio.\"offset\" where id = 1";
+        let rows = self.pg_client.query(sql, &[]).await?;
+        if let Some(offset) = rows.first() {
+            let current_offset: i64 = offset.get("current_offset");
+            Ok(current_offset)
+        } else {
+            let current_offset = 0;
+            let sql = "INSERT INTO fluvio.\"offset\" (id, current_offset) VALUES(1, $1);";
+            let _ = self.pg_client.execute(sql, &[&current_offset]).await?;
+            Ok(current_offset)
+        }
+    }
+    pub async fn update_offset(&self, current_offset: i64) -> eyre::Result<()> {
+        let sql = format!("UPDATE fluvio.\"offset\" SET current_offset={} where id = 1", current_offset);
+        //let _ = self.pg_client.prepare(sql.as_str()).await?;
+        let _ = self.pg_client.execute(sql.as_str(), &[]).await?;
+        Ok(())
+    }
     pub async fn start(&mut self) -> eyre::Result<()> {
-        let mut stream = self.consumer.stream(Offset::from_beginning(0)).await?;
+        let offset = self.get_offset().await?;
+        let mut stream = self.consumer.stream(Offset::from_beginning(offset.try_into().unwrap())).await?;
         while let Some(Ok(next)) = stream.next().await {
+            let offset = next.offset;
             let next = next.value();
             let event: ReplicationEvent = serde_json::de::from_slice(next)?;
+            let mut sql_statements : Vec<String> = Vec::new();
             match event.message {
                 LogicalReplicationMessage::Insert(insert) => {
                     if let Some(table) = self.relations.get(&insert.rel_id) {
+
                         let sql = Self::to_table_insert(table, &insert);
-                        if let Err(e) = self.pg_client.execute(sql.as_str(), &[]).await {
-                            tracing::error!("Error with insert: {:?} - SQL WAS {}", e, sql);
-                        }
                         tracing::info!("TABLE insert: {:?}", sql);
+                        sql_statements.push(sql);
                     } else {
                         tracing::error!("Failed to find table for: {:?}", insert);
                     }
@@ -100,35 +125,21 @@ impl PgConnector {
                     };
                     if let Some(old_table) = self.relations.get_mut(&rel.rel_id) {
                         let alters = Self::to_table_alter(&new_table, old_table);
-                        for sql in alters {
-                            tracing::info!("TABLE ALTER: {:?}", sql);
-                            if let Err(e) = self.pg_client.execute(sql.as_str(), &[]).await {
-                                tracing::error!(
-                                    "Error with table alter: {:?} - SQL WAS {}",
-                                    e,
-                                    sql
-                                );
-                            }
-                        }
+                        sql_statements.extend(alters);
 
                         *old_table = new_table;
                     } else {
                         let sql = Self::to_table_create(&new_table);
                         tracing::info!("TABLE CREATE: {:?}", sql);
-                        if let Err(e) = self.pg_client.execute(sql.as_str(), &[]).await {
-                            tracing::error!("Error with table create: {:?} - SQL WAS {}", e, sql);
-                        }
+                        sql_statements.push(sql);
                         self.relations.insert(rel.rel_id, new_table);
                     }
                 }
-                LogicalReplicationMessage::Commit(_) | LogicalReplicationMessage::Begin(_) => {}
                 LogicalReplicationMessage::Delete(delete) => {
                     if let Some(table) = self.relations.get(&delete.rel_id) {
                         let sql = Self::to_delete(table, &delete);
                         tracing::info!("TABLE delete: {:?}", sql);
-                        if let Err(e) = self.pg_client.execute(sql.as_str(), &[]).await {
-                            tracing::error!("Error with delete: {:?} SQL WAS {}", e, sql);
-                        }
+                        sql_statements.push(sql);
                     } else {
                         tracing::error!("Failed to find table for delete: {:?}", delete);
                     }
@@ -137,9 +148,7 @@ impl PgConnector {
                     if let Some(table) = self.relations.get_mut(&update.rel_id) {
                         let sql = Self::to_update(table, &update);
                         tracing::debug!("TABLE update: {:?}", sql);
-                        if let Err(e) = self.pg_client.execute(sql.as_str(), &[]).await {
-                            tracing::error!("Error with delete: {:?} SQL WAS {}", e, sql);
-                        }
+                        sql_statements.push(sql);
                     } else {
                         tracing::error!("Failed to find table for update: {:?}", update);
                     }
@@ -147,13 +156,20 @@ impl PgConnector {
                 LogicalReplicationMessage::Truncate(trunk) => {
                     let sql = Self::to_table_trucate(&self.relations, trunk);
                     tracing::info!("TABLE delete: {:?}", sql);
-                    if let Err(e) = self.pg_client.execute(sql.as_str(), &[]).await {
-                        tracing::error!("Error with delete: {:?} - SQL WAS {}", e, sql);
-                    }
+                    sql_statements.push(sql);
                 }
+                LogicalReplicationMessage::Commit(_) | LogicalReplicationMessage::Begin(_) => {}
                 other => {
                     tracing::error!("Uncaught replication message: {:?}", other);
                 }
+            }
+            for sql in &sql_statements {
+                if let Err(e) = self.pg_client.execute(sql.as_str(), &[]).await {
+                    tracing::error!("Error with {:?} - SQL WAS {}", e, sql);
+                }
+            }
+            if !sql_statements.is_empty() {
+                let _ = self.update_offset(offset).await?;
             }
         }
         Ok(())

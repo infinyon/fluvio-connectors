@@ -394,6 +394,7 @@ jobs:
         name: "Create fluvio k3d Cluster"
         with:
           cluster-name: "fluvio"
+          args: --timeout 5m
       - name: Ensure k3d cluster is ready
         run: |
           sleep 5
@@ -432,6 +433,7 @@ jobs:
         name: "Create fluvio k3d Cluster"
         with:
           cluster-name: "fluvio"
+          args: --timeout 5m
       - name: Sleep 20 to ensure k3d cluster is ready
         run: sleep 20
       - name: Install Fluvio Local Cluster

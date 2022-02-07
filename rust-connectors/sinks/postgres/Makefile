@@ -8,7 +8,7 @@ FLUVIO_PG_SINK_ENDPOINT=$(FLUVIO_PG_DATABASE_IP):5433
 FLUVIO_PG_SOURCE_ENDPOINT=$(FLUVIO_PG_DATABASE_IP):5432
 
 postgres:
-	docker run --name $(POSTGRES_SINK_NAME) -p $(FLUVIO_PG_SINK_ENDPOINT):5432/tcp -e POSTGRES_PASSWORD=fluviopassword -e POSTGRES_USER=fluvio -d postgres -c 'wal_level=logical'
+	docker run --name $(POSTGRES_SINK_NAME) -p $(FLUVIO_PG_SINK_ENDPOINT):5432/tcp -e POSTGRES_PASSWORD=fluviopassword -e POSTGRES_USER=fluvio -d postgres
 	docker run --name $(POSTGRES_SOURCE_NAME) -p $(FLUVIO_PG_SOURCE_ENDPOINT):5432/tcp -e POSTGRES_PASSWORD=fluviopassword -e POSTGRES_USER=fluvio -d postgres -c 'wal_level=logical'
 
 postgres-clean:
