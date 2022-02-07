@@ -234,8 +234,10 @@ jobs:
         name: "Create fluvio k3d Cluster"
         with:
           cluster-name: "fluvio"
-      - name: Sleep 20 to ensure k3d cluster is ready
-        run: sleep 20
+      - name: Ensure k3d cluster is ready
+        run: |
+          sleep 5
+          ./actions/kd3-check.sh
       - name: Download ${{ matrix.connector-name }} x86_64-unknown-linux-musl Docker Image as Artifact
         uses: actions/download-artifact@v2
         with:
@@ -373,8 +375,10 @@ jobs:
         name: "Create fluvio k3d Cluster"
         with:
           cluster-name: "fluvio"
-      - name: Sleep 20 to ensure k3d cluster is ready
-        run: sleep 20
+      - name: Ensure k3d cluster is ready
+        run: |
+          sleep 5
+          ./actions/kd3-check.sh
       - name: Install Fluvio Local Cluster
         uses: infinyon/fluvio@master
         with:
