@@ -113,6 +113,7 @@ jobs:
         with:
           name: ${{ matrix.connector-name }}-${{ matrix.rust-target }}
           path: ${{ env.RUST_BIN_DIR }}/${{ matrix.connector-name }}
+          retention-days: 1
 
   build_containers:
     name: Build image ${{ matrix.connector-name }} for ${{ matrix.rust-target }}
@@ -213,6 +214,7 @@ jobs:
         with:
           name: infinyon-fluvio-connector-${{ matrix.connector-name }}-${{ matrix.rust-target }}.tar
           path: /tmp/infinyon-fluvio-connector-${{ matrix.connector-name }}-${{ matrix.rust-target }}.tar
+          retention-days: 1
 
   integration_tests:
     name: Integration testing on - ${{ matrix.os }} for ${{ matrix.connector-name }} connector.
@@ -230,12 +232,15 @@ jobs:
     env:
       RUST_BACKTRACE: full
     steps:
+      - uses: actions/checkout@v2
       - uses: AbsaOSS/k3d-action@v2
         name: "Create fluvio k3d Cluster"
         with:
           cluster-name: "fluvio"
-      - name: Sleep 20 to ensure k3d cluster is ready
-        run: sleep 20
+      - name: Ensure k3d cluster is ready
+        run: |
+          sleep 5
+          ./actions/kd3-check.sh
       - name: Download ${{ matrix.connector-name }} x86_64-unknown-linux-musl Docker Image as Artifact
         uses: actions/download-artifact@v2
         with:
@@ -294,6 +299,7 @@ jobs:
         with:
           name: integration_${{ matrix.connector-name }}
           path: diagnostics*.gz
+          retention-days: 5
 
   docker_push:
     name: Publish ${{ matrix.connector-name }} images to Docker Hub
@@ -373,8 +379,10 @@ jobs:
         name: "Create fluvio k3d Cluster"
         with:
           cluster-name: "fluvio"
-      - name: Sleep 20 to ensure k3d cluster is ready
-        run: sleep 20
+      - name: Ensure k3d cluster is ready
+        run: |
+          sleep 5
+          ./actions/kd3-check.sh
       - name: Install Fluvio Local Cluster
         uses: infinyon/fluvio@master
         with:
