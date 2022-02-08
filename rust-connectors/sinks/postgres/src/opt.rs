@@ -159,7 +159,10 @@ impl PgConnector {
         Ok(())
     }
 
-    pub fn to_table_trucate(relations: &BTreeMap<u32, RelationBody>, trunk: TruncateBody) -> String {
+    pub fn to_table_trucate(
+        relations: &BTreeMap<u32, RelationBody>,
+        trunk: TruncateBody,
+    ) -> String {
         let table_names: Vec<String> = trunk
             .rel_ids
             .iter()
@@ -286,7 +289,8 @@ impl PgConnector {
         }
         format!(
             "UPDATE {}.{} SET {} WHERE {}",
-            table.namespace, table.name,
+            table.namespace,
+            table.name,
             update_vals.join(","),
             where_vals.join(" AND ")
         )
@@ -315,7 +319,8 @@ impl PgConnector {
         }
         format!(
             "DELETE FROM {}.{} WHERE {}",
-            table.namespace, table.name,
+            table.namespace,
+            table.name,
             where_clauses.join(" AND ")
         )
     }
@@ -363,6 +368,9 @@ impl PgConnector {
             columns.push(format!("PRIMARY KEY ({})", primary_keys.join(",")));
         }
         let columns = columns.join(",");
-        format!("CREATE TABLE {}.{} ({})", table.namespace, table.name, columns)
+        format!(
+            "CREATE TABLE {}.{} ({})",
+            table.namespace, table.name, columns
+        )
     }
 }
