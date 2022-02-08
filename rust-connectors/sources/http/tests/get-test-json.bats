@@ -30,6 +30,6 @@ teardown() {
     sleep 10
 
     run fluvio consume -o 1 --end-offset 1 -d $TOPIC
-    assert_output --partial '{"body": {"Hello, Fluvio! - ' 
+    assert_output --partial '{"body": "Hello, Fluvio! - ' 
 }
 
