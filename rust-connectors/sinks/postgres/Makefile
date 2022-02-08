@@ -27,11 +27,18 @@ psql-sink:
 psql-source:
 	PGPASSWORD=fluviopassword psql -h $(FLUVIO_PG_DATABASE_IP) -p 5432 -U fluvio
 
+pg_dump-sink:
+	@PGPASSWORD=fluviopassword docker exec -it $(POSTGRES_SINK_NAME) pg_dump -U fluvio
+
+pg_dump-source:
+	@PGPASSWORD=fluviopassword docker exec -it $(POSTGRES_SOURCE_NAME) pg_dump -U fluvio
+
+
 watch-tests:
 	cargo watch -s 'make postgres-clean ; make postgres && fluvio topic delete postgres ; fluvio topic create postgres && sleep 5 && make test-dev'
 
 .EXPORT_ALL_VARIABLES:
 FLUVIO_PG_PUBLICATION=fluvio
-RUST_LOG=debug
+RUST_LOG=info
 FLUVIO_PG_SOURCE_DATABASE_URL=postgres://fluvio:fluviopassword@$(FLUVIO_PG_SOURCE_ENDPOINT)
-FLUVIO_PG_SINK_DATABASE_URL=postgres://fluvio:fluviopassword@$(FLUVIO_PG_SINK_ENDPOINT)/postgres
+FLUVIO_PG_SINK_DATABASE_URL=postgres://fluvio:fluviopassword@$(FLUVIO_PG_SINK_ENDPOINT)
