@@ -36,7 +36,7 @@ teardown() {
     assert_output --partial '"content-type":"text/plain;charset=utf-8"'
 
     run fluvio consume -o 0 --end-offset 0 -d $TOPIC
-    assert_output --partial '{"status":{"version":"HTTP/1.1","code":200,"string":"OK"},"header":'
+    assert_output --partial '"code":200'
 
     run fluvio consume -o 1 --end-offset 1 -d $TOPIC
     assert_output --partial '"body":"Hello, Fluvio! - ' 
