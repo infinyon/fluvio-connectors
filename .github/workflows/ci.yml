@@ -378,7 +378,7 @@ jobs:
       - name: "Start postgres instance"
         run: |
           make -C ./rust-connectors/sources/postgres postgres-docker
-      - uses: AbsaOSS/k3d-action@v2.1.0
+      - uses: AbsaOSS/k3d-action@v1.5.0
         name: "Create fluvio k3d Cluster"
         with:
           cluster-name: "fluvio"
