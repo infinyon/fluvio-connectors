@@ -27,18 +27,18 @@ teardown() {
 @test "http-connector-get-full-json-test" {
     count=1
     echo "Starting consumer on topic $TOPIC"
-    sleep 10
+    sleep 13
 
     run fluvio consume -o 0 --end-offset 0 -d $TOPIC
-    assert_output --partial '"version": "HTTP/1.1",'
+    assert_output --partial '"version":"HTTP/1.1",'
 
     run fluvio consume -o 0 --end-offset 0 -d $TOPIC
-    assert_output --partial '"content-type": "text/plain;charset=utf-8"'
+    assert_output --partial '"content-type":"text/plain;charset=utf-8"'
 
     run fluvio consume -o 0 --end-offset 0 -d $TOPIC
-    assert_output --partial '"status_code": 200,'
+    assert_output --partial '"code":200'
 
     run fluvio consume -o 1 --end-offset 1 -d $TOPIC
-    assert_output --partial '"body": {"Hello, Fluvio! - ' 
+    assert_output --partial '"body":"Hello, Fluvio! - ' 
 }
 
