@@ -93,15 +93,6 @@ impl PgConnector {
             Ok(current_offset)
         }
     }
-    pub async fn update_offset(&self, current_offset: i64) -> eyre::Result<()> {
-        let sql = format!(
-            "UPDATE fluvio.\"offset\" SET current_offset={} where id = 1",
-            current_offset
-        );
-        //let _ = self.pg_client.prepare(sql.as_str()).await?;
-        let _ = self.pg_client.execute(sql.as_str(), &[]).await?;
-        Ok(())
-    }
     pub async fn start(&mut self) -> eyre::Result<()> {
         let offset = self.get_offset().await?;
         let mut stream = self
@@ -117,7 +108,6 @@ impl PgConnector {
                 LogicalReplicationMessage::Insert(insert) => {
                     if let Some(table) = self.relations.get(&insert.rel_id) {
                         let sql = Self::to_table_insert(table, &insert);
-                        tracing::info!("TABLE insert: {:?}", sql);
                         sql_statements.push(sql);
                     } else {
                         tracing::error!("Failed to find table for: {:?}", insert);
@@ -135,7 +125,6 @@ impl PgConnector {
                         *old_table = new_table;
                     } else {
                         let sql = Self::to_table_create(&new_table);
-                        tracing::info!("TABLE CREATE: {:?}", sql);
                         sql_statements.push(sql);
                         self.relations.insert(rel.rel_id, new_table);
                     }
@@ -143,7 +132,6 @@ impl PgConnector {
                 LogicalReplicationMessage::Delete(delete) => {
                     if let Some(table) = self.relations.get(&delete.rel_id) {
                         let sql = Self::to_delete(table, &delete);
-                        tracing::info!("TABLE delete: {:?}", sql);
                         sql_statements.push(sql);
                     } else {
                         tracing::error!("Failed to find table for delete: {:?}", delete);
@@ -152,7 +140,6 @@ impl PgConnector {
                 LogicalReplicationMessage::Update(update) => {
                     if let Some(table) = self.relations.get_mut(&update.rel_id) {
                         let sql = Self::to_update(table, &update);
-                        tracing::debug!("TABLE update: {:?}", sql);
                         sql_statements.push(sql);
                     } else {
                         tracing::error!("Failed to find table for update: {:?}", update);
@@ -160,7 +147,6 @@ impl PgConnector {
                 }
                 LogicalReplicationMessage::Truncate(trunk) => {
                     let sql = Self::to_table_trucate(&self.relations, trunk);
-                    tracing::info!("TABLE delete: {:?}", sql);
                     sql_statements.push(sql);
                 }
                 LogicalReplicationMessage::Commit(_) | LogicalReplicationMessage::Begin(_) => {}
@@ -168,13 +154,15 @@ impl PgConnector {
                     tracing::error!("Uncaught replication message: {:?}", other);
                 }
             }
-            for sql in &sql_statements {
-                if let Err(e) = self.pg_client.execute(sql.as_str(), &[]).await {
-                    tracing::error!("Error with {:?} - SQL WAS {}", e, sql);
-                }
-            }
             if !sql_statements.is_empty() {
-                let _ = self.update_offset(offset).await?;
+                let sql = format!(
+                    "UPDATE fluvio.\"offset\" SET current_offset={} where id = 1",
+                    offset
+                );
+                sql_statements.push(sql);
+                let batch = sql_statements.join(";");
+                tracing::debug!("executing sql: {:?}", batch);
+                self.pg_client.batch_execute(&batch).await?;
             }
         }
         Ok(())

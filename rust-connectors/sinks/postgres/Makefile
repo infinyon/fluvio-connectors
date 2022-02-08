@@ -32,6 +32,6 @@ watch-tests:
 
 .EXPORT_ALL_VARIABLES:
 FLUVIO_PG_PUBLICATION=fluvio
-RUST_LOG=info
+RUST_LOG=debug
 FLUVIO_PG_SOURCE_DATABASE_URL=postgres://fluvio:fluviopassword@$(FLUVIO_PG_SOURCE_ENDPOINT)
-FLUVIO_PG_SINK_DATABASE_URL=postgres://fluvio:fluviopassword@$(FLUVIO_PG_SINK_ENDPOINT)
+FLUVIO_PG_SINK_DATABASE_URL=postgres://fluvio:fluviopassword@$(FLUVIO_PG_SINK_ENDPOINT)/postgres
