@@ -50,12 +50,21 @@ impl TryFrom<&mut HttpResponseRecord> for HttpJsonRecord {
     fn try_from(resp_record: &mut HttpResponseRecord) -> Result<Self, Self::Error> {
         let json_headers = resp_record.headers.as_ref().map(|h| headers_to_json(h));
 
-        Ok(HttpJsonRecord {
-            status: Some(HttpJsonStatus {
-                version: resp_record.version.to_owned(),
-                code: resp_record.status_code.to_owned(),
-                string: resp_record.status_string.to_owned(),
+        let status_version = resp_record.version.to_owned();
+        let status_code = resp_record.status_code.to_owned();
+        let status_string = resp_record.status_string.to_owned();
+
+        let status_rec = match (&status_version, &status_code, &status_string) {
+            (None, None, None) => None,
+            _ => Some(HttpJsonStatus {
+                version: status_version,
+                code: status_code,
+                string: status_string,
             }),
+        };
+
+        Ok(HttpJsonRecord {
+            status: status_rec,
             header: json_headers,
             body: resp_record.body.to_owned(),
         })
