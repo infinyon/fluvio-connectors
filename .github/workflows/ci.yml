@@ -240,11 +240,7 @@ jobs:
       RUST_BACKTRACE: full
     steps:
       - uses: actions/checkout@v2
-<<<<<<< HEAD
       - uses: AbsaOSS/k3d-action@v1.5.0
-=======
-      - uses: AbsaOSS/k3d-action@v2.1.0
->>>>>>> 2244340 (Bump k3d action version)
         name: "Create fluvio k3d Cluster"
         with:
           cluster-name: "fluvio"
