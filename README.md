@@ -81,8 +81,7 @@
 | Helper                      | CI   | Type | Description                  |
 | :---                        | :--- | :--- | :---                         |
 | [bats-helpers]              | TBD  | Test | Bats Helpers                 |
-| [test-connector]            | TBD  | Test | Test Connector               |
-| 
+| [test-connector]            | TBD  | Test | Test Connector               | 
 
 [bats-helpers]: https://github.com/infinyon/fluvio-connectors/tree/main/rust-connectors/utils/bats-helpers
 [test-connector]: https://github.com/infinyon/fluvio-connectors/tree/main/rust-connectors/utils/test-connector
