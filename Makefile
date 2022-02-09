@@ -23,6 +23,9 @@ smoke-test:
 	$(CARGO_BUILDER) run --bin fluvio-connector start ./test-connector/config.yaml
 
 build:
+	$(CARGO_BUILDER) build $(TARGET_FLAG) $(RELEASE_FLAG) --bin $(CONNECTOR_NAME)
+
+build-v2:
 	$(CARGO_BUILDER) build $(TARGET_FLAG) $(RELEASE_FLAG) --bin fluvio-connect-$(CONNECTOR_NAME)
 
 ifeq (${CI},true)

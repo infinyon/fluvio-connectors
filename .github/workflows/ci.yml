@@ -102,10 +102,16 @@ jobs:
       - uses: Swatinem/rust-cache@v1
         with:
           key: ${{ matrix.os }}-${{ matrix.rust-target }}-${{ matrix.connector-name }}
-      - name: Build
+      - name: BuildV1
+        if: matrix.connector-name != 'http'
         env:
           CONNECTOR_NAME: ${{ matrix.connector-name }}
         run: make build
+      - name: BuildV2
+       if: matrix.connector-name == 'http'
+        env:
+          CONNECTOR_NAME: ${{ matrix.connector-name }}
+        run: make buildv2
 
       # Upload artifacts
       - name: Upload artifact - ${{ matrix.connector-name }}
