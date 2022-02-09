@@ -1,2 +1,5 @@
+mod connect;
 mod opt;
-pub use opt::{PgConnector, PgConnectorOpt};
+
+pub use connect::PgConnector;
+pub use opt::PgConnectorOpt;

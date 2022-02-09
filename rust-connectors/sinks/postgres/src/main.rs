@@ -30,6 +30,6 @@ async fn main() -> eyre::Result<()> {
 
     let config: PgConnectorOpt = PgConnectorOpt::from_args();
     let mut connector = PgConnector::new(config).await?;
-    let _ = connector.start().await?;
+    let _ = connector.process_stream().await?;
     Ok(())
 }

@@ -8,7 +8,8 @@ use url::Url;
 #[tokio::test]
 async fn postgres_sink_and_source() -> eyre::Result<()> {
     fluvio_future::subscriber::init_logger();
-    let fluvio_topic = "postgres".to_string();
+    //let fluvio_topic = "postgres".to_string(); // To help debug, use "postgres"
+    let fluvio_topic = uuid::Uuid::new_v4().to_string().replace("-", "");
     let admin = fluvio::FluvioAdmin::connect().await?;
     let _ = admin
         .create(
@@ -18,7 +19,6 @@ async fn postgres_sink_and_source() -> eyre::Result<()> {
         )
         .await;
     let (sink_handle, pg_sink_client) = start_pg_sink(fluvio_topic.clone()).await?;
-
     let (source_handle, pg_source_client) = start_pg_source(fluvio_topic.clone()).await?;
 
     // Create table
@@ -277,8 +277,38 @@ async fn postgres_sink_and_source() -> eyre::Result<()> {
     let count_query = pg_sink_client.query(query, &[]).await?;
     let count: i64 = count_query.first().unwrap().get("count");
     assert_eq!(count, 0, "Count does not match");
+    cleanup(
+        fluvio_topic,
+        sink_handle,
+        pg_sink_client,
+        source_handle,
+        pg_source_client,
+    )
+    .await
+    .expect("Failed to clean up tests");
+
+    Ok(())
+}
+
+async fn cleanup(
+    fluvio_topic: String,
+    sink_handle: JoinHandle<()>,
+    pg_sink_client: Client,
+    source_handle: JoinHandle<()>,
+    pg_source_client: Client,
+) -> eyre::Result<()> {
     sink_handle.abort();
     source_handle.abort();
+
+    let admin = fluvio::FluvioAdmin::connect().await?;
+    let _ = admin.delete::<TopicSpec, String>(fluvio_topic).await;
+
+    let table_truncate = "DROP TABLE public.names cascade";
+    let _ = pg_source_client.execute(table_truncate, &[]).await?;
+    let _ = pg_sink_client.execute(table_truncate, &[]).await?;
+    let _ = pg_sink_client
+        .execute("DROP TABLE fluvio.offset", &[])
+        .await?;
 
     Ok(())
 }
@@ -310,10 +340,14 @@ async fn start_pg_sink(fluvio_topic: String) -> eyre::Result<(JoinHandle<()>, Cl
         .execute("DROP TABLE IF EXISTS names", &[])
         .await?;
     let handle = tokio::spawn(async move {
-        connector.start().await.expect("process stream failed");
+        connector
+            .process_stream()
+            .await
+            .expect("process stream failed");
     });
     Ok((handle, pg_sink_client))
 }
+
 async fn start_pg_source(fluvio_topic: String) -> eyre::Result<(JoinHandle<()>, Client)> {
     use postgres_source::{PgConnector, PgConnectorOpt};
     let postgres_source_url = std::env::var("FLUVIO_PG_SOURCE_DATABASE_URL")
