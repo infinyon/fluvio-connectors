@@ -111,7 +111,7 @@ jobs:
         if: matrix.connector-name == 'http'
         env:
           CONNECTOR_NAME: ${{ matrix.connector-name }}
-        run: make buildv2
+        run: make build-v2
 
       # Upload artifacts
       - name: Upload artifact - ${{ matrix.connector-name }}
