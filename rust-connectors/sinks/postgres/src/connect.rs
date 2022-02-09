@@ -62,6 +62,7 @@ impl PgConnector {
             Ok(current_offset)
         }
     }
+
     pub async fn get_relations(&mut self, offset: i64) -> eyre::Result<()> {
         let stream = self.consumer.stream(Offset::from_beginning(0)).await?;
         let stream = stream.timeout(Duration::from_millis(100));
@@ -81,9 +82,11 @@ impl PgConnector {
     }
     pub async fn process_stream(&mut self) -> eyre::Result<()> {
         let offset = self.get_offset().await?;
-        if offset == 0 {
+        if offset >= 0 {
             self.get_relations(offset).await?;
         }
+        // Offset needs to be one more than the last.
+        let offset = offset + 1;
         let mut stream = self
             .consumer
             .stream(Offset::from_beginning(offset.try_into().unwrap()))

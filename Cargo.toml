@@ -12,3 +12,6 @@ members = [
     "rust-connectors/utils/fluvio-smartstream-map/"
 ]
 resolver = "2"
+[patch.crates-io]
+fluvio = { git = "https://github.com/infinyon/fluvio", branch = "master" }
+fluvio-controlplane-metadata = { git = "https://github.com/infinyon/fluvio", branch = "master" }
