@@ -6,7 +6,7 @@ Sources mqtt events given input mqtt consumer configuration options.
 
 ## Protocol Support
 
-mqtt V4 and V5
+MQTT V3.1.1 and V5
 
 ## mqtt Metadata Modifiers
 
