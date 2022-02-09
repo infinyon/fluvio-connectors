@@ -71,7 +71,7 @@ jobs:
         connector-name:
           - test-connector
           - mqtt
-          - fluvio-connect-http
+          - http
           - postgres-source
         rust: [stable]
     env:
@@ -112,7 +112,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.connector-name }}-${{ matrix.rust-target }}
-          path: ${{ env.RUST_BIN_DIR }}/${{ matrix.connector-name }}
+          path: ${{ env.RUST_BIN_DIR }}/fluvio-connect-${{ matrix.connector-name }}
           retention-days: 1
 
   build_containers:
