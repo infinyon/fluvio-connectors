@@ -19,6 +19,7 @@ Controls the Source connector
 | timeout    | 60       | u64    | mqtt broker connect timeout in seconds |
 | mqtt_url   | -        | String | mqtt broker Host |
 | mqtt_topic | -        | String | mqtt topic to subscribe and source events from |
+| client_id  | UUID V4  | String | mqtt client ID |
 
 ### Record Output Configuration
 
