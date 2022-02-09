@@ -108,7 +108,7 @@ jobs:
           CONNECTOR_NAME: ${{ matrix.connector-name }}
         run: make build
       - name: BuildV2
-       if: matrix.connector-name == 'http'
+        if: matrix.connector-name == 'http'
         env:
           CONNECTOR_NAME: ${{ matrix.connector-name }}
         run: make buildv2
