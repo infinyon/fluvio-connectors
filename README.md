@@ -88,8 +88,8 @@
 
 ## Contributing
 
-See [CONTRIBUTING.md]
+See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## Release Process
 
-See [RELEASE.md]
+See [RELEASE.md](RELEASE.md)
