@@ -5,7 +5,7 @@ use structopt::StructOpt;
 
 pub use fluvio::{consumer, Fluvio, PartitionConsumer, TopicProducer};
 
-use fluvio_controlplane_metadata::smartmodule::SmartModuleSpec;
+use fluvio::metadata::smartmodule::SmartModuleSpec;
 
 #[derive(StructOpt, Debug, JsonSchema, Clone)]
 #[structopt(settings = &[AppSettings::DeriveDisplayOrder])]
