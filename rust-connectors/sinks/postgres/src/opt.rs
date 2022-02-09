@@ -13,13 +13,6 @@ pub struct PgConnectorOpt {
     #[structopt(long, env = "FLUVIO_PG_DATABASE_URL", hide_env_values = true)]
     pub url: Url,
 
-    /// The time (in millis) to wait while fetching latest Fluvio record to resume
-    #[structopt(long, env = "FLUVIO_PG_RESUME_TIMEOUT", default_value = "1000")]
-    pub resume_timeout: u64,
-
-    #[structopt(long)]
-    pub skip_setup: bool,
-
     #[structopt(flatten)]
     #[schemars(flatten)]
     pub common: CommonSourceOpt,

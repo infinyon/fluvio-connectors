@@ -320,8 +320,6 @@ async fn start_pg_sink(fluvio_topic: String) -> eyre::Result<(JoinHandle<()>, Cl
 
     let mut connector = PgConnector::new(PgConnectorOpt {
         url: Url::parse(&postgres_sink_url).expect("Failed to parse connector url"),
-        resume_timeout: 1000,
-        skip_setup: false,
         common: CommonSourceOpt {
             fluvio_topic: fluvio_topic.clone(),
             rust_log: None,
