@@ -121,7 +121,7 @@ impl PgConnector {
 
         let publication = &config.publication;
         tracing::info!("Querying publications {publication}");
-        let publications_query = "select * from pg_publication where pubname=$1";
+        let publications_query = "SELECT * from pg_publication WHERE pubname=$1";
         let publications = pg_client.query(publications_query, &[&publication]).await?;
         if publications.is_empty() {
             tracing::info!("Creating publication {publication}");
@@ -159,7 +159,7 @@ impl PgConnector {
             r#"START_REPLICATION SLOT "{}" LOGICAL {} {}"#,
             self.config.slot, last_lsn, options
         );
-        println!("Running replication query - {}", query);
+        tracing::info!("Running replication query - {}", query);
         let copy_stream = self
             .pg_client
             .copy_both_simple::<bytes::Bytes>(&query)

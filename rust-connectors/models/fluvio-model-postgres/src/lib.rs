@@ -42,7 +42,7 @@ pub enum LogicalReplicationMessage {
 pub struct Tuple(pub Vec<TupleData>);
 
 /// A column as it appears in the replication stream
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Column {
     /// Currently may be 0 or 1, representing whether this column is part of the key.
     pub flags: i8,
@@ -80,6 +80,25 @@ pub enum TupleData {
     String(String),
     /// The raw column data as a binary string
     RawText(Vec<u8>),
+}
+
+// This isn't the best use of TryInto<String>.
+impl TryInto<String> for &TupleData {
+    type Error = String;
+    fn try_into(self) -> Result<String, Self::Error> {
+        match self {
+            TupleData::Bool(v) => Ok(format!("{v}")),
+            TupleData::Char(c) => Ok(format!("{c}")),
+            TupleData::Int2(i) => Ok(format!("{i}")),
+            TupleData::Int4(i) => Ok(format!("{i}")),
+            TupleData::Int8(i) => Ok(format!("{i}")),
+            TupleData::Oid(i) => Ok(format!("{i}")),
+            TupleData::Float4(i) => Ok(format!("{i}")),
+            TupleData::Float8(i) => Ok(format!("{i}")),
+            TupleData::String(i) => Ok(format!("'{i}'")),
+            other => Err(format!("Unsupported tupple type {:?}", other)),
+        }
+    }
 }
 
 /// A BEGIN statement
@@ -185,13 +204,14 @@ pub struct DeleteBody {
     pub rel_id: u32,
     /// The tuple of data that used to belong in this row.
     pub old_tuple: Option<Tuple>,
-    /// A tuple of the key columns of htis relation.
+    /// A tuple of the key columns of this relation.
     pub key_tuple: Option<Tuple>,
 }
 
 /// A TRUNCATE statement
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TruncateBody {
+    /// Option bits for TRUNCATE: 1 for CASCADE, 2 for RESTART IDENTITY
     pub options: i8,
     /// The IDs of the relations being truncated (i.e. table OIDs).
     pub rel_ids: Vec<u32>,

@@ -14,7 +14,7 @@ readonly IMAGE_NAME="infinyon/fluvio-connect-$CONNECTOR_NAME"
 readonly BUILD_ROOT="$(realpath "$(dirname "${BASH_SOURCE[0]}")"/../../container-build)"
 readonly WORK_DIR="$(mktemp -d -p "$BUILD_ROOT")"
 
-# Default path to Dockerfile (for `docker build`) 
+# Default path to Dockerfile (for `docker build`)
 readonly DOCKERFILE_PATH="$(realpath "${DOCKERFILE_PATH:-$BUILD_ROOT/dockerfiles/default/Dockerfile}")"
 
 # check if tmp dir was created
@@ -60,6 +60,7 @@ function main() {
     docker build $IMAGE_TAGS $BUILD_ARGS .
     docker save "${IMAGE_NAME}" > "${DOCKER_IMAGE_TAR}"
     k3d image import -k -c fluvio "${DOCKER_IMAGE_TAR}"
+    docker exec k3d-fluvio-server-0 sh -c "ctr image list -q"
   else
     # shellcheck disable=SC2086
     docker buildx build -o type=docker,dest=- $IMAGE_TAGS $BUILD_ARGS . > ${DOCKER_IMAGE_TAR}
