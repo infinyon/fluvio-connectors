@@ -71,7 +71,7 @@ jobs:
         connector-name:
           - test-connector
           - mqtt
-          - http
+          - fluvio-connect-http
           - postgres-source
         rust: [stable]
     env:
