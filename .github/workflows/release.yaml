@@ -28,6 +28,12 @@ jobs:
           - os: ubuntu-latest
             connector-name: http
             image-name: infinyon/fluvio-connect-http
+          - os: ubuntu-latest
+            connector-name: postgres-source
+            image-name: infinyon/fluvio-connect-postgres-source
+          - os: ubuntu-latest
+            connector-name: postgres-sink
+            image-name: infinyon/fluvio-connect-postgres-sink
     steps:
       - uses: actions/checkout@v2
       - name: Try pulling ${{ matrix.connector-name }} x86_64-unknown-linux-musl docker images

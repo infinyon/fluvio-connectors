@@ -94,7 +94,13 @@ impl PgConnector {
         while let Some(Ok(next)) = stream.next().await {
             let offset = next.offset;
             let next = next.value();
-            let event: ReplicationEvent = serde_json::de::from_slice(next)?;
+            let event: ReplicationEvent = match serde_json::de::from_slice(next) {
+                Ok(next) => next,
+                Err(e) => {
+                    tracing::error!("Error deseralizing ReplicationEvent {:?}", e);
+                    continue;
+                }
+            };
             let mut sql_statements: Vec<String> = Vec::new();
             match event.message {
                 LogicalReplicationMessage::Insert(insert) => {
