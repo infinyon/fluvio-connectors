@@ -22,66 +22,80 @@
 </a>
 </div>
 
-## Rust Connectors (rust-connectors/sources/)
+## Rust Source Connectors (rust-connectors/sources/)
 
-| Connector                 | Release     | Docker | CI     | Types               | Protocols/Description |
-| :---                      | :----:      | :---   | :----  | :----:              | :---                  |
-| [fluvio-connect-http]     | TBD         | TBD    | TBD    | Source              | HTTP 1.0, 1.1, 2.0    |
-| [fluvio-connect-mqtt]     | TBD         | TBD    | TBD    | Source              | MQTT V4, V5           |
-| [fluvio-connect-postgres] | TBD         | TBD    | TBD    | Source, Sink        | Postgres CDC          |
-| [fluvio-connect-syslog]   | TBD         | TBD    | TBD    | Source, Sink        | Syslog                |
+| Connector          | Release     | Docker (infinyon/connect-)      | Protocols/Description |
+| :---               | :----:      | :---                            | :---                  |
+| [sources/http]     | 0.2.0       | [infinyon/http]                 | HTTP 1.0, 1.1, 2.0    |
+| [sources/mqtt]     | 0.1.1       | [infinyon/mqtt]                 | MQTT V4, V5           |
+| [sources/postgres] | 0.1.0       | [infinyon/postgres-source]      | Postgres CDC          |
+| [sources/syslog]   | 0.1.0       | [infinyon/syslog]               | Syslog                |
 
-[fluvio-connect-http]: https://github.com/infinyon/fluvio-connectors/tree/main/rust-connectors/sources/http
-[fluvio-connect-mqtt]: https://github.com/infinyon/fluvio-connectors/tree/main/rust-connectors/sources/mqtt
-[fluvio-connect-postgres]: https://github.com/infinyon/fluvio-connectors/tree/main/rust-connectors/sources/postgres
-[fluvio-connect-syslog]: https://github.com/infinyon/fluvio-connectors/tree/main/rust-connectors/sources/syslog
+[sources/http]: https://github.com/infinyon/fluvio-connectors/tree/main/rust-connectors/sources/http
+[sources/mqtt]: https://github.com/infinyon/fluvio-connectors/tree/main/rust-connectors/sources/mqtt
+[sources/postgres]: https://github.com/infinyon/fluvio-connectors/tree/main/rust-connectors/sources/postgres
+[sources/syslog]: https://github.com/infinyon/fluvio-connectors/tree/main/rust-connectors/sources/syslog
+
+[infinyon/http]: https://hub.docker.com/r/infinyon/fluvio-connect-http
+[infinyon/mqtt]: https://hub.docker.com/r/infinyon/fluvio-connect-mqtt
+[infinyon/postgres-source]: https://hub.docker.com/r/infinyon/fluvio-connect-postgres-source
+[infinyon/syslog]: https://hub.docker.com/r/infinyon/fluvio-connect-syslog
+
+## Rust Sink Connectors (rust-connectors/sinks/)
+
+| Connector          | Release     | Docker (infinyon/connect-)      | Protocols/Description |
+| :---               | :----:      | :---                            | :---                  |
+| [sinks/postgres]   | 0.1.0       | [infinyon/postgres-sink]        | Postgres CDC          |
+
+[sinks/postgres]: https://github.com/infinyon/fluvio-connectors/tree/main/rust-connectors/sinks/postgres
+[infinyon/postgres-sink]: https://hub.docker.com/r/infinyon/fluvio-connect-postgres-sink
 
 ## Libs (rust-connectors/)
 
-| Lib                         | path   | CI   | Type | Description                  |
-| :---                        | :---   | :--- | :--- | :---                         |
-| [fluvio-connectors-common]  | common | TBD  | Rust | Common Metadata opts         |
+| Lib                         | path   | Type | Description                  |
+| :---                        | :---   | :--- | :---                         |
+| [fluvio-connectors-common]  | common | Rust | Common Metadata opts         |
 
 [fluvio-connectors-common]: https://github.com/infinyon/fluvio-connectors/tree/main/rust-connectors/common
 
 ## Models (rust-connectors/models)
 
-| Model                     | Language(s) | CI   | Description             |
-| :---                      | :---        | :--- | :---                    |
-| [fluvio-model-postgres]   | Rust        | TBD  | Postgres Data Model     |
+| Model                     | Language(s) | Description             |
+| :---                      | :---        | :---                    |
+| [fluvio-model-postgres]   | Rust        | Postgres Data Model     |
 
 [fluvio-model-postgres]: https://github.com/infinyon/fluvio-connectors/tree/main/rust-connectors/models/fluvio-model-postgres
 
 ## Examples (examples/)
 
-| Example                   | Language(s) | CI   | Types  | Protocols/Description   |
-| :---                      | :---        | :--- | :----: | :---                    |
-| [python-client-connector] | Python      | TBD  | Source | Source random cat facts |
+| Example                   | Language(s) | Types  | Protocols/Description   |
+| :---                      | :---        | :----: | :---                    |
+| [python-client-connector] | Python      | Source | Source random cat facts |
 
 [python-client-connector]: https://github.com/infinyon/fluvio-connectors/tree/main/examples/python-client-connector
 
 ## Mocks (rust-connectors/utils/mocks)
 
-| Mock                        | CI   | Type | Description                  |
-| :---                        | :--- | :--- | :---                         |
-| [http-json-mock]            | TBD  | Mock | Mock used by HTTP Bats       |
+| Mock                        | Type | Description                  |
+| :---                        | :--- | :---                         |
+| [http-json-mock]            | Mock | Mock used by HTTP Bats       |
 
 [http-json-mock]: https://github.com/infinyon/fluvio-connectors/tree/main/rust-connectors/utils/mocks/http-json-mock
 
 ## Smart Stream (rust-connectors/utils)
 
-| Smart Stream                | CI   | Description                  |
-| :---                        | :--- | :---                         |
-| [fluvio-smartstream-map]    | TBD  | Map                          |
+| Smart Stream                | Description                  |
+| :---                        | :---                         |
+| [fluvio-smartstream-map]    | Map                          |
 
 [fluvio-smartstream-map]: https://github.com/infinyon/fluvio-connectors/tree/main/rust-connectors/utils/fluvio-smartstream-map
 
 ## Other Helpers (rust-connectors/utils)
 
-| Helper                      | CI   | Type | Description                  |
-| :---                        | :--- | :--- | :---                         |
-| [bats-helpers]              | TBD  | Test | Bats Helpers                 |
-| [test-connector]            | TBD  | Test | Test Connector               | 
+| Helper                      | Type | Description                  |
+| :---                        | :--- | :---                         |
+| [bats-helpers]              | Test | Bats Helpers                 |
+| [test-connector]            | Test | Test Connector               | 
 
 [bats-helpers]: https://github.com/infinyon/fluvio-connectors/tree/main/rust-connectors/utils/bats-helpers
 [test-connector]: https://github.com/infinyon/fluvio-connectors/tree/main/rust-connectors/utils/test-connector
@@ -90,6 +104,3 @@
 
 See [CONTRIBUTING.md](CONTRIBUTING.md)
 
-## Release Process
-
-See [RELEASE.md](RELEASE.md)
