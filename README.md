@@ -6,7 +6,6 @@
 <br>
 <br>
 
-<div>
 <!-- CI Combined status -->
 <a href="https://github.com/infinyon/fluvio-connectors/actions/workflows/ci.yml">
 <img src="https://github.com/infinyon/fluvio-connectors/workflows/CI/badge.svg" alt="CI Status" />
