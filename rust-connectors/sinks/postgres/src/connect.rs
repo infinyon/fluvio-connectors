@@ -1,16 +1,12 @@
-
 use fluvio::{Fluvio, Offset, PartitionConsumer};
 use tokio_stream::StreamExt;
 
 use crate::PgConnectorOpt;
 use fluvio_model_postgres::RelationBody;
+use fluvio_model_postgres::{convert, LogicalReplicationMessage, ReplicationEvent};
 use std::collections::BTreeMap;
 use std::time::Duration;
 use tokio_postgres::{Client, NoTls};
-use fluvio_model_postgres::{
-    LogicalReplicationMessage, ReplicationEvent,
-    convert,
-};
 
 /// A Fluvio connector for Postgres CDC.
 pub struct PgConnector {
@@ -111,7 +107,7 @@ impl PgConnector {
                 }
                 LogicalReplicationMessage::Relation(new_rel) => {
                     if let Some(old_table) = self.relations.get_mut(&new_rel.rel_id) {
-                        let alters = convert::to_table_alter(&new_rel, &old_table);
+                        let alters = convert::to_table_alter(&new_rel, old_table);
                         sql_statements.extend(alters);
 
                         *old_table = new_rel;
