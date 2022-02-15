@@ -1,6 +1,7 @@
 # Connector Change Log
 
-## mqtt Version 0.X.X - UNRELEASED
+## mqtt Version 0.2.0 - UNRELEASED
+* Add TLS Support for MQTT Connector ([PR #179](https://github.com/infinyon/fluvio-connectors/pull/179))
 
 ## mqtt Version 0.1.1 - 2022-Jan-18
 * Chore bump Version ([PR #120](https://github.com/infinyon/fluvio-connectors/pull/120))

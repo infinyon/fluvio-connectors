@@ -12,14 +12,20 @@ MQTT V3.1.1 and V5
 
 ### Source Configuration
 
-Controls the Source connector
+#### Paramaters
 
-| Option     | default  | type   | description |
-| :---       | :---     | :---   | :----       |
-| timeout    | 60       | u64    | mqtt broker connect timeout in seconds |
-| mqtt_url   | -        | String | mqtt broker Host |
-| mqtt_topic | -        | String | mqtt topic to subscribe and source events from |
-| client_id  | UUID V4  | String | mqtt client ID |
+| Option        | default  | type   | description                                             |
+| :---          | :---     | :---   | :----                                                   |
+| timeout       | 60       | u64    | mqtt broker connect timeout in seconds                  |
+| mqtt_url      | -        | String | MQTT url which includes schema, username, domain and port. *USE MQTT_URL* in secrets if you need a password |
+| mqtt_topic    | -        | String | mqtt topic to subscribe and source events from          |
+| client_id     | UUID V4  | String | mqtt client ID                                          |
+
+#### Secrets
+
+| Option        | default  | type   | description                                             |
+| :---          | :---     | :---   | :----                                                   |
+| MQTT_URL      | -        | String | MQTT url which uncludes schema, username, pasword, domain and port    |
 
 ### Record Output Configuration
 
