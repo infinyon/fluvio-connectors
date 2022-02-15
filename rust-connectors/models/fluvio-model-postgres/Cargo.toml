@@ -5,3 +5,5 @@ edition = "2021"
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
+postgres-types = "0.2.2"
+tracing = { version = "0.1" }

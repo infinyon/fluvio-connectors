@@ -1,3 +1,4 @@
+pub mod convert;
 use serde::{Deserialize, Serialize};
 
 /// One top-level event from the Postgres logical replication stream.
