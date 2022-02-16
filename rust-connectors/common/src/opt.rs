@@ -3,7 +3,7 @@ use schemars::JsonSchema;
 use structopt::clap::AppSettings;
 use structopt::StructOpt;
 
-pub use fluvio::{consumer, Fluvio, PartitionConsumer, TopicProducer};
+pub use fluvio::{consumer, metadata::topic::TopicSpec, Fluvio, PartitionConsumer, TopicProducer};
 
 use fluvio::metadata::smartmodule::SmartModuleSpec;
 
@@ -54,8 +54,24 @@ impl CommonSourceOpt {
         }
         fluvio_future::subscriber::init_logger();
     }
+    pub async fn ensure_topic_exists(&self) -> anyhow::Result<()> {
+        let admin = fluvio::FluvioAdmin::connect().await?;
+        let topics = admin.list::<TopicSpec, _>(vec![]).await?;
+        let topic_exists = topics.iter().any(|t| t.name == self.fluvio_topic);
+        if !topic_exists {
+            let _ = admin
+                .create(
+                    self.fluvio_topic.clone(),
+                    false,
+                    TopicSpec::new_computed(1, 1, Some(false)),
+                )
+                .await;
+        }
+        Ok(())
+    }
     pub async fn create_producer(&self) -> anyhow::Result<TopicProducer> {
         let fluvio = fluvio::Fluvio::connect().await?;
+        self.ensure_topic_exists().await?;
 
         let producer = match (&self.filter, &self.map, &self.arraymap) {
             (Some(filter_path), _, _) => {
@@ -115,6 +131,7 @@ impl CommonSourceOpt {
         topic: &str,
         partition: i32,
     ) -> anyhow::Result<PartitionConsumer> {
+        self.ensure_topic_exists().await?;
         let consumer = consumer(topic, partition).await?;
         Ok(consumer)
     }
