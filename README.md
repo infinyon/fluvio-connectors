@@ -23,12 +23,12 @@
 
 ## Rust Source Connectors (rust-connectors/sources/)
 
-| Connector          | Release     | Docker (infinyon/connect-)      | Protocols/Description |
-| :---               | :----:      | :---                            | :---                  |
-| [sources/http]     | 0.2.0       | [infinyon/http]                 | HTTP 1.0, 1.1, 2.0    |
-| [sources/mqtt]     | 0.1.1       | [infinyon/mqtt]                 | MQTT V4, V5           |
-| [sources/postgres] | 0.1.0       | [infinyon/postgres-source]      | Postgres CDC          |
-| [sources/syslog]   | 0.1.0       | [infinyon/syslog]               | Syslog                |
+| Connector          | Release     | Protocols/Description |
+| :---               | :----:      | :---                  |
+| [sources/http]     | 0.2.0       | HTTP 1.0, 1.1, 2.0    |
+| [sources/mqtt]     | 0.1.1       | MQTT V4, V5           |
+| [sources/postgres] | 0.1.0       | Postgres CDC          |
+| [sources/syslog]   | 0.1.0       | Syslog                |
 
 [sources/http]: https://github.com/infinyon/fluvio-connectors/tree/main/rust-connectors/sources/http
 [sources/mqtt]: https://github.com/infinyon/fluvio-connectors/tree/main/rust-connectors/sources/mqtt
@@ -42,9 +42,9 @@
 
 ## Rust Sink Connectors (rust-connectors/sinks/)
 
-| Connector          | Release     | Docker (infinyon/connect-)      | Protocols/Description |
-| :---               | :----:      | :---                            | :---                  |
-| [sinks/postgres]   | 0.1.0       | [infinyon/postgres-sink]        | Postgres CDC          |
+| Connector          | Release     | Protocols/Description |
+| :---               | :----:      | :---                  |
+| [sinks/postgres]   | 0.1.0       | Postgres CDC          |
 
 [sinks/postgres]: https://github.com/infinyon/fluvio-connectors/tree/main/rust-connectors/sinks/postgres
 [infinyon/postgres-sink]: https://hub.docker.com/r/infinyon/fluvio-connect-postgres-sink
