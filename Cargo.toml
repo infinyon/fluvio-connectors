@@ -13,4 +13,4 @@ members = [
 ]
 resolver = "2"
 [patch.crates-io]
-fluvio = { git = "https://github.com/infinyon/fluvio", branch = "master" }
+rumqttc = { git = "https://github.com/bytebeamio/rumqtt" }

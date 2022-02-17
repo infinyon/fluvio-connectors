@@ -5,19 +5,20 @@ mod error;
 use error::MqttConnectorError;
 
 use fluvio_future::tracing::{debug, error, info};
-use rumqttc::{v4::Packet, Event};
-use rumqttc::{AsyncClient, MqttOptions, QoS};
+use rumqttc::{v4::Packet, AsyncClient, ClientConfig, Event, MqttOptions, QoS, Transport};
 use schemars::{schema_for, JsonSchema};
 use serde::Serialize;
 use std::convert::TryFrom;
+use std::time::Duration;
 use structopt::StructOpt;
+use url::Url;
 
 #[derive(StructOpt, Debug, JsonSchema)]
 struct MqttOpts {
     #[structopt(long)]
     timeout: Option<u64>,
 
-    #[structopt(short, long)]
+    #[structopt(short, long, env = "MQTT_URL", hide_env_values = true)]
     mqtt_url: String,
 
     #[structopt(long)]
@@ -69,26 +70,47 @@ fn main() -> Result<(), MqttConnectorError> {
     info!("Initializing MQTT connector");
 
     async_global_executor::block_on(async move {
-        let mqtt_timeout_seconds = opts.timeout.unwrap_or(60);
-        let mqtt_url = opts.mqtt_url;
+        let mqtt_timeout_seconds = Duration::from_secs(opts.timeout.unwrap_or(60));
         let mqtt_topic = opts.mqtt_topic;
 
         let client_id = opts
             .client_id
             .unwrap_or_else(|| uuid::Uuid::new_v4().to_string());
 
-        info!(
-            %mqtt_timeout_seconds,
-            %mqtt_url,
-            fluvio_topic=%opts.common.fluvio_topic,
-            %mqtt_topic,
-            %client_id
-        );
+        let mut url = Url::parse(&opts.mqtt_url)?;
+        if !url.query_pairs().any(|(key, _)| key == "client_id") {
+            url.query_pairs_mut().append_pair("client_id", &client_id);
+        }
 
-        let timeout = std::time::Duration::from_secs(mqtt_timeout_seconds);
+        {
+            let mut url_without_password = url.clone();
+            let _ = url_without_password.set_password(None);
+            info!(
+                timout=&opts.timeout,
+                mqtt_url=%url_without_password,
+                fluvio_topic=%opts.common.fluvio_topic,
+                %mqtt_topic,
+                %client_id
+            );
+        }
+        let mut mqttoptions = MqttOptions::try_from(url.clone())?;
+        mqttoptions.set_keep_alive(mqtt_timeout_seconds);
+        if url.scheme() == "mqtts" || url.scheme() == "ssl" {
+            let mut root_cert_store = rustls::RootCertStore::empty();
+            for cert in
+                rustls_native_certs::load_native_certs().expect("could not load platform certs")
+            {
+                root_cert_store
+                    .add(&rustls::Certificate(cert.0))
+                    .expect("Failed to parse DER");
+            }
+            let client_config = ClientConfig::builder()
+                .with_safe_defaults()
+                .with_root_certificates(root_cert_store)
+                .with_no_client_auth();
 
-        let mut mqttoptions = MqttOptions::new(client_id, mqtt_url, 1883);
-        mqttoptions.set_keep_alive(timeout);
+            mqttoptions.set_transport(Transport::tls_with_config(client_config.into()));
+        }
         let producer = opts.common.create_producer().await?;
 
         loop {
@@ -101,7 +123,7 @@ fn main() -> Result<(), MqttConnectorError> {
                 let notification = match eventloop.poll().await {
                     Ok(notification) => notification,
                     Err(e) => {
-                        error!("Mqtt error {:?}", e);
+                        error!("Mqtt error {}", e);
                         break;
                     }
                 };
@@ -109,7 +131,7 @@ fn main() -> Result<(), MqttConnectorError> {
                     let fluvio_record = serde_json::to_string(&mqtt_event)?;
                     debug!("Record before smartstream {}", fluvio_record);
                     if let Err(e) = producer.send(RecordKey::NULL, fluvio_record).await {
-                        error!("Fluvio error! {:?}", e);
+                        error!("Fluvio error! {}", e);
                         producer.clear_errors().await;
                         break;
                     }
