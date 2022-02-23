@@ -21,14 +21,14 @@
 </a>
 </div>
 
-## Rust Source Connectors (rust-connectors/sources/)
+## Source Connectors
 
-| Connector          | Release     | Protocols/Description |
-| :---               | :----:      | :---                  |
-| [sources/http]     | 0.2.0       | HTTP 1.0, 1.1, 2.0    |
-| [sources/mqtt]     | 0.1.1       | MQTT V4, V5           |
-| [sources/postgres] | 0.1.0       | Postgres CDC          |
-| [sources/syslog]   | 0.1.0       | Syslog                |
+| Connector          | Release     | Type | Protocols/Description |
+| :---               | :----:      | :--- | :---                  |
+| [sources/http]     | 0.2.0       | Rust | HTTP 1.0, 1.1, 2.0    |
+| [sources/mqtt]     | 0.1.1       | Rust | MQTT V4, V5           |
+| [sources/postgres] | 0.1.0       | Rust | Postgres CDC          |
+| [sources/syslog]   | 0.1.0       | Rust | Syslog                |
 
 [sources/http]: https://github.com/infinyon/fluvio-connectors/tree/main/rust-connectors/sources/http
 [sources/mqtt]: https://github.com/infinyon/fluvio-connectors/tree/main/rust-connectors/sources/mqtt
@@ -40,11 +40,11 @@
 [infinyon/postgres-source]: https://hub.docker.com/r/infinyon/fluvio-connect-postgres-source
 [infinyon/syslog]: https://hub.docker.com/r/infinyon/fluvio-connect-syslog
 
-## Rust Sink Connectors (rust-connectors/sinks/)
+## Sink Connectors
 
-| Connector          | Release     | Protocols/Description |
-| :---               | :----:      | :---                  |
-| [sinks/postgres]   | 0.1.0       | Postgres CDC          |
+| Connector          | Release     | Type | Protocols/Description |
+| :---               | :----:      | :--- | :---                  |
+| [sinks/postgres]   | 0.1.0       | Rust | Postgres CDC          |
 
 [sinks/postgres]: https://github.com/infinyon/fluvio-connectors/tree/main/rust-connectors/sinks/postgres
 [infinyon/postgres-sink]: https://hub.docker.com/r/infinyon/fluvio-connect-postgres-sink
