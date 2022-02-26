@@ -7,15 +7,6 @@ on:
         description: 'Fluvio Connector to Build'
         required: true
         type: string
-#      serial:
-#        description: 'Unique Serial Identifier'
-#        required: true
-#        type: string
-#    outputs:
-#      artefacts_url:
-#        description: 'Built Artefacts'
-#        value: ${{ steps.bundle_builder.outputs.artefacts_url }}
-#        type: string
 
 jobs:
   rust-builder:
@@ -70,3 +61,4 @@ jobs:
           name: ${{ inputs.name }}-${{ matrix.rust-target }}
           path: ${{ env.RUST_BIN_DIR }}/${{ inputs.name }}
           retention-days: 1
+
