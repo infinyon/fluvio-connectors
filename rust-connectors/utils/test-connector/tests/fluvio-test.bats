@@ -27,7 +27,7 @@ teardown() {
     ENDING_OFFSET=$(fluvio partition list | grep $TOPIC | awk '{print $9}')
     echo "Starting offset: $STARTING_OFFSET"
     echo "Ending offset: $ENDING_OFFSET"
-    [ "0" != "$ENDING_OFFSET" ]
-    [ "$STARTING_OFFSET" != "$ENDING_OFFSET" ]
+    [ "0" -ne "$ENDING_OFFSET" ]
+    [ "$STARTING_OFFSET" -ne "$ENDING_OFFSET" ]
 }
 
