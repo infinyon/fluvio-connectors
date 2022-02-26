@@ -1,0 +1,64 @@
+name: "Fluvio Connector Builder"
+
+on:
+  workflow_call:
+    inputs:
+      name:
+        description: 'Fluvio Connector to Build'
+        required: true
+        type: string
+
+jobs:
+  rust-builder:
+    name:  Build binary ${{ inputs.name }} for ${{ matrix.rust-target }} on (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        rust-target:
+          - x86_64-unknown-linux-musl
+          - aarch64-unknown-linux-musl
+        rust: [stable]
+    env:
+      RUST_BACKTRACE: full
+      RUSTV: ${{ matrix.rust }}
+      TARGET: ${{ matrix.rust-target }}
+      RUST_BIN_DIR: target/${{ matrix.rust-target }}/debug
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          repository: infinyon/fluvio-connectors
+      - name: Set RELEASE mode
+        shell: bash
+        run: |
+          echo "RELEASE=true" | tee -a $GITHUB_ENV
+          echo "RELEASE_NAME=release" | tee -a $GITHUB_ENV
+          echo "RUST_BIN_DIR=target/${{ matrix.rust-target }}/release" | tee -a $GITHUB_ENV
+      - name: Print env
+        run: |
+          echo "RUST_BIN_DIR = ${{ env.RUST_BIN_DIR }} "
+      - name: Install Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+          target: ${{ matrix.rust-target }}
+      - name: Install zig
+        run: ./actions/zig-install.sh ${{ matrix.os }}
+      - uses: Swatinem/rust-cache@v1
+        with:
+          key: ${{ matrix.os }}-${{ matrix.rust-target }}-${{ inputs.name }}
+      - name: Build
+        env:
+          CONNECTOR_NAME: ${{ inputs.name }}
+        run: make build
+
+      # Upload artifacts
+      - name: Upload artifact - ${{ inputs.name }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ inputs.name }}-${{ matrix.rust-target }}
+          path: ${{ env.RUST_BIN_DIR }}/${{ inputs.name }}
+          retention-days: 1
+
