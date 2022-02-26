@@ -1,0 +1,85 @@
+name: "Connector Container Builder"
+
+on:
+  workflow_call:
+    inputs:
+      name:
+        description: 'Fluvio Connector to Build'
+        required: true
+        type: string
+
+jobs:
+  build_containers:
+    name: Build image ${{ inputs.name }} for ${{ matrix.rust-target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        rust: [stable]
+        rust-target:
+          - x86_64-unknown-linux-musl
+          - aarch64-unknown-linux-musl
+    env:
+      RUSTV: ${{ matrix.rust }}
+      TARGET: ${{ matrix.rust-target }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          repository: infinyon/fluvio-connectors      
+      # Building w/ QEMU for the arm64 support
+      - name: Set up QEMU
+        id: qemu
+        uses: docker/setup-qemu-action@v1
+        with:
+          image: tonistiigi/binfmt:latest
+          platforms: all
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Inspect builder
+        run: |
+          echo "Name:      ${{ steps.buildx.outputs.name }}"
+          echo "Endpoint:  ${{ steps.buildx.outputs.endpoint }}"
+          echo "Status:    ${{ steps.buildx.outputs.status }}"
+          echo "Flags:     ${{ steps.buildx.outputs.flags }}"
+          echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
+      # Download artifacts from build
+      - name: Download artifact - ${{ inputs.name }} - ${{ matrix.rust-target }}
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ inputs.name }}-${{ matrix.rust-target }}
+          # This is the directory the Makefile expects artifacts to live in
+          path: container-build
+
+      - name: Print container-build dir
+        run: |
+          ls container-build;
+          chmod +x ./container-build/${{ inputs.name }}
+          ./container-build/${{ inputs.name }} -h || true
+      # The build script will export the resulting image to
+      # /tmp/infinyon-fluvio-connector-${{ inputs.name }}-${{ matrix.rust-target }}.tar
+      - name: Build containers
+        if: inputs.name != 'test-connector'
+        env:
+          TARGET: ${{ matrix.rust-target }}
+          CONNECTOR_NAME: ${{ inputs.name }}
+          COMMIT_HASH: ${{ github.sha }}
+          # IMAGE_NAME: ${{ matrix.image-name }}
+        run: make official-containers
+
+      - name: Build Test-connector
+        if: inputs.name == 'test-connector'
+        env:
+          TARGET: ${{ matrix.rust-target }}
+          CONNECTOR_NAME: ${{ inputs.name }}
+          COMMIT_HASH: ${{ github.sha }}
+          DOCKERFILE_PATH: ./container-build/dockerfiles/test-connector/Dockerfile
+          # IMAGE_NAME: ${{ matrix.image-name }}
+        run: make official-containers
+      - name: Upload tarball as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: infinyon-fluvio-connector-${{ inputs.name }}-${{ matrix.rust-target }}.tar
+          path: /tmp/infinyon-fluvio-connector-${{ inputs.name }}-${{ matrix.rust-target }}.tar
+          retention-days: 1
