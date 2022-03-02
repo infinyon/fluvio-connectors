@@ -26,7 +26,7 @@ jobs:
       TARGET: ${{ matrix.rust-target }}
       RUST_BIN_DIR: target/${{ matrix.rust-target }}/debug
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: infinyon/fluvio-connectors
       - name: Set RELEASE mode

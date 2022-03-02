@@ -38,7 +38,7 @@ jobs:
       RUSTV: ${{ matrix.rust }}
       TARGET: ${{ matrix.rust-target }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install Rust stable
         uses: actions-rs/toolchain@v1
         with:
@@ -89,7 +89,7 @@ jobs:
       TARGET: ${{ matrix.rust-target }}
       RUST_BIN_DIR: target/${{ matrix.rust-target }}/debug
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set RELEASE mode
         #if: github.event_name == 'push' && github.ref == 'refs/heads/staging'
         shell: bash
@@ -166,7 +166,7 @@ jobs:
       RUSTV: ${{ matrix.rust }}
       TARGET: ${{ matrix.rust-target }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       # Building w/ QEMU for the arm64 support
       - name: Set up QEMU
@@ -247,7 +247,7 @@ jobs:
     env:
       RUST_BACKTRACE: full
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: AbsaOSS/k3d-action@v1.5.0
         name: "Create fluvio k3d Cluster"
         with:
@@ -286,7 +286,7 @@ jobs:
           echo foo | fluvio produce foobar
           fluvio consume foobar -o 0 -d
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install Rust stable
         uses: actions-rs/toolchain@v1
         with:
@@ -361,7 +361,7 @@ jobs:
           docker image load --input /tmp/infinyon-fluvio-connector-${{ matrix.connector-name }}-aarch64-unknown-linux-musl.tar
           docker image ls -a
       # Needed for getting the connectior version
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Tag Fluvio Connector Docker images
         run: |
           export CONNECTOR_VERSION=$(cargo metadata --format-version 1 | jq '.workspace_members[]' | sed 's/"//g' | awk '{if($1 == "${{matrix.connector-name}}") print $2}')
@@ -390,7 +390,7 @@ jobs:
   postgres_source_integration_tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: "Start postgres instance"
         run: |
           make -C ./rust-connectors/sources/postgres postgres
@@ -429,7 +429,7 @@ jobs:
   postgres_sink_and_source_integration_tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: "Start postgres instance"
         run: |
           make -C ./rust-connectors/sinks/postgres postgres

@@ -35,7 +35,7 @@ jobs:
             connector-name: postgres-sink
             image-name: infinyon/fluvio-connect-postgres-sink
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Try pulling ${{ matrix.connector-name }} x86_64-unknown-linux-musl docker images
         continue-on-error: true
         id: docker_check
