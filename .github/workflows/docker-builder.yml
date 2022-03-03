@@ -24,7 +24,7 @@ jobs:
       RUSTV: ${{ matrix.rust }}
       TARGET: ${{ matrix.rust-target }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: infinyon/fluvio-connectors      
       # Building w/ QEMU for the arm64 support
