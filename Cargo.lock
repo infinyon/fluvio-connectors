@@ -1257,9 +1257,9 @@ dependencies = [
 
 [[package]]
 name = "fluvio-dataplane-protocol"
-version = "0.9.1"
+version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "504067238f4aebc70136717d5a4d6e4c2d00a5de1486ebf3ce594f5c46d909cf"
+checksum = "9446be973e2ab24c9f4f7f268ed910487f22750fbe89b3fef166b867d2092eb4"
 dependencies = [
  "bytes",
  "cfg-if 1.0.0",
