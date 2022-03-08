@@ -14,7 +14,7 @@ serde = { version = "1.0.127", features = ["derive"] }
 schemars = "0.8"
 structopt = "0.3"
 
-anyhow = "1.0.55"
+anyhow = "1.0.56"
 fluvio-future = { version = "0.3.11", features = ["subscriber"] }
 fluvio = { version = "0.12", features = ["smartengine"] }
 flate2 = { version = "1.0" }
