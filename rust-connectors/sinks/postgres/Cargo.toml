@@ -30,5 +30,5 @@ postgres-protocol = { git = "https://github.com/MaterializeInc/rust-postgres", b
 
 [dev-dependencies]
 postgres-source = { path = "../../sources/postgres" }
-fluvio-future = { version = "0.3.0", features = ["fixture"] }
+fluvio-future = { version = "0.3.14", features = ["fixture"] }
 uuid = { version = "0.8", features = ["serde", "v4"] }
