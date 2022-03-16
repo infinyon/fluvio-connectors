@@ -1,12 +1,9 @@
+use fluvio_connectors_common::opt::{CommonSourceOpt, Record};
 use schemars::schema_for;
 use schemars::JsonSchema;
-use structopt::StructOpt;
-use fluvio_connectors_common::opt::{
-    CommonSourceOpt,
-    Record,
-};
-use tokio_stream::StreamExt;
 use std::collections::HashMap;
+use structopt::StructOpt;
+use tokio_stream::StreamExt;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -27,7 +24,6 @@ async fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-
 #[derive(StructOpt, Debug, JsonSchema, Clone)]
 pub struct SlackOpt {
     #[structopt(long, env = "WEBHOOK_URL", hide_env_values = true)]
@@ -37,7 +33,6 @@ pub struct SlackOpt {
     #[schemars(flatten)]
     pub common: CommonSourceOpt,
 }
-
 
 impl SlackOpt {
     pub async fn execute(&self) -> anyhow::Result<()> {
@@ -55,10 +50,7 @@ impl SlackOpt {
         map.insert("text", text);
 
         let client = reqwest::Client::new();
-        let _res = client.post(&self.webhook_url)
-            .json(&map)
-            .send()
-            .await?;
+        let _res = client.post(&self.webhook_url).json(&map).send().await?;
         Ok(())
     }
 }
