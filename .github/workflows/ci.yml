@@ -82,6 +82,7 @@ jobs:
           - http
           - postgres-source
           - postgres-sink
+          - slack-sink
         rust: [stable]
     env:
       RUST_BACKTRACE: full
@@ -136,31 +137,11 @@ jobs:
         rust-target:
           - x86_64-unknown-linux-musl
           - aarch64-unknown-linux-musl
-        connector-name: [test-connector]
+        connector-name: [test-connector, mqtt, http, postgres-source, postgres-sink]
         include:
-          - os: ubuntu-latest
-            connector-name: mqtt
+          - connector-name: slack-sink
             rust-target: x86_64-unknown-linux-musl
-          - os: ubuntu-latest
-            connector-name: mqtt
-            rust-target: aarch64-unknown-linux-musl
-          - os: ubuntu-latest
-            connector-name: http
-            rust-target: x86_64-unknown-linux-musl
-          - os: ubuntu-latest
-            connector-name: http
-            rust-target: aarch64-unknown-linux-musl
-          - os: ubuntu-latest
-            connector-name: postgres-source
-            rust-target: x86_64-unknown-linux-musl
-          - os: ubuntu-latest
-            connector-name: postgres-source
-            rust-target: aarch64-unknown-linux-musl
-          - os: ubuntu-latest
-            connector-name: postgres-sink
-            rust-target: x86_64-unknown-linux-musl
-          - os: ubuntu-latest
-            connector-name: postgres-sink
+          - connector-name: slack-sink
             rust-target: aarch64-unknown-linux-musl
     env:
       RUSTV: ${{ matrix.rust }}

@@ -42,9 +42,10 @@
 
 ## Sink Connectors
 
-| Connector          | Release     | Type | Protocols/Description |
-| :---               | :----:      | :--- | :---                  |
-| [sinks/postgres]   | 0.1.0       | Rust | Postgres CDC          |
+| Connector          | Release     | Type | Protocols/Description            |
+| :---               | :----:      | :--- | :---                             |
+| [sinks/postgres]   | 0.1.0       | Rust | Postgres CDC                     |
+| [sinks/slack]      | 0.1.0       | Rust | Sends messages to slack          |
 
 [sinks/postgres]: https://github.com/infinyon/fluvio-connectors/tree/main/rust-connectors/sinks/postgres
 [infinyon/postgres-sink]: https://hub.docker.com/r/infinyon/fluvio-connect-postgres-sink
@@ -94,7 +95,7 @@
 | Helper                      | Type | Description                  |
 | :---                        | :--- | :---                         |
 | [bats-helpers]              | Test | Bats Helpers                 |
-| [test-connector]            | Test | Test Connector               | 
+| [test-connector]            | Test | Test Connector               |
 
 [bats-helpers]: https://github.com/infinyon/fluvio-connectors/tree/main/rust-connectors/utils/bats-helpers
 [test-connector]: https://github.com/infinyon/fluvio-connectors/tree/main/rust-connectors/utils/test-connector
