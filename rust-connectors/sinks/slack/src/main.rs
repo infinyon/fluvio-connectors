@@ -1,4 +1,5 @@
 use fluvio_connectors_common::opt::{CommonSourceOpt, Record};
+use fluvio_future::tracing::{debug, info};
 use schemars::schema_for;
 use schemars::JsonSchema;
 use std::collections::HashMap;
@@ -37,15 +38,15 @@ pub struct SlackOpt {
 impl SlackOpt {
     pub async fn execute(&self) -> anyhow::Result<()> {
         let mut stream = self.common.create_consumer_stream(0).await?;
-        println!("Starting stream");
+        info!("Starting stream");
         while let Some(Ok(record)) = stream.next().await {
-            println!("Sending {:?}, to slack", record.value());
             let _ = self.send_to_slack(&record).await;
         }
         Ok(())
     }
     pub async fn send_to_slack(&self, record: &Record) -> anyhow::Result<()> {
         let text = String::from_utf8_lossy(record.value());
+        debug!("Sending {:?}, to slack", text);
         let mut map = HashMap::new();
         map.insert("text", text);
 
