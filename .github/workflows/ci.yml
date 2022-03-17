@@ -141,8 +141,10 @@ jobs:
         include:
           - connector-name: slack-sink
             rust-target: x86_64-unknown-linux-musl
+            os: ubuntu-latest
           - connector-name: slack-sink
             rust-target: aarch64-unknown-linux-musl
+            os: ubuntu-latest
     env:
       RUSTV: ${{ matrix.rust }}
       TARGET: ${{ matrix.rust-target }}
