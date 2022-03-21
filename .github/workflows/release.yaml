@@ -34,6 +34,9 @@ jobs:
           - os: ubuntu-latest
             connector-name: postgres-sink
             image-name: infinyon/fluvio-connect-postgres-sink
+          - os: ubuntu-latest
+            connector-name: slack-sink
+            image-name: infinyon/fluvio-connect-slack-sink
     steps:
       - uses: actions/checkout@v3
       - name: Try pulling ${{ matrix.connector-name }} x86_64-unknown-linux-musl docker images
