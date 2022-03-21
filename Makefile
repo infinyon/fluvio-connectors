@@ -1,4 +1,14 @@
-TARGET?=x86_64-unknown-linux-musl
+# TARGET?=x86_64-unknown-linux-musl
+# Build docker image for Fluvio.
+ARCH=$(shell uname -m)
+ifndef TARGET
+ifeq ($(ARCH),arm64)
+TARGET=aarch64-unknown-linux-musl
+else
+TARGET=x86_64-unknown-linux-musl
+endif
+endif
+
 RUSTV?=stable
 BUILD_PROFILE=$(if $(RELEASE),release,debug)
 RELEASE_FLAG=$(if $(RELEASE),--release,)

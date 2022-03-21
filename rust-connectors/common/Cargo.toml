@@ -18,6 +18,7 @@ anyhow = "1.0.56"
 fluvio-future = { version = "0.3.15", features = ["subscriber"] }
 fluvio = { version = "0.12", features = ["smartengine"] }
 flate2 = { version = "1.0" }
+tokio-stream = { version = "0.1" }
 
 [dev-dependencies]
 serde_yaml = "0.8.18"

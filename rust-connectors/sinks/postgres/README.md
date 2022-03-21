@@ -17,7 +17,7 @@ secrets:
 
 ### Sink Configuration Parameters
 
-Controls the Source connector
+Controls the Sinxk connector
 
 | Option                   | default  | type   | description |
 | :---                     | :---     | :---   | :----       |

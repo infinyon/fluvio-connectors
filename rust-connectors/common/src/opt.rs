@@ -3,9 +3,16 @@ use schemars::JsonSchema;
 use structopt::clap::AppSettings;
 use structopt::StructOpt;
 
-pub use fluvio::{consumer, metadata::topic::TopicSpec, Fluvio, PartitionConsumer, TopicProducer};
+pub use fluvio::{
+    consumer,
+    consumer::{Record, SmartModuleInvocation, SmartModuleInvocationWasm, SmartModuleKind},
+    dataplane::ErrorCode,
+    metadata::topic::TopicSpec,
+    ConsumerConfig, Fluvio, FluvioError, PartitionConsumer, TopicProducer,
+};
 
 use fluvio::metadata::smartmodule::SmartModuleSpec;
+use tokio_stream::Stream;
 
 #[derive(StructOpt, Debug, JsonSchema, Clone)]
 #[structopt(settings = &[AppSettings::DeriveDisplayOrder])]
@@ -126,13 +133,49 @@ impl CommonSourceOpt {
         }
     }
 
-    pub async fn create_consumer(
-        &self,
-        topic: &str,
-        partition: i32,
-    ) -> anyhow::Result<PartitionConsumer> {
+    async fn create_consumer(&self, partition: i32) -> anyhow::Result<PartitionConsumer> {
         self.ensure_topic_exists().await?;
-        let consumer = consumer(topic, partition).await?;
-        Ok(consumer)
+        Ok(fluvio::consumer(&self.fluvio_topic, partition).await?)
+    }
+
+    pub async fn create_consumer_stream(
+        &self,
+        partition: i32,
+    ) -> anyhow::Result<impl Stream<Item = Result<Record, ErrorCode>>> {
+        let fluvio = fluvio::Fluvio::connect().await?;
+        let wasm_invocation: Option<SmartModuleInvocation> =
+            match (&self.filter, &self.map, &self.arraymap) {
+                (Some(filter_path), _, _) => {
+                    let data = self.get_smartmodule(filter_path, &fluvio).await?;
+                    Some(SmartModuleInvocation {
+                        wasm: SmartModuleInvocationWasm::adhoc_from_bytes(&data)?,
+                        kind: SmartModuleKind::Filter,
+                        params: Default::default(),
+                    })
+                }
+                (_, Some(map_path), _) => {
+                    let data = self.get_smartmodule(map_path, &fluvio).await?;
+                    Some(SmartModuleInvocation {
+                        wasm: SmartModuleInvocationWasm::adhoc_from_bytes(&data)?,
+                        kind: SmartModuleKind::Map,
+                        params: Default::default(),
+                    })
+                }
+                (_, _, Some(array_map_path)) => {
+                    let data = self.get_smartmodule(array_map_path, &fluvio).await?;
+                    Some(SmartModuleInvocation {
+                        wasm: SmartModuleInvocationWasm::adhoc_from_bytes(&data)?,
+                        kind: SmartModuleKind::FilterMap,
+                        params: Default::default(),
+                    })
+                }
+                _ => None,
+            };
+        let mut builder = ConsumerConfig::builder();
+        builder.smartmodule(wasm_invocation);
+        let config = builder.build()?;
+        let consumer = self.create_consumer(partition).await?;
+        let offset = fluvio::Offset::end();
+        Ok(consumer.stream_with_config(offset, config).await?)
     }
 }
