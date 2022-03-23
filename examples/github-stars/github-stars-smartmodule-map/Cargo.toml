@@ -1,0 +1,13 @@
+[package]
+name = "github-stars-smartmodule-map"
+version = "0.1.0"
+edition = "2021"
+[lib]
+crate-type = ['cdylib']
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+fluvio-smartmodule = "0.2.3"
+serde = "1.0.136"
+serde_json = "1.0.79"
