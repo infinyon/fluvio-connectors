@@ -3542,6 +3542,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9def91fd1e018fe007022791f865d0ccc9b3a0d5001e01aabb8b40e46000afb5"
 
 [[package]]
+name = "slack-display-smartmodule-map"
+version = "0.1.0"
+dependencies = [
+ "fluvio-smartmodule",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "slack-sink"
 version = "0.1.0"
 dependencies = [

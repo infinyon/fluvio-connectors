@@ -4,5 +4,5 @@ topic: github-stars
 create_topic: true
 direction: source
 parameters:
-  webhook-url: '${YOUR_SLACK_WEBHOOK}'
-    #map: http-json-connector-map
+  webhook-url: '${WEBHOOK_URL}'
+  aggregate: star-display

@@ -12,6 +12,7 @@ members = [
     "rust-connectors/utils/test-connector",
     "rust-connectors/utils/fluvio-smartstream-map/",
     "examples/github-stars/github-stars-smartmodule-map/",
+    "examples/github-stars/slack-display-smartmodule-map/",
 ]
 resolver = "2"
 [patch.crates-io]
