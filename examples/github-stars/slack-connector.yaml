@@ -5,5 +5,5 @@ topic: github-stars
 create_topic: true
 direction: source
 parameters:
-  webhook-url: '<YOUR SLACK WEBHOOK URL>'
-  filter: star-display
+  webhook-url: '<YOUR SLACK TOKEN HERE>'
+  filter-map: 'star-display'

@@ -7,7 +7,6 @@ direction: source
 parameters:
   endpoint: 'https://api.github.com/repos/infinyon/fluvio'
   method: GET
-  interval: 18
-  header: 'user-agent: curl/7.79.1'
-  header: 'Authorization: token <YOUR TOKEN HERE>'
+  interval: 30
+  header: 'Authorization: token <YOUR GITHUB TOKEN HERE>'
   aggregate: star-selector
