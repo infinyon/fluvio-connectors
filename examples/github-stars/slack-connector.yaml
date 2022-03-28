@@ -1,8 +1,9 @@
+version: dev
 name: github-stars-output
 type: slack-sink
 topic: github-stars
 create_topic: true
 direction: source
 parameters:
-  webhook-url: '${WEBHOOK_URL}'
-  aggregate: star-display
+  webhook-url: '<YOUR SLACK WEBHOOK URL>'
+  filter: star-display

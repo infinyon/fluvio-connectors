@@ -1,15 +1,20 @@
 use fluvio_smartmodule::{smartmodule, Record, RecordData, Result};
 
+#[smartmodule(filter)]
+pub fn filter_log_level(record: &Record) -> Result<bool> {
+    let stars = serde_json::from_slice::<GithubStars>(record.value.as_ref())?;
+    Ok(stars.star_update)
+}
 /*
+
 #[smartmodule(map)]
 pub fn map(record: &Record) -> Result<(Option<RecordData>, RecordData)> {
-    let stars = serde_json::from_slice::<GitHubStars>(record.value.as_ref())?;
+    let stars = serde_json::from_slice::<GithubStars>(record.value.as_ref())?;
     let count = format!("{}", stars.stargazers_count);
     let key = record.key.clone();
 
     Ok((key, count.into()))
 }
-*/
 #[smartmodule(aggregate)]
 pub fn aggregate(accumulator: RecordData, current: &Record) -> Result<RecordData> {
     // Parse accumulator
@@ -28,9 +33,10 @@ pub fn aggregate(accumulator: RecordData, current: &Record) -> Result<RecordData
     Ok(summed_stars_bytes.into())
     */
 }
-
-#[derive(Default,serde::Deserialize, serde::Serialize)]
+*/
+#[derive(Default, Clone, serde::Deserialize, serde::Serialize)]
 struct GithubStars {
-    stargazers_count: i32,
-    last_star_count: Option<i32>,
+    pub stargazers_count: i32,
+    #[serde(default)]
+    pub star_update: bool,
 }

@@ -14,7 +14,7 @@ pub use fluvio::{
 use fluvio::metadata::smartmodule::SmartModuleSpec;
 use tokio_stream::Stream;
 
-#[derive(StructOpt, Debug, JsonSchema, Clone)]
+#[derive(StructOpt, Debug, JsonSchema, Clone, Default)]
 #[structopt(settings = &[AppSettings::DeriveDisplayOrder])]
 pub struct CommonSourceOpt {
     /// The topic where this connector sends or receives records
@@ -49,6 +49,16 @@ pub struct CommonSourceOpt {
     /// to lookup a SmartModule by name
     #[structopt(long, group("smartmodule"))]
     pub arraymap: Option<String>,
+
+    /// Path of aggregate smartmodule used as a pre-produce step
+    ///
+    /// If the value is not a path to a file, it will be used
+    /// to lookup a SmartModule by name
+    #[structopt(long, group("smartmodule"))]
+    pub aggregate: Option<String>,
+
+    #[structopt(long, group("smartmodule"))]
+    pub aggregate_init: Option<String>,
 }
 
 impl CommonSourceOpt {
@@ -80,27 +90,35 @@ impl CommonSourceOpt {
         let fluvio = fluvio::Fluvio::connect().await?;
         self.ensure_topic_exists().await?;
 
-        let producer = match (&self.filter, &self.map, &self.arraymap) {
-            (Some(filter_path), _, _) => {
+        let producer = match (&self.filter, &self.map, &self.arraymap, &self.aggregate) {
+            (Some(filter_path), _, _, _) => {
                 let data = self.get_smartmodule(filter_path, &fluvio).await?;
                 fluvio
                     .topic_producer(&self.fluvio_topic)
                     .await?
                     .with_filter(data, Default::default())?
             }
-            (_, Some(map_path), _) => {
+            (_, Some(map_path), _, _) => {
                 let data = self.get_smartmodule(map_path, &fluvio).await?;
                 fluvio
                     .topic_producer(&self.fluvio_topic)
                     .await?
                     .with_map(data, Default::default())?
             }
-            (_, _, Some(array_map_path)) => {
+            (_, _, Some(array_map_path), _) => {
                 let data = self.get_smartmodule(array_map_path, &fluvio).await?;
                 fluvio
                     .topic_producer(&self.fluvio_topic)
                     .await?
                     .with_array_map(data, Default::default())?
+            }
+            (_, _, _, Some(aggregate)) => {
+                let data = self.get_smartmodule(aggregate, &fluvio).await?;
+                let initial = self.aggregate_init.clone().unwrap_or(String::new());
+                fluvio
+                    .topic_producer(&self.fluvio_topic)
+                    .await?
+                    .with_aggregate(data, Default::default(), initial.as_bytes().to_vec())?
             }
             _ => fluvio.topic_producer(&self.fluvio_topic).await?,
         };
