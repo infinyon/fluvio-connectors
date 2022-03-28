@@ -1,6 +1,8 @@
 # Connector Change Log
 
-## http Version 0.2.X - UNRELEASED
+## http Version 0.2.1 - UNRELEASED
+* Support for `user-agent` argument. ([PR #216](https://github.com/infinyon/fluvio-connectors/pull/216))
+* Aggregate smart modules in common options. ([PR #216](https://github.com/infinyon/fluvio-connectors/pull/216))
 
 ## http Version 0.2.0 - 2022-Feb-7
 * Feature json Response Type Record ([PR #141](https://github.com/infinyon/fluvio-connectors/pull/141))

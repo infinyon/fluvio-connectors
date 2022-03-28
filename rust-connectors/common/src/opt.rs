@@ -117,7 +117,7 @@ impl CommonSourceOpt {
                 fluvio
                     .topic_producer(&self.fluvio_topic)
                     .await?
-                    .with_array_map(data, Default::default())?
+                    .with_filter(data, Default::default())?
             }
             (_, _, Some(map_path), _, _) => {
                 let data = self.get_smartmodule(map_path, &fluvio).await?;
@@ -183,8 +183,8 @@ impl CommonSourceOpt {
     ) -> anyhow::Result<impl Stream<Item = Result<Record, ErrorCode>>> {
         let fluvio = fluvio::Fluvio::connect().await?;
         let wasm_invocation: Option<SmartModuleInvocation> =
-            match (&self.filter, &self.map, &self.arraymap) {
-                (Some(filter_path), _, _) => {
+            match (&self.filter, &self.map, &self.arraymap, &self.filter_map) {
+                (Some(filter_path), _, _, _) => {
                     let data = self.get_smartmodule(filter_path, &fluvio).await?;
                     Some(SmartModuleInvocation {
                         wasm: SmartModuleInvocationWasm::adhoc_from_bytes(&data)?,
@@ -192,7 +192,7 @@ impl CommonSourceOpt {
                         params: Default::default(),
                     })
                 }
-                (_, Some(map_path), _) => {
+                (_, Some(map_path), _, _) => {
                     let data = self.get_smartmodule(map_path, &fluvio).await?;
                     Some(SmartModuleInvocation {
                         wasm: SmartModuleInvocationWasm::adhoc_from_bytes(&data)?,
@@ -200,8 +200,16 @@ impl CommonSourceOpt {
                         params: Default::default(),
                     })
                 }
-                (_, _, Some(array_map_path)) => {
+                (_, _, Some(array_map_path), _) => {
                     let data = self.get_smartmodule(array_map_path, &fluvio).await?;
+                    Some(SmartModuleInvocation {
+                        wasm: SmartModuleInvocationWasm::adhoc_from_bytes(&data)?,
+                        kind: SmartModuleKind::ArrayMap,
+                        params: Default::default(),
+                    })
+                }
+                (_, _, _, Some(filter_map_path)) => {
+                    let data = self.get_smartmodule(filter_map_path, &fluvio).await?;
                     Some(SmartModuleInvocation {
                         wasm: SmartModuleInvocationWasm::adhoc_from_bytes(&data)?,
                         kind: SmartModuleKind::FilterMap,
