@@ -1,10 +1,17 @@
 #![allow(clippy::unnecessary_mut_passed)]
-use fluvio_smartmodule::{smartmodule, Record, Result};
+use fluvio_smartmodule::{smartmodule, Record, RecordData, Result};
 
-#[smartmodule(filter)]
-pub fn filter_log_level(record: &Record) -> Result<bool> {
+#[smartmodule(filter_map)]
+fn filter_map(record: &Record) -> Result<Option<(Option<RecordData>, RecordData)>> {
     let stars = serde_json::from_slice::<GithubStars>(record.value.as_ref())?;
-    Ok(stars.star_update)
+
+	if stars.star_update {
+        let stars = format!("Fluvio Github Star count is now {}", stars.stargazers_count);
+        Ok(Some((record.key.clone(), stars.into())))
+
+	} else {
+        Ok(None)
+    }
 }
 
 #[derive(Default, Clone, serde::Deserialize, serde::Serialize)]
