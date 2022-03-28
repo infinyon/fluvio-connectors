@@ -33,10 +33,7 @@ async fn postgres_inserts() -> eyre::Result<()> {
         skip_setup: false,
         common: CommonSourceOpt {
             fluvio_topic: fluvio_topic.clone(),
-            rust_log: None,
-            filter: None,
-            map: None,
-            arraymap: None,
+            ..Default::default()
         },
     };
     let mut connector = PgConnector::new(config.clone())

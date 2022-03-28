@@ -12,6 +12,10 @@ pub struct HttpOpt {
     #[structopt(long)]
     pub body: Option<String>,
 
+    /// HTTP body for the request
+    #[structopt(long, default_value = "fluvio/http-source 0.1.0")]
+    pub user_agent: String,
+
     /// HTTP method used in the request. Eg. GET, POST, PUT...
     #[structopt(long, default_value = "GET")]
     pub method: String,
@@ -28,11 +32,11 @@ pub struct HttpOpt {
     #[structopt(long, hidden(true))]
     pub output_format: Option<String>,
 
-    /// Response output parts: body | full    
+    /// Response output parts: body | full
     #[structopt(long, default_value = "body")]
     pub output_parts: String,
 
-    /// Response output type: text | json    
+    /// Response output type: text | json
     #[structopt(long, default_value = "text")]
     pub output_type: String,
 

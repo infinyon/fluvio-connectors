@@ -65,6 +65,7 @@ async fn main() -> Result<()> {
 
     while timer_stream.next().await.is_some() {
         let mut req = client.request(method.clone(), &opts.endpoint);
+        req = req.header("user-agent", opts.user_agent.clone());
 
         let headers = opts.headers.iter().flat_map(|h| h.split_once(':'));
         for (key, value) in headers {

@@ -22,12 +22,13 @@ Controls the Source connector
 
 Controls how each HTTP Request is made
 
-| Option   | default  | type   | description |
-| :---     | :---     | :---   | :----       |
-| method   | GET      | String | GET, POST, PUT, HEAD |
-| endpoint | -        | String | HTTP URL endpoint |
-| headers  | -        | String | Request header(s) Key=Value pairs |
-| body     | -        | String | Request body e.g. in POST |
+| Option      | default                       | type   | description |
+| :---        | :---                          | :---   | :----       |
+| method      | GET                           | String | GET, POST, PUT, HEAD |
+| endpoint    | -                             | String | HTTP URL endpoint |
+| headers     | -                             | String | Request header(s) Key=Value pairs |
+| body        | -                             | String | Request body e.g. in POST |
+| user-agent  | "fluvio/http-source 0.1.0"    | String | Request user-agent|
 
 ### Record Output Configuration
 
