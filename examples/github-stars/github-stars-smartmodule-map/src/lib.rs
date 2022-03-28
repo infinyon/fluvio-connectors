@@ -8,12 +8,12 @@ pub fn aggregate(accumulator: RecordData, current: &Record) -> EyreResult<Record
 
     // Parse next record
     let current_stars: GithubStars = serde_json::from_slice(current.value.as_ref())?;
-    accumulated_stars.star_update = accumulated_stars.stargazers_count != current_stars.stargazers_count;
+    accumulated_stars.star_update =
+        accumulated_stars.stargazers_count != current_stars.stargazers_count;
     accumulated_stars.stargazers_count = current_stars.stargazers_count;
     let accumulated_stars = serde_json::to_vec(&accumulated_stars)?;
     Ok(accumulated_stars.into())
 }
-
 
 #[derive(Default, Clone, serde::Deserialize, serde::Serialize)]
 struct GithubStars {
@@ -51,7 +51,6 @@ impl TryFrom<GithubStars> for Record {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -71,10 +70,13 @@ mod tests {
             stargazers_count: 1,
             ..Default::default()
         };
-        let out = aggregate(accumulated_stars.try_into().unwrap(), &current_stars.try_into().unwrap());
+        let out = aggregate(
+            accumulated_stars.try_into().unwrap(),
+            &current_stars.try_into().unwrap(),
+        );
         assert!(out.is_ok());
         let out = out.unwrap();
-        let out : GithubStars = out.try_into().unwrap();
+        let out: GithubStars = out.try_into().unwrap();
         assert_eq!(out.stargazers_count, 1);
         assert_eq!(out.star_update, false);
     }
@@ -88,10 +90,13 @@ mod tests {
             stargazers_count: 2,
             ..Default::default()
         };
-        let out = aggregate(accumulated_stars.try_into().unwrap(), &current_stars.try_into().unwrap());
+        let out = aggregate(
+            accumulated_stars.try_into().unwrap(),
+            &current_stars.try_into().unwrap(),
+        );
         assert!(out.is_ok());
         let out = out.unwrap();
-        let out : GithubStars = out.try_into().unwrap();
+        let out: GithubStars = out.try_into().unwrap();
         assert_eq!(out.stargazers_count, 2);
         assert_eq!(out.star_update, true);
     }
