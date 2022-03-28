@@ -114,7 +114,7 @@ impl CommonSourceOpt {
             }
             (_, _, _, Some(aggregate)) => {
                 let data = self.get_smartmodule(aggregate, &fluvio).await?;
-                let initial = self.aggregate_init.clone().unwrap_or(String::new());
+                let initial = self.aggregate_init.clone().unwrap_or_default();
                 fluvio
                     .topic_producer(&self.fluvio_topic)
                     .await?

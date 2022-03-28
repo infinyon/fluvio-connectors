@@ -1,3 +1,4 @@
+#![allow(clippy::unnecessary_mut_passed)]
 use fluvio_smartmodule::{smartmodule, Record, RecordData, Result as EyreResult};
 
 #[smartmodule(aggregate)]
@@ -24,7 +25,7 @@ struct GithubStars {
 impl TryInto<GithubStars> for Record {
     type Error = serde_json::Error;
     fn try_into(self) -> Result<GithubStars, Self::Error> {
-        Ok(serde_json::from_slice(self.value.as_ref())?)
+        serde_json::from_slice(self.value.as_ref())
     }
 }
 impl TryInto<GithubStars> for RecordData {
