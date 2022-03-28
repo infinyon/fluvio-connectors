@@ -5,11 +5,10 @@ use fluvio_smartmodule::{smartmodule, Record, RecordData, Result};
 fn filter_map(record: &Record) -> Result<Option<(Option<RecordData>, RecordData)>> {
     let stars = serde_json::from_slice::<GithubStars>(record.value.as_ref())?;
 
-	if stars.star_update {
+    if stars.star_update {
         let stars = format!("Fluvio Github Star count is now {}", stars.stargazers_count);
         Ok(Some((record.key.clone(), stars.into())))
-
-	} else {
+    } else {
         Ok(None)
     }
 }

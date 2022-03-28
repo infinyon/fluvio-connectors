@@ -98,7 +98,13 @@ impl CommonSourceOpt {
         let fluvio = fluvio::Fluvio::connect().await?;
         self.ensure_topic_exists().await?;
 
-        let producer = match (&self.filter, &self.filter_map, &self.map, &self.arraymap, &self.aggregate) {
+        let producer = match (
+            &self.filter,
+            &self.filter_map,
+            &self.map,
+            &self.arraymap,
+            &self.aggregate,
+        ) {
             (Some(filter_path), _, _, _, _) => {
                 let data = self.get_smartmodule(filter_path, &fluvio).await?;
                 fluvio
