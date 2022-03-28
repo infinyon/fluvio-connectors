@@ -111,17 +111,23 @@ jobs:
       - uses: Swatinem/rust-cache@v1
         with:
           key: ${{ matrix.os }}-${{ matrix.rust-target }}-${{ matrix.connector-name }}
-      - name: Build
+      - name: BuildV1
+        if: matrix.connector-name != 'http'
         env:
           CONNECTOR_NAME: ${{ matrix.connector-name }}
         run: make build
+      - name: BuildV2
+        if: matrix.connector-name == 'http'
+        env:
+          CONNECTOR_NAME: ${{ matrix.connector-name }}
+        run: make build-v2
 
       # Upload artifacts
       - name: Upload artifact - ${{ matrix.connector-name }}
         uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.connector-name }}-${{ matrix.rust-target }}
-          path: ${{ env.RUST_BIN_DIR }}/${{ matrix.connector-name }}
+          path: ${{ env.RUST_BIN_DIR }}/fluvio-connect-${{ matrix.connector-name }}
           retention-days: 1
 
   build_containers:

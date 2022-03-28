@@ -35,6 +35,9 @@ smoke-test:
 build:
 	$(CARGO_BUILDER) build $(TARGET_FLAG) $(RELEASE_FLAG) --bin $(CONNECTOR_NAME)
 
+build-v2:
+	$(CARGO_BUILDER) build $(TARGET_FLAG) $(RELEASE_FLAG) --bin fluvio-connect-$(CONNECTOR_NAME)
+
 ifeq (${CI},true)
 # In CI, we expect all artifacts to already be built and loaded for the script
 copy-binaries:
