@@ -11,7 +11,7 @@ fn filter_map(record: &Record) -> Result<Option<(Option<RecordData>, RecordData)
 
     if stars.star_update {
         let stars = format!(
-            "Sebastian dev - Fluvio Github Star count is {}",
+            "Fluvio Github Star count is {}",
             stars.stargazers_count
         );
         Ok(Some((record.key.clone(), stars.into())))
