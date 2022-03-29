@@ -1,4 +1,3 @@
-version: dev
 name: github-stars-input
 type: http
 topic: github-stars
