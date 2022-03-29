@@ -64,8 +64,8 @@ pub struct CommonSourceOpt {
     #[structopt(long, group("smartmodule"))]
     pub aggregate: Option<String>,
 
-    #[structopt(long, group("smartmodule"))]
-    pub aggregate_init: Option<String>,
+    #[structopt(long)]
+    pub aggregate_initial_value: Option<String>,
 }
 
 impl CommonSourceOpt {
@@ -135,16 +135,45 @@ impl CommonSourceOpt {
             }
             (_, _, _, _, Some(aggregate)) => {
                 let data = self.get_smartmodule(aggregate, &fluvio).await?;
-                let initial = self.aggregate_init.clone().unwrap_or_default();
+                let initial = self.get_aggregate_initial_value(&fluvio).await?;
+                self.get_aggregate_initial_value(&fluvio).await?;
                 fluvio
                     .topic_producer(&self.fluvio_topic)
                     .await?
-                    .with_aggregate(data, Default::default(), initial.as_bytes().to_vec())?
+                    .with_aggregate(data, Default::default(), initial)?
             }
             _ => fluvio.topic_producer(&self.fluvio_topic).await?,
         };
 
         Ok(producer)
+    }
+
+    async fn get_aggregate_initial_value(&self, fluvio: &Fluvio) -> anyhow::Result<Vec<u8>> {
+        use std::time::Duration;
+        use tokio_stream::StreamExt;
+        if let Some(initial_value) = &self.aggregate_initial_value {
+            if initial_value == "use-last" {
+                let consumer = fluvio.partition_consumer(self.fluvio_topic.clone(), 0).await?;
+                let stream = consumer.stream(fluvio::Offset::from_end(1)).await?;
+                let timeout = stream.timeout(Duration::from_millis(3000));
+                tokio::pin!(timeout);
+                let last_record = StreamExt::try_next(&mut timeout)
+                    .await
+                    .ok()
+                    .flatten()
+                    .transpose();
+
+                if let Ok(Some(record)) = last_record {
+                    Ok(record.value().to_vec())
+                } else {
+                    Ok(Vec::new())
+                }
+            } else {
+                Ok(initial_value.as_bytes().to_vec())
+            }
+        } else {
+            Ok(Vec::new())
+        }
     }
 
     pub async fn get_smartmodule(&self, name: &str, fluvio: &Fluvio) -> anyhow::Result<Vec<u8>> {

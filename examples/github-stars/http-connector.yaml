@@ -9,3 +9,4 @@ parameters:
   interval: 30
   header: 'Authorization: token <YOUR GITHUB TOKEN HERE>'
   aggregate: star-selector
+  aggregate-initial-value: "use-last"
