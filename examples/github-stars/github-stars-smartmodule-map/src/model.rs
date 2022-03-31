@@ -1,4 +1,3 @@
-
 use fluvio_smartmodule::{Record, RecordData};
 
 #[derive(Default, Clone, serde::Deserialize, serde::Serialize)]

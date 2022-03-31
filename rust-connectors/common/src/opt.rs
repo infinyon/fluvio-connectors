@@ -153,7 +153,9 @@ impl CommonSourceOpt {
         use tokio_stream::StreamExt;
         if let Some(initial_value) = &self.aggregate_initial_value {
             if initial_value == "use-last" {
-                let consumer = fluvio.partition_consumer(self.fluvio_topic.clone(), 0).await?;
+                let consumer = fluvio
+                    .partition_consumer(self.fluvio_topic.clone(), 0)
+                    .await?;
                 let stream = consumer.stream(fluvio::Offset::from_end(1)).await?;
                 let timeout = stream.timeout(Duration::from_millis(3000));
                 tokio::pin!(timeout);

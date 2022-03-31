@@ -17,7 +17,7 @@ pub fn aggregate(accumulator: RecordData, current: &Record) -> EyreResult<Record
         accumulated_stars.stargazers_count != current_stars.stargazers_count;
     accumulated_stars.stargazers_count = current_stars.stargazers_count;
 
-    let accumulated_stars : RecordData = accumulated_stars.try_into()?;
+    let accumulated_stars: RecordData = accumulated_stars.try_into()?;
     Ok(accumulated_stars.into())
 }
 
@@ -26,8 +26,8 @@ mod tests {
     use super::*;
     #[test]
     fn deserialize_check() {
-        let res : Result<GithubStars, serde_json::Error> = serde_json::from_str(
-            "{\"stargazers_count\":950,\"star_update\":false}");
+        let res: Result<GithubStars, serde_json::Error> =
+            serde_json::from_str("{\"stargazers_count\":950,\"star_update\":false}");
         assert!(res.is_ok());
     }
     #[test]
