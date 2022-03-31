@@ -23,8 +23,8 @@ http-connector: smart-module-create
 
 
 clean:
-	fluvio sm delete $(GH_SM_NAME);
-	fluvio sm delete $(SLACK_SM_NAME);
-	fluvio connector delete github-stars-output
-	fluvio connector delete github-stars-input
-	fluvio topic delete github-stars
+	fluvio sm delete $(GH_SM_NAME) || true
+	fluvio sm delete $(SLACK_SM_NAME) || true
+	fluvio connector delete github-stars-output || true
+	fluvio connector delete github-stars-input || true
+	fluvio topic delete github-stars || true

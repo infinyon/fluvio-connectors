@@ -1,4 +1,3 @@
-version: dev
 name: github-stars-output
 type: slack-sink
 topic: github-stars
