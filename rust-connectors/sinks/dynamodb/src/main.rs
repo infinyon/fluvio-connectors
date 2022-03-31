@@ -6,7 +6,7 @@ use aws_sdk_dynamodb::{
     Client, Endpoint,
 };
 use fluvio_connectors_common::opt::{CommonSourceOpt, Record};
-use fluvio_future::tracing::{info};
+use fluvio_future::tracing::info;
 use http::Uri;
 use schemars::{schema_for, JsonSchema};
 use structopt::StructOpt;
