@@ -12,9 +12,9 @@ impl TryInto<GithubStars> for Record {
         serde_json::from_slice(self.value.as_ref())
     }
 }
-impl Into<GithubStars> for RecordData {
-    fn into(self) -> GithubStars {
-        serde_json::from_slice(self.as_ref()).unwrap_or_default()
+impl From<RecordData> for GithubStars {
+    fn from(record: RecordData) -> GithubStars {
+        serde_json::from_slice(record.as_ref()).unwrap_or_default()
     }
 }
 impl TryFrom<GithubStars> for RecordData {

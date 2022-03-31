@@ -18,7 +18,7 @@ pub fn aggregate(accumulator: RecordData, current: &Record) -> EyreResult<Record
     accumulated_stars.stargazers_count = current_stars.stargazers_count;
 
     let accumulated_stars: RecordData = accumulated_stars.try_into()?;
-    Ok(accumulated_stars.into())
+    Ok(accumulated_stars)
 }
 
 #[cfg(test)]
