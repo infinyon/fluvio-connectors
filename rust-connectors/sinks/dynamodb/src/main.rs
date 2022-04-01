@@ -83,11 +83,19 @@ impl DynamoDbOpt {
 
         for column in column_names {
             if let Some(value) = json.get(column) {
-                let attr = if value.is_string() {
-                    AttributeValue::S(value.to_string())
-                } else {
-                    unimplemented!("This case for a string isn't implemented yet!");
+                let attr = match value {
+                    Value::String(value) => AttributeValue::S(value.to_string()),
+                    Value::Number(value) => AttributeValue::N(value.to_string()),
+                    Value::Bool(value) => AttributeValue::Bool(*value),
+                    Value::Null => AttributeValue::Null(true),
+                    Value::Array(_value) => {
+                        unimplemented!("This case for a string isn't implemented yet!");
+                    }
+                    Value::Object(_value) => {
+                        unimplemented!("This case for a string isn't implemented yet!");
+                    }
                 };
+
                 request = request.item(column, attr);
             }
         }
