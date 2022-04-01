@@ -7,7 +7,6 @@ use aws_sdk_dynamodb::{
 };
 use fluvio_connectors_common::opt::{CommonSourceOpt, Record};
 use fluvio_future::tracing::info;
-use http::Uri;
 use schemars::{schema_for, JsonSchema};
 use structopt::StructOpt;
 use tokio_stream::StreamExt;
@@ -34,19 +33,16 @@ async fn main() -> anyhow::Result<()> {
 #[derive(StructOpt, Debug, JsonSchema, Clone)]
 pub struct DynamoDbOpt {
     #[structopt(long)]
-    pub local_dynamodb: bool,
+    pub aws_endpoint: Option<String>,
 
     #[structopt(long)]
     pub table_name: String,
 
     #[structopt(long)]
-    pub column_names: Vec<String>,
+    pub column_names: String,
 
     #[structopt(long)]
-    pub column_types: Vec<String>,
-
-    #[structopt(long)]
-    pub schema_key: Option<String>,
+    pub column_types: String,
 
     #[structopt(flatten)]
     #[schemars(flatten)]
@@ -57,11 +53,9 @@ impl DynamoDbOpt {
     pub async fn execute(&self) -> anyhow::Result<()> {
         let config = aws_config::load_from_env().await;
         let mut builder = aws_sdk_dynamodb::config::Builder::from(&config);
-        if self.local_dynamodb {
-            builder = builder.endpoint_resolver(
-                // 8000 is the default dynamodb port
-                Endpoint::mutable(Uri::from_static("http://localhost:8000")),
-            )
+        if let Some(endpoint) = &self.aws_endpoint {
+            let endpoint = Endpoint::mutable(endpoint.parse()?);
+            builder = builder.endpoint_resolver(endpoint)
         }
 
         let dynamodb_local_config = builder.build();
@@ -76,6 +70,7 @@ impl DynamoDbOpt {
         }
         Ok(())
     }
+
     pub async fn send_to_dynamodb(
         &self,
         record: &Record,
@@ -84,8 +79,9 @@ impl DynamoDbOpt {
         use serde_json::value::Value;
         let json: Value = serde_json::from_slice(record.value())?;
         let mut request = client.put_item().table_name(&self.table_name);
+        let column_names = self.column_names.split(',');
 
-        for column in &self.column_names {
+        for column in column_names {
             if let Some(value) = json.get(column) {
                 let attr = if value.is_string() {
                     AttributeValue::S(value.to_string())
@@ -110,19 +106,19 @@ impl DynamoDbOpt {
         if names.contains(&table_name) {
             return Ok(());
         }
-        let column_names = &self.column_names;
-        let column_types = &self.column_types;
+
+        let column_names: Vec<&str> = self.column_names.split(',').collect();
+        let column_types: Vec<&str> = self.column_types.split(',').collect();
+
         if column_names.is_empty() {
             panic!("Must have one ore more columns");
         }
         if column_names.len() != column_types.len() {
             panic!("Must have the same number of column names as column types");
         }
-        let first_column = column_names.first().unwrap().to_string();
+        let primary_key = column_names.first().unwrap().to_string();
 
-        let primary_key = self.schema_key.as_ref().unwrap_or(&first_column);
-
-        if !column_names.contains(primary_key) {
+        if !column_names.contains(&&*primary_key.as_str()) {
             panic!("Key Schema must be a column");
         }
 
@@ -135,20 +131,19 @@ impl DynamoDbOpt {
             .read_capacity_units(10)
             .write_capacity_units(5)
             .build();
-        let mut resp = client
+
+        let attr_type = ScalarAttributeType::from(*column_types.first().unwrap());
+        let attribute = AttributeDefinition::builder()
+            .attribute_name(primary_key)
+            .attribute_type(attr_type)
+            .build();
+
+        let resp = client
             .create_table()
             .table_name(table_name)
             .key_schema(ks)
-            .provisioned_throughput(pt);
-
-        for (attribute_name, attribute_type) in column_names.iter().zip(column_types.iter()) {
-            let attr_type = ScalarAttributeType::from(attribute_type.as_str());
-            let attribute = AttributeDefinition::builder()
-                .attribute_name(attribute_name.to_string())
-                .attribute_type(attr_type)
-                .build();
-            resp = resp.attribute_definitions(attribute);
-        }
+            .provisioned_throughput(pt)
+            .attribute_definitions(attribute);
 
         let _ = resp.send().await?;
         Ok(())

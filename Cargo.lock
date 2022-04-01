@@ -1364,7 +1364,6 @@ dependencies = [
  "aws-sdk-dynamodb",
  "fluvio-connectors-common",
  "fluvio-future",
- "http 0.2.6",
  "schemars",
  "serde_json",
  "structopt",
