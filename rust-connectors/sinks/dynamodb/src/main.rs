@@ -6,8 +6,9 @@ use aws_sdk_dynamodb::{
     Client, Endpoint,
 };
 use fluvio_connectors_common::opt::{CommonSourceOpt, Record};
-use fluvio_future::tracing::info;
+use fluvio_future::tracing::{error, info};
 use schemars::{schema_for, JsonSchema};
+use serde_json::value::Value;
 use structopt::StructOpt;
 use tokio_stream::StreamExt;
 
@@ -66,9 +67,42 @@ impl DynamoDbOpt {
         let mut stream = self.common.create_consumer_stream(0).await?;
         info!("Starting stream");
         while let Some(Ok(record)) = stream.next().await {
-            let _ = self.send_to_dynamodb(&record, &client).await;
+            if let Err(e) = self.send_to_dynamodb(&record, &client).await {
+                error!("{:?}", e);
+            }
         }
         Ok(())
+    }
+
+    fn serde_value_to_dynamo_value(value: &Value) -> AttributeValue {
+        match value {
+            Value::String(value) => AttributeValue::S(value.to_string()),
+            Value::Number(value) => AttributeValue::N(value.to_string()),
+            Value::Bool(value) => AttributeValue::Bool(*value),
+            Value::Null => AttributeValue::Null(true),
+            Value::Array(value) => {
+                if !value.iter().any(|v| !v.is_string()) {
+                    let set: Vec<String> = value.iter().map(|v| v.to_string()).collect();
+                    AttributeValue::Ss(set)
+                } else if !value.iter().any(|v| !v.is_number()) {
+                    let set: Vec<String> = value.iter().map(|v| v.to_string()).collect();
+                    AttributeValue::Ns(set)
+                } else {
+                    let list: Vec<AttributeValue> = value
+                        .iter()
+                        .map(Self::serde_value_to_dynamo_value)
+                        .collect();
+                    AttributeValue::L(list)
+                }
+            }
+            Value::Object(value) => {
+                let map: std::collections::HashMap<String, AttributeValue> = value
+                    .iter()
+                    .map(|(key, value)| (key.clone(), Self::serde_value_to_dynamo_value(value)))
+                    .collect();
+                AttributeValue::M(map)
+            }
+        }
     }
 
     pub async fn send_to_dynamodb(
@@ -76,26 +110,13 @@ impl DynamoDbOpt {
         record: &Record,
         client: &aws_sdk_dynamodb::Client,
     ) -> anyhow::Result<()> {
-        use serde_json::value::Value;
         let json: Value = serde_json::from_slice(record.value())?;
         let mut request = client.put_item().table_name(&self.table_name);
         let column_names = self.column_names.split(',');
 
         for column in column_names {
             if let Some(value) = json.get(column) {
-                let attr = match value {
-                    Value::String(value) => AttributeValue::S(value.to_string()),
-                    Value::Number(value) => AttributeValue::N(value.to_string()),
-                    Value::Bool(value) => AttributeValue::Bool(*value),
-                    Value::Null => AttributeValue::Null(true),
-                    Value::Array(_value) => {
-                        unimplemented!("This case for a string isn't implemented yet!");
-                    }
-                    Value::Object(_value) => {
-                        unimplemented!("This case for a string isn't implemented yet!");
-                    }
-                };
-
+                let attr = Self::serde_value_to_dynamo_value(value);
                 request = request.item(column, attr);
             }
         }
