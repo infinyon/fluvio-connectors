@@ -357,7 +357,7 @@ jobs:
           for TAG in "${CONNECTOR_VERSION}-${{github.sha}}" "latest"; do
             docker push "docker.io/infinyon/fluvio-connect-${{ matrix.connector-name }}:${TAG}-amd64"
             docker push "docker.io/infinyon/fluvio-connect-${{ matrix.connector-name }}:${TAG}-arm64v8"
-            docker manifest create "docker.io/infinyon/fluvio-connect-${{ matrix.connector--name }}:${TAG}" \
+            docker manifest create "docker.io/infinyon/fluvio-connect-${{ matrix.connector-name }}:${TAG}" \
               "docker.io/infinyon/fluvio-connect-${{ matrix.connector-name }}:${TAG}-amd64" \
               "docker.io/infinyon/fluvio-connect-${{ matrix.connector-name }}:${TAG}-arm64v8"
             docker manifest push "docker.io/infinyon/fluvio-connect-${{ matrix.connector-name }}:${TAG}"
