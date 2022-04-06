@@ -6,7 +6,6 @@ topic: longevity
 create_topic: true
 direction: source
 parameters:
-  #runner-opts:
-  test-name: longevity 
-  test-opts: --runtime-seconds=30 --producers 1 --consumers 1
+  test-name: longevity
+  runner-opts: --timeout 30s --producer 1 --consumer 1
   
