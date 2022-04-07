@@ -1,13 +1,7 @@
-// Techdebt: Granular errors
-#![allow(clippy::redundant_closure)]
 
-use ::http::{
-    HttpOpt,
-    HttpConnectorResult,
-};
+use ::http::{HttpConnectorResult, HttpOpt};
 use schemars::schema_for;
 use structopt::StructOpt;
-
 
 #[tokio::main]
 async fn main() -> HttpConnectorResult<()> {

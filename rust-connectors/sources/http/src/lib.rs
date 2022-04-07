@@ -1,3 +1,5 @@
+// Techdebt: Granular errors
+#![allow(clippy::redundant_closure)]
 use fluvio_connectors_common::fluvio::RecordKey;
 use fluvio_connectors_common::opt::CommonSourceOpt;
 use schemars::JsonSchema;
