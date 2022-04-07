@@ -28,7 +28,9 @@ async fn main() -> tide::Result<()> {
 async fn get_request(req: Request<State>) -> tide::Result {
     let state = req.state();
     let value = state.get_count.fetch_add(1, Ordering::Relaxed) + 1;
-    Ok(format!("Hello, Fluvio! - {}", value).into())
+    let ret = format!("Hello, Fluvio! - {}", value);
+    println!("GET returning: {}", ret);
+    Ok(ret.into())
 }
 
 #[derive(Debug, Deserialize)]
@@ -40,5 +42,7 @@ async fn post_request(mut req: Request<State>) -> tide::Result {
     let HelloPostBody { name } = req.body_json().await?;
     let state = req.state();
     let value = state.post_count.fetch_add(1, Ordering::Relaxed) + 1;
-    Ok(format!("Hello, {}! - {}", name, value).into())
+    let ret = format!("Hello, {}! - {}", name, value);
+    println!("POST returning: {}", ret);
+    Ok(ret.into())
 }
