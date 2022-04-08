@@ -78,7 +78,7 @@ jobs:
           # IMAGE_NAME: ${{ matrix.image-name }}
         run: make official-containers
       - name: Upload tarball as artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: infinyon-fluvio-connector-${{ inputs.name }}-${{ matrix.rust-target }}.tar
           path: /tmp/infinyon-fluvio-connector-${{ inputs.name }}-${{ matrix.rust-target }}.tar
