@@ -56,7 +56,7 @@ jobs:
 
       # Upload artifacts
       - name: Upload artifact - ${{ inputs.name }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ inputs.name }}-${{ matrix.rust-target }}
           path: ${{ env.RUST_BIN_DIR }}/${{ inputs.name }}
