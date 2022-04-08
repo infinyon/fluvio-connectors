@@ -46,7 +46,7 @@ jobs:
           echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
       # Download artifacts from build
       - name: Download artifact - ${{ inputs.name }} - ${{ matrix.rust-target }}
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: ${{ inputs.name }}-${{ matrix.rust-target }}
           # This is the directory the Makefile expects artifacts to live in

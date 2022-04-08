@@ -175,7 +175,7 @@ jobs:
 
       # Download artifacts from build
       - name: Download artifact - ${{ matrix.connector-name }} - ${{ matrix.rust-target }}
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: ${{ matrix.connector-name }}-${{ matrix.rust-target }}
           # This is the directory the Makefile expects artifacts to live in
@@ -241,7 +241,7 @@ jobs:
           sleep 5
           ./actions/kd3-check.sh
       - name: Download ${{ matrix.connector-name }} x86_64-unknown-linux-musl Docker Image as Artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: infinyon-fluvio-connector-${{ matrix.connector-name }}-x86_64-unknown-linux-musl.tar
           path: /tmp
@@ -320,12 +320,12 @@ jobs:
           - dynamodb-sink
     steps:
       - name: Download ${{ matrix.connector-name }} x86_64-unknown-linux-musl Docker Image as Artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: infinyon-fluvio-connector-${{ matrix.connector-name }}-x86_64-unknown-linux-musl.tar
           path: /tmp
       - name: Download ${{ matrix.connector-name }} aarch64-unknown-linux-musl Docker Image as Artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: infinyon-fluvio-connector-${{ matrix.connector-name }}-aarch64-unknown-linux-musl.tar
           path: /tmp
