@@ -1503,9 +1503,9 @@ dependencies = [
 
 [[package]]
 name = "fluvio"
-version = "0.12.7"
+version = "0.12.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "05ecc8a147a0d8514ede660cdce600b0f53ed2dabd7051c909241eec96aff642"
+checksum = "9573442e6bfe6219dd9c42857ac2900370f714e836670baa917fe1eaab2b40a2"
 dependencies = [
  "async-channel",
  "async-lock",
@@ -1803,9 +1803,9 @@ dependencies = [
 
 [[package]]
 name = "fluvio-types"
-version = "0.3.2"
+version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "16ca187cd68d2a28330e627a08581517045b3ba6f96d10b368d27fd52be5728a"
+checksum = "b6ccf8635c710fe2d8c56d35cabcc787a63374c7074a232e68d33b519f03577e"
 dependencies = [
  "event-listener",
  "thiserror",
