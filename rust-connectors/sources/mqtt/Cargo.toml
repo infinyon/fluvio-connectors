@@ -21,6 +21,6 @@ serde = {version = "1.0.130", features = ["derive"] }
 anyhow = "1.0.56"
 url = "2.2"
 rustls = "0.20.4"
-rustls-native-certs = "0.6.1"
+rustls-native-certs = "0.6.2"
 
 rumqttc = { version = "0.11.0", features = ["url", "websocket"] }
