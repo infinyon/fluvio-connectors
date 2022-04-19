@@ -46,8 +46,11 @@
 | :---               | :----:      | :--- | :---                             |
 | [sinks/postgres]   | 0.1.0       | Rust | Postgres CDC                     |
 | [sinks/slack]      | 0.1.0       | Rust | Sends messages to slack          |
+| [sinks/dynamodb]   | 0.1.0       | Rust | Sends messages to dynamodb       |
 
 [sinks/postgres]: https://github.com/infinyon/fluvio-connectors/tree/main/rust-connectors/sinks/postgres
+[sinks/slack]: https://github.com/infinyon/fluvio-connectors/tree/main/rust-connectors/sinks/slack
+[sinks/dynamodb]: https://github.com/infinyon/fluvio-connectors/tree/main/rust-connectors/sinks/dynamodb
 [infinyon/postgres-sink]: https://hub.docker.com/r/infinyon/fluvio-connect-postgres-sink
 
 ## Libs (rust-connectors/)
