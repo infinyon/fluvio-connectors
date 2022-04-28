@@ -5192,8 +5192,3 @@ dependencies = [
  "cc",
  "libc",
 ]
-
-[[patch.unused]]
-name = "rumqttc"
-version = "0.12.0"
-source = "git+https://github.com/bytebeamio/rumqtt#2f71df0c49ec22d6e3c830687a2aef1273490e62"
