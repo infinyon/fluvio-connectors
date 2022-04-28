@@ -16,5 +16,3 @@ members = [
     "examples/github-stars/slack-display-smartmodule-map/",
 ]
 resolver = "2"
-[patch.crates-io]
-rumqttc = { git = "https://github.com/bytebeamio/rumqtt" }
