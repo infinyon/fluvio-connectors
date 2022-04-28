@@ -37,6 +37,9 @@ jobs:
           - os: ubuntu-latest
             connector-name: slack-sink
             image-name: infinyon/fluvio-connect-slack-sink
+          - os: ubuntu-latest
+            connector-name: dynamodb-sink
+            image-name: infinyon/fluvio-connect-dynamodb-sink
     steps:
       - uses: actions/checkout@v3
       - name: Try pulling ${{ matrix.connector-name }} x86_64-unknown-linux-musl docker images
