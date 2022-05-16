@@ -24,5 +24,5 @@ fluvio-dataplane-protocol = "0.10"
 fluvio-future = { version = "0.3.15", features = ["subscriber"] }
 
 [dev-dependencies]
-rstest = "0.12"
+rstest = "0.13"
 rstest_reuse = "0.3"
