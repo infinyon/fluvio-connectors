@@ -58,7 +58,7 @@ impl KafkaOpt {
         debug!("Sending {:?}, to kafka", text);
         let msg = ProduceMessage::new(
             self.common.fluvio_topic.as_str(),
-            0,
+            self.common.fluvio_partition,
             record.key(),
             Some(record.value()),
         );
