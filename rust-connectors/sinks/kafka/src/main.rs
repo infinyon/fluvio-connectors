@@ -2,9 +2,11 @@ use fluvio_connectors_common::opt::{CommonSourceOpt, Record};
 use fluvio_future::tracing::{debug, info};
 use schemars::schema_for;
 use schemars::JsonSchema;
-use std::collections::HashMap;
 use structopt::StructOpt;
 use tokio_stream::StreamExt;
+
+use kafka::client::{KafkaClient, ProduceMessage, RequiredAcks};
+use std::time::Duration;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -14,44 +16,55 @@ async fn main() -> anyhow::Result<()> {
             "version": env!("CARGO_PKG_VERSION"),
             "description": env!("CARGO_PKG_DESCRIPTION"),
             "direction": "Source",
-            "schema": schema_for!(SlackOpt),
+            "schema": schema_for!(KafkaOpt),
         });
         println!("{}", serde_json::to_string_pretty(&schema).unwrap());
         return Ok(());
     }
-    let opts: SlackOpt = SlackOpt::from_args();
+    let opts: KafkaOpt = KafkaOpt::from_args();
     opts.common.enable_logging();
     let _ = opts.execute().await?;
     Ok(())
 }
 
 #[derive(StructOpt, Debug, JsonSchema, Clone)]
-pub struct SlackOpt {
-    #[structopt(long, env = "WEBHOOK_URL", hide_env_values = true)]
-    pub webhook_url: String,
+pub struct KafkaOpt {
+    #[structopt(long, env = "KAFKA_URL", hide_env_values = true)]
+    pub kafka_url: String,
 
     #[structopt(flatten)]
     #[schemars(flatten)]
     pub common: CommonSourceOpt,
 }
 
-impl SlackOpt {
+impl KafkaOpt {
     pub async fn execute(&self) -> anyhow::Result<()> {
         let mut stream = self.common.create_consumer_stream().await?;
+        let mut kafka_client = KafkaClient::new(vec![self.kafka_url.clone()]);
+        let _ = kafka_client.load_metadata_all()?;
+
         info!("Starting stream");
         while let Some(Ok(record)) = stream.next().await {
-            let _ = self.send_to_slack(&record).await;
+            let _ = self.send_to_kafka(&record, &mut kafka_client).await;
         }
         Ok(())
     }
-    pub async fn send_to_slack(&self, record: &Record) -> anyhow::Result<()> {
+    pub async fn send_to_kafka(
+        &self,
+        record: &Record,
+        kafka_client: &mut KafkaClient,
+    ) -> anyhow::Result<()> {
         let text = String::from_utf8_lossy(record.value());
-        debug!("Sending {:?}, to slack", text);
-        let mut map = HashMap::new();
-        map.insert("text", text);
-
-        let client = reqwest::Client::new();
-        let _res = client.post(&self.webhook_url).json(&map).send().await?;
+        debug!("Sending {:?}, to kafka", text);
+        let msg = ProduceMessage::new(
+            self.common.fluvio_topic.as_str(),
+            0,
+            record.key(),
+            Some(record.value()),
+        );
+        let req = vec![msg];
+        let _resp =
+            kafka_client.produce_messages(RequiredAcks::One, Duration::from_millis(100), req)?;
         Ok(())
     }
 }
