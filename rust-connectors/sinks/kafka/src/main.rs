@@ -32,6 +32,9 @@ pub struct KafkaOpt {
     #[structopt(long, env = "KAFKA_URL", hide_env_values = true)]
     pub kafka_url: String,
 
+    #[structopt(long)]
+    pub kafka_topic: Option<String>,
+
     #[structopt(flatten)]
     #[schemars(flatten)]
     pub common: CommonSourceOpt,
@@ -54,10 +57,14 @@ impl KafkaOpt {
         record: &Record,
         kafka_client: &mut KafkaClient,
     ) -> anyhow::Result<()> {
+        let kafka_topic = self
+            .kafka_topic
+            .as_ref()
+            .unwrap_or(&self.common.fluvio_topic);
         let text = String::from_utf8_lossy(record.value());
         debug!("Sending {:?}, to kafka", text);
         let msg = ProduceMessage::new(
-            self.common.fluvio_topic.as_str(),
+            kafka_topic,
             self.common.fluvio_partition,
             record.key(),
             Some(record.value()),

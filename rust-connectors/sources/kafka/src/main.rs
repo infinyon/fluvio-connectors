@@ -1,11 +1,9 @@
-use fluvio_connectors_common::opt::{CommonSourceOpt, Record};
+use fluvio_connectors_common::opt::CommonSourceOpt;
 use fluvio_future::tracing::{debug, info};
-use kafka::client::{KafkaClient, ProduceMessage, RequiredAcks};
+use kafka::consumer::{Consumer, FetchOffset, GroupOffsetStorage};
 use schemars::schema_for;
 use schemars::JsonSchema;
-use std::time::Duration;
 use structopt::StructOpt;
-use tokio_stream::StreamExt;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -31,6 +29,12 @@ pub struct KafkaOpt {
     #[structopt(long, env = "KAFKA_URL", hide_env_values = true)]
     pub kafka_url: String,
 
+    #[structopt(long)]
+    pub kafka_group: Option<String>,
+
+    #[structopt(long)]
+    pub kafka_topic: Option<String>,
+
     #[structopt(flatten)]
     #[schemars(flatten)]
     pub common: CommonSourceOpt,
@@ -38,32 +42,35 @@ pub struct KafkaOpt {
 
 impl KafkaOpt {
     pub async fn execute(&self) -> anyhow::Result<()> {
-        let mut stream = self.common.create_consumer_stream().await?;
-        let mut kafka_client = KafkaClient::new(vec![self.kafka_url.clone()]);
-        let _ = kafka_client.load_metadata_all()?;
+        let producer = self.common.create_producer().await?;
+        info!("Connected to fluvio!");
+        let kafka_topic = self
+            .kafka_topic
+            .as_ref()
+            .unwrap_or(&self.common.fluvio_topic);
 
-        info!("Starting stream");
-        while let Some(Ok(record)) = stream.next().await {
-            let _ = self.send_to_kafka(&record, &mut kafka_client).await;
+        let mut consumer = Consumer::from_hosts(vec![self.kafka_url.clone()])
+            .with_topic_partitions(kafka_topic.clone(), &[self.common.fluvio_partition])
+            .with_fallback_offset(FetchOffset::Earliest)
+            .with_group(
+                self.kafka_group
+                    .clone()
+                    .unwrap_or_else(|| "fluvio-kafka-source".to_string()),
+            )
+            .with_offset_storage(GroupOffsetStorage::Kafka)
+            .create()?;
+
+        info!("Connected to kafka!");
+        loop {
+            for ms in consumer.poll().unwrap().iter() {
+                for m in ms.messages() {
+                    let _ = producer.send(m.key, m.value).await?;
+
+                    debug!("{:?}", m);
+                }
+                let _ = consumer.consume_messageset(ms)?;
+            }
+            consumer.commit_consumed().unwrap();
         }
-        Ok(())
-    }
-    pub async fn send_to_kafka(
-        &self,
-        record: &Record,
-        kafka_client: &mut KafkaClient,
-    ) -> anyhow::Result<()> {
-        let text = String::from_utf8_lossy(record.value());
-        debug!("Sending {:?}, to kafka", text);
-        let msg = ProduceMessage::new(
-            self.common.fluvio_topic.as_str(),
-            0,
-            record.key(),
-            Some(record.value()),
-        );
-        let req = vec![msg];
-        let _resp =
-            kafka_client.produce_messages(RequiredAcks::One, Duration::from_millis(100), req);
-        Ok(())
     }
 }
