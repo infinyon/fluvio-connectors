@@ -70,7 +70,7 @@ impl KafkaOpt {
                 }
                 let _ = consumer.consume_messageset(ms)?;
             }
-            consumer.commit_consumed().unwrap();
+            let _ = consumer.commit_consumed()?;
         }
     }
 }

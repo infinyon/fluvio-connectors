@@ -44,11 +44,12 @@ impl KafkaOpt {
     pub async fn execute(&self) -> anyhow::Result<()> {
         let mut stream = self.common.create_consumer_stream().await?;
         let mut kafka_client = KafkaClient::new(vec![self.kafka_url.clone()]);
+        //let mut kafka_client = KafkaClient::new(vec![self.kafka_url.clone()]);
         let _ = kafka_client.load_metadata_all()?;
 
         info!("Starting stream");
         while let Some(Ok(record)) = stream.next().await {
-            let _ = self.send_to_kafka(&record, &mut kafka_client).await;
+            let _ = self.send_to_kafka(&record, &mut kafka_client).await?;
         }
         Ok(())
     }
@@ -70,8 +71,9 @@ impl KafkaOpt {
             Some(record.value()),
         );
         let req = vec![msg];
-        let _resp =
-            kafka_client.produce_messages(RequiredAcks::One, Duration::from_millis(100), req)?;
+        let resp =
+            kafka_client.produce_messages(RequiredAcks::All, Duration::from_millis(10000), req)?;
+        debug!("Sent {:?}", resp);
         Ok(())
     }
 }
