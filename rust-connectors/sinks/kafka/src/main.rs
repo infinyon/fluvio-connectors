@@ -1,5 +1,5 @@
 use fluvio_connectors_common::opt::{CommonSourceOpt, Record};
-use fluvio_future::tracing::{info};
+use fluvio_future::tracing::info;
 use schemars::schema_for;
 use schemars::JsonSchema;
 use structopt::StructOpt;
