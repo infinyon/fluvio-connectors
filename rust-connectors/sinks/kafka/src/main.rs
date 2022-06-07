@@ -5,8 +5,6 @@ use schemars::JsonSchema;
 use structopt::StructOpt;
 use tokio_stream::StreamExt;
 
-use kafka::client::{KafkaClient, ProduceMessage, RequiredAcks};
-use std::time::Duration;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -43,6 +41,23 @@ pub struct KafkaOpt {
 impl KafkaOpt {
     pub async fn execute(&self) -> anyhow::Result<()> {
         let mut stream = self.common.create_consumer_stream().await?;
+
+        info!("Starting stream");
+        while let Some(Ok(record)) = stream.next().await {
+            let _ = self.send_to_kafka(&record).await?;
+        }
+        Ok(())
+    }
+    pub async fn send_to_kafka(
+        &self,
+        record: &Record,
+        //kafka_client: &mut KafkaClient,
+    ) -> anyhow::Result<()> {
+        todo!()
+    }
+    /*
+    pub async fn execute(&self) -> anyhow::Result<()> {
+        let mut stream = self.common.create_consumer_stream().await?;
         let mut kafka_client = KafkaClient::new(vec![self.kafka_url.clone()]);
         //let mut kafka_client = KafkaClient::new(vec![self.kafka_url.clone()]);
         let _ = kafka_client.load_metadata_all()?;
@@ -76,4 +91,5 @@ impl KafkaOpt {
         debug!("Sent {:?}", resp);
         Ok(())
     }
+    */
 }
