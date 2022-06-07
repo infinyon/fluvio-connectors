@@ -1,10 +1,9 @@
 use fluvio_connectors_common::opt::{CommonSourceOpt, Record};
-use fluvio_future::tracing::{debug, info};
+use fluvio_future::tracing::{info};
 use schemars::schema_for;
 use schemars::JsonSchema;
 use structopt::StructOpt;
 use tokio_stream::StreamExt;
-
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -50,7 +49,7 @@ impl KafkaOpt {
     }
     pub async fn send_to_kafka(
         &self,
-        record: &Record,
+        _record: &Record,
         //kafka_client: &mut KafkaClient,
     ) -> anyhow::Result<()> {
         todo!()
