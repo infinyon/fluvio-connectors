@@ -46,16 +46,35 @@ impl KafkaOpt {
     pub async fn execute(&self) -> anyhow::Result<()> {
         let mut stream = self.common.create_consumer_stream().await?;
 
+        /*
+         * TODO:
+         .set("security.protocol", "SASL_SSL")
+         .set("sasl.mechanisms", "PLAIN")
+         .set("sasl.username", "")
+         .set("sasl.password", "")
+         */
+        use rdkafka::admin::{
+            AdminClient,
+            AdminOptions,
+            NewTopic,
+            TopicReplication,
+        };
+        use rdkafka::config::FromClientConfig;
+
+        let admin = AdminClient::from_config(
+            ClientConfig::new()
+            .set("bootstrap.servers", self.kafka_brokers.clone())
+            .set("session.timeout.ms", "45000")
+        )?;
+        let kafka_topic = self
+            .kafka_topic
+            .as_ref()
+            .unwrap_or(&self.common.fluvio_topic);
+        let new_topic = NewTopic::new(kafka_topic.as_str(), 1, TopicReplication::Fixed(1));
+        let _ = admin.create_topics(&[new_topic], &AdminOptions::new()).await?;
+
         let producer: &FutureProducer = &ClientConfig::new()
             .set("bootstrap.servers", self.kafka_brokers.clone())
-
-            /*
-             * TODO:
-            .set("security.protocol", "SASL_SSL")
-            .set("sasl.mechanisms", "PLAIN")
-            .set("sasl.username", "")
-            .set("sasl.password", "")
-            */
             .set("session.timeout.ms", "45000")
             .create()
             .expect("Producer creation error");
