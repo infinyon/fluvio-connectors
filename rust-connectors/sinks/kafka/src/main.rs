@@ -26,8 +26,9 @@ async fn main() -> anyhow::Result<()> {
 
 #[derive(StructOpt, Debug, JsonSchema, Clone)]
 pub struct KafkaOpt {
+    /// A Comma separated list of the kafka brokers to connect to
     #[structopt(long, env = "KAFKA_URL", hide_env_values = true)]
-    pub kafka_url: String,
+    pub kafka_brokers: String,
 
     #[structopt(long)]
     pub kafka_topic: Option<String>,
@@ -46,11 +47,15 @@ impl KafkaOpt {
         let mut stream = self.common.create_consumer_stream().await?;
 
         let producer: &FutureProducer = &ClientConfig::new()
-            .set("bootstrap.servers", "")
+            .set("bootstrap.servers", self.kafka_brokers.clone())
+
+            /*
+             * TODO:
             .set("security.protocol", "SASL_SSL")
             .set("sasl.mechanisms", "PLAIN")
             .set("sasl.username", "")
             .set("sasl.password", "")
+            */
             .set("session.timeout.ms", "45000")
             .create()
             .expect("Producer creation error");
