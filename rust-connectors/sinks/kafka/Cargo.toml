@@ -18,4 +18,4 @@ tokio-stream = "0.1"
 fluvio-future = { version = "0.3.15", features = ["subscriber"] }
 
 #kafka = "0.9.0"
-rdkafka = { version = "0.25", features = ["cmake-build", "sasl", "ssl-vendored", "ssl"] }
+rdkafka = { version = "0.28", features = ["cmake-build", "sasl", "ssl-vendored", "ssl"] }
