@@ -1,5 +1,5 @@
 use fluvio_connectors_common::opt::CommonSourceOpt;
-use fluvio_future::tracing::{debug, info};
+use fluvio_future::tracing::info;
 use kafka::consumer::{Consumer, FetchOffset, GroupOffsetStorage};
 use schemars::schema_for;
 use schemars::JsonSchema;
@@ -64,9 +64,8 @@ impl KafkaOpt {
         loop {
             for ms in consumer.poll().unwrap().iter() {
                 for m in ms.messages() {
+                    info!("Sending {:?} to fluvio", m);
                     let _ = producer.send(m.key, m.value).await?;
-
-                    debug!("{:?}", m);
                 }
                 let _ = consumer.consume_messageset(ms)?;
             }

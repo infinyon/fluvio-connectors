@@ -2510,6 +2510,7 @@ dependencies = [
  "anyhow",
  "fluvio-connectors-common",
  "fluvio-future",
+ "kafka",
  "rdkafka",
  "schemars",
  "serde",
