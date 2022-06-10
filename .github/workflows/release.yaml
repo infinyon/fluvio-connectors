@@ -40,6 +40,13 @@ jobs:
           - os: ubuntu-latest
             connector-name: dynamodb-sink
             image-name: infinyon/fluvio-connect-dynamodb-sink
+          - os: ubuntu-latest
+            connector-name: kafka-sink
+            image-name: infinyon/fluvio-connect-kafka-sink
+          - os: ubuntu-latest
+            connector-name: kafka-source
+            image-name: infinyon/fluvio-connect-kafka-source
+
     steps:
       - uses: actions/checkout@v3
       - name: Try pulling ${{ matrix.connector-name }} x86_64-unknown-linux-musl docker images
