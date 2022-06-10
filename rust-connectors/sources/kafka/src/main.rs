@@ -35,6 +35,10 @@ pub struct KafkaOpt {
     #[structopt(long)]
     pub kafka_topic: Option<String>,
 
+    #[structopt(long, default_value = "0")]
+    #[schemars(skip)]
+    pub kafka_partition: i32,
+
     #[structopt(flatten)]
     #[schemars(flatten)]
     pub common: CommonSourceOpt,
@@ -50,7 +54,7 @@ impl KafkaOpt {
             .unwrap_or(&self.common.fluvio_topic);
 
         let mut consumer = Consumer::from_hosts(vec![self.kafka_url.clone()])
-            .with_topic_partitions(kafka_topic.clone(), &[self.common.fluvio_partition])
+            .with_topic_partitions(kafka_topic.clone(), &[self.kafka_partition])
             .with_fallback_offset(FetchOffset::Earliest)
             .with_group(
                 self.kafka_group

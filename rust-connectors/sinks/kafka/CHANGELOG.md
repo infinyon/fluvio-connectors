@@ -1,3 +1,3 @@
-# Slack Connector Change Log
+# Kafka Sink Change Log
 
-## http Version 0.1.0 - UNRELEASED
+## kafka-sink Version 0.1.0 - UNRELEASED

@@ -1,3 +1,3 @@
-# Slack Connector Change Log
+# Kafka Source Connector Change Log
 
-## http Version 0.1.0 - UNRELEASED
+## kafka-source version 0.1.0 - UNRELEASED

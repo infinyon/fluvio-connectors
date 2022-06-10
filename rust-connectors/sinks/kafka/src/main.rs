@@ -33,6 +33,9 @@ pub struct KafkaOpt {
     #[structopt(long)]
     pub kafka_topic: Option<String>,
 
+    #[structopt(long)]
+    pub kafka_partition: Option<i32>,
+
     #[structopt(flatten)]
     #[schemars(flatten)]
     pub common: CommonSourceOpt,
@@ -43,27 +46,26 @@ use rdkafka::producer::{FutureProducer, FutureRecord};
 use std::time::Duration;
 impl KafkaOpt {
     pub async fn execute(&self) -> anyhow::Result<()> {
-        let mut stream = self.common.create_consumer_stream().await?;
-
-        /*
-        * TODO:
-        .set("security.protocol", "SASL_SSL")
-        .set("sasl.mechanisms", "PLAIN")
-        .set("sasl.username", "")
-        .set("sasl.password", "")
-        */
         use rdkafka::admin::{AdminClient, AdminOptions, NewTopic, TopicReplication};
         use rdkafka::config::FromClientConfig;
+        let kafka_topic = self
+            .kafka_topic
+            .as_ref()
+            .unwrap_or(&self.common.fluvio_topic);
 
         let admin = AdminClient::from_config(
             ClientConfig::new()
                 .set("bootstrap.servers", self.kafka_url.clone())
                 .set("session.timeout.ms", "45000"),
+            /*
+            * TODO: Add SASL Authentication
+            .set("security.protocol", "SASL_SSL")
+            .set("sasl.mechanisms", "PLAIN")
+            .set("sasl.username", "")
+            .set("sasl.password", "")
+            */
         )?;
-        let kafka_topic = self
-            .kafka_topic
-            .as_ref()
-            .unwrap_or(&self.common.fluvio_topic);
+
         let new_topic = NewTopic::new(kafka_topic.as_str(), 1, TopicReplication::Fixed(1));
         let _ = admin
             .create_topics(&[new_topic], &AdminOptions::new())
@@ -76,6 +78,7 @@ impl KafkaOpt {
             .expect("Producer creation error");
 
         info!("Starting stream");
+        let mut stream = self.common.create_consumer_stream().await?;
         while let Some(Ok(record)) = stream.next().await {
             let _ = self.send_to_kafka(&record, producer).await?;
         }
@@ -90,9 +93,12 @@ impl KafkaOpt {
             .kafka_topic
             .as_ref()
             .unwrap_or(&self.common.fluvio_topic);
-        let kafka_record = FutureRecord::to(kafka_topic.as_str())
+        let mut kafka_record = FutureRecord::to(kafka_topic.as_str())
             .payload(record.value())
             .key(record.key().unwrap_or(&[]));
+        if let Some(kafka_partition) = self.kafka_partition {
+            kafka_record = kafka_record.partition(kafka_partition);
+        }
         let res = kafka_producer
             .send(kafka_record, Duration::from_secs(0))
             .await;
