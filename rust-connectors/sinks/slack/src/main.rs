@@ -37,7 +37,7 @@ pub struct SlackOpt {
 
 impl SlackOpt {
     pub async fn execute(&self) -> anyhow::Result<()> {
-        let mut stream = self.common.create_consumer_stream(0).await?;
+        let mut stream = self.common.create_consumer_stream().await?;
         info!("Starting stream");
         while let Some(Ok(record)) = stream.next().await {
             let _ = self.send_to_slack(&record).await;

@@ -22,6 +22,10 @@ pub struct CommonSourceOpt {
     #[schemars(skip)]
     pub fluvio_topic: String,
 
+    #[structopt(long, default_value = "0")]
+    #[schemars(skip)]
+    pub fluvio_partition: i32,
+
     /// The rust log level. If it is not defined, `RUST_LOG` environment variable
     /// will be used. If environment variable is not defined,
     /// then INFO level will be used.
@@ -154,7 +158,7 @@ impl CommonSourceOpt {
         if let Some(initial_value) = &self.aggregate_initial_value {
             if initial_value == "use-last" {
                 let consumer = fluvio
-                    .partition_consumer(self.fluvio_topic.clone(), 0)
+                    .partition_consumer(self.fluvio_topic.clone(), self.fluvio_partition)
                     .await?;
                 let stream = consumer.stream(fluvio::Offset::from_end(1)).await?;
                 let timeout = stream.timeout(Duration::from_millis(3000));
@@ -203,14 +207,13 @@ impl CommonSourceOpt {
         }
     }
 
-    async fn create_consumer(&self, partition: i32) -> anyhow::Result<PartitionConsumer> {
+    async fn create_consumer(&self) -> anyhow::Result<PartitionConsumer> {
         self.ensure_topic_exists().await?;
-        Ok(fluvio::consumer(&self.fluvio_topic, partition).await?)
+        Ok(fluvio::consumer(&self.fluvio_topic, self.fluvio_partition).await?)
     }
 
     pub async fn create_consumer_stream(
         &self,
-        partition: i32,
     ) -> anyhow::Result<impl Stream<Item = Result<Record, ErrorCode>>> {
         let fluvio = fluvio::Fluvio::connect().await?;
         let wasm_invocation: Option<SmartModuleInvocation> =
@@ -252,7 +255,7 @@ impl CommonSourceOpt {
         let mut builder = ConsumerConfig::builder();
         builder.smartmodule(wasm_invocation);
         let config = builder.build()?;
-        let consumer = self.create_consumer(partition).await?;
+        let consumer = self.create_consumer().await?;
         let offset = fluvio::Offset::end();
         Ok(consumer.stream_with_config(offset, config).await?)
     }
