@@ -1,4 +1,5 @@
 use fluvio_connectors_common::fluvio::RecordKey;
+use fluvio_connectors_common::git_hash_version;
 use fluvio_connectors_common::opt::CommonSourceOpt;
 
 mod error;
@@ -67,7 +68,11 @@ fn main() -> Result<(), MqttConnectorError> {
     // Enable logging, setting default RUST_LOG if not given
     opts.common.enable_logging();
 
-    info!("Initializing MQTT connector");
+    info!(
+        connector_version = env!("CARGO_PKG_VERSION"),
+        git_hash = git_hash_version(),
+        "Starting MQTT source connector",
+    );
 
     async_global_executor::block_on(async move {
         let mqtt_timeout_seconds = Duration::from_secs(opts.timeout.unwrap_or(60));

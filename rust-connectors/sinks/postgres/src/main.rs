@@ -1,6 +1,9 @@
+use fluvio_connectors_common::git_hash_version;
 use postgres_sink::{PgConnector, PgConnectorOpt};
+
 use schemars::schema_for;
 use structopt::StructOpt;
+use tracing::info;
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
@@ -30,6 +33,12 @@ async fn main() -> eyre::Result<()> {
 
     let config: PgConnectorOpt = PgConnectorOpt::from_args();
     let mut connector = PgConnector::new(config).await?;
+
+    info!(
+        connector_version = env!("CARGO_PKG_VERSION"),
+        git_hash = git_hash_version(),
+        "Starting Postgres sink connector",
+    );
     let _ = connector.process_stream().await?;
     Ok(())
 }

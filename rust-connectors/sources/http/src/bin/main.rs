@@ -1,7 +1,7 @@
 // Techdebt: Granular errors
 #![allow(clippy::redundant_closure)]
 
-use fluvio_connectors_common::fluvio::RecordKey;
+use fluvio_connectors_common::{fluvio::RecordKey, git_hash_version};
 use tokio_stream::StreamExt;
 
 type Result<T, E = Box<dyn std::error::Error + Send + Sync + 'static>> = core::result::Result<T, E>;
@@ -41,7 +41,12 @@ async fn main() -> Result<()> {
         panic!("ERROR: output_format has been deprecated and renamed as output_parts");
     }
 
-    tracing::info!("Initializing HTTP connector");
+    tracing::info!(
+        connector_version = env!("CARGO_PKG_VERSION"),
+        git_hash = git_hash_version(),
+        "Starting HTTP source connector",
+    );
+
     tracing::info!(
         interval = %opts.interval,
         method = %opts.method,

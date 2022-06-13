@@ -1,3 +1,4 @@
+use fluvio_connectors_common::git_hash_version;
 use fluvio_connectors_common::opt::{CommonSourceOpt, Record};
 use fluvio_future::tracing::{debug, info};
 use schemars::schema_for;
@@ -20,6 +21,12 @@ async fn main() -> anyhow::Result<()> {
     }
     let opts: KafkaOpt = KafkaOpt::from_args();
     opts.common.enable_logging();
+    info!(
+        connector_version = env!("CARGO_PKG_VERSION"),
+        git_hash = git_hash_version(),
+        "Starting Kafka sink connector",
+    );
+
     let _ = opts.execute().await?;
     Ok(())
 }
