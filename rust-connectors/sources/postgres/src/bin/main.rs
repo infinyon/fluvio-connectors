@@ -1,5 +1,6 @@
 use adaptive_backoff::prelude::*;
 use eyre::eyre;
+use fluvio_connectors_common::git_hash_version;
 use postgres_source::{PgConnector, PgConnectorOpt};
 use schemars::schema_for;
 use structopt::StructOpt;
@@ -32,6 +33,13 @@ async fn main() -> eyre::Result<()> {
     }
 
     let config: PgConnectorOpt = PgConnectorOpt::from_args();
+
+    info!(
+        connector_version = env!("CARGO_PKG_VERSION"),
+        git_hash = git_hash_version(),
+        "Starting Postgres source connector",
+    );
+
     if let Err(err) = run_connector(&config).await {
         error!(%err,"error running connector");
     }

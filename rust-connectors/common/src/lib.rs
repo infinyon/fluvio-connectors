@@ -4,3 +4,7 @@ pub mod fluvio {
 }
 
 pub mod opt;
+
+pub fn git_hash_version() -> &'static str {
+    env!("GIT_HASH")
+}

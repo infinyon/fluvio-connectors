@@ -5,6 +5,7 @@ use aws_sdk_dynamodb::{
     },
     Client, Endpoint,
 };
+use fluvio_connectors_common::git_hash_version;
 use fluvio_connectors_common::opt::{CommonSourceOpt, Record};
 use fluvio_future::tracing::{error, info};
 use schemars::{schema_for, JsonSchema};
@@ -27,6 +28,12 @@ async fn main() -> anyhow::Result<()> {
     }
     let opts: DynamoDbOpt = DynamoDbOpt::from_args();
     opts.common.enable_logging();
+    info!(
+        connector_version = env!("CARGO_PKG_VERSION"),
+        git_hash = git_hash_version(),
+        "Starting DynamoDB sink connector",
+    );
+
     let _ = opts.execute().await?;
     Ok(())
 }
