@@ -1,5 +1,7 @@
 use anyhow::Context;
+use humantime::parse_duration;
 use schemars::JsonSchema;
+use std::time::Duration;
 use structopt::clap::AppSettings;
 use structopt::StructOpt;
 
@@ -8,7 +10,8 @@ pub use fluvio::{
     consumer::{Record, SmartModuleInvocation, SmartModuleInvocationWasm, SmartModuleKind},
     dataplane::ErrorCode,
     metadata::topic::TopicSpec,
-    ConsumerConfig, Fluvio, FluvioError, PartitionConsumer, TopicProducer,
+    Compression, ConsumerConfig, Fluvio, FluvioError, PartitionConsumer, TopicProducer,
+    TopicProducerConfigBuilder,
 };
 
 use fluvio::metadata::smartmodule::SmartModuleSpec;
@@ -70,6 +73,21 @@ pub struct CommonSourceOpt {
 
     #[structopt(long)]
     pub aggregate_initial_value: Option<String>,
+
+    /// Time to wait before sending
+    /// Ex: '150ms', '20s'
+    #[structopt(long, parse(try_from_str = parse_duration))]
+    pub linger: Option<Duration>,
+
+    /// Compression algorithm to use when sending records.
+    /// Supported values: none, gzip, snappy and lz4.
+    #[structopt(long)]
+    #[schemars(skip)]
+    pub compression: Option<Compression>,
+
+    /// Max amount of bytes accumulated before sending
+    #[structopt(long)]
+    pub batch_size: Option<usize>,
 }
 
 impl CommonSourceOpt {
@@ -101,6 +119,33 @@ impl CommonSourceOpt {
     pub async fn create_producer(&self) -> anyhow::Result<TopicProducer> {
         let fluvio = fluvio::Fluvio::connect().await?;
         self.ensure_topic_exists().await?;
+        let config_builder = TopicProducerConfigBuilder::default();
+
+        // Linger
+        let config_builder = if let Some(linger) = self.linger {
+            config_builder.linger(linger)
+        } else {
+            config_builder
+        };
+
+        // Compression
+        let config_builder = if let Some(compression) = self.compression {
+            config_builder.compression(compression)
+        } else {
+            config_builder
+        };
+
+        // Batch size
+        let config_builder = if let Some(batch_size) = self.batch_size {
+            config_builder.batch_size(batch_size)
+        } else {
+            config_builder
+        };
+
+        let config = config_builder.build()?;
+        let producer = fluvio
+            .topic_producer_with_config(&self.fluvio_topic, config)
+            .await?;
 
         let producer = match (
             &self.filter,
@@ -111,49 +156,34 @@ impl CommonSourceOpt {
         ) {
             (Some(filter_path), _, _, _, _) => {
                 let data = self.get_smartmodule(filter_path, &fluvio).await?;
-                fluvio
-                    .topic_producer(&self.fluvio_topic)
-                    .await?
-                    .with_filter(data, Default::default())?
+                producer.with_filter(data, Default::default())?
             }
             (_, Some(filter_map_path), _, _, _) => {
-                let data = self.get_smartmodule(filter_map_path, &fluvio).await?;
-                fluvio
-                    .topic_producer(&self.fluvio_topic)
-                    .await?
-                    .with_filter(data, Default::default())?
+                let _data = self.get_smartmodule(filter_map_path, &fluvio).await?;
+                todo!("Filter map isn't in fluvio yet. https://github.com/infinyon/fluvio-connectors/issues/272");
+                //producer.with_filter_map(data, Default::default())?
             }
             (_, _, Some(map_path), _, _) => {
                 let data = self.get_smartmodule(map_path, &fluvio).await?;
-                fluvio
-                    .topic_producer(&self.fluvio_topic)
-                    .await?
-                    .with_map(data, Default::default())?
+                producer.with_map(data, Default::default())?
             }
             (_, _, _, Some(array_map_path), _) => {
                 let data = self.get_smartmodule(array_map_path, &fluvio).await?;
-                fluvio
-                    .topic_producer(&self.fluvio_topic)
-                    .await?
-                    .with_array_map(data, Default::default())?
+                producer.with_array_map(data, Default::default())?
             }
             (_, _, _, _, Some(aggregate)) => {
                 let data = self.get_smartmodule(aggregate, &fluvio).await?;
                 let initial = self.get_aggregate_initial_value(&fluvio).await?;
                 self.get_aggregate_initial_value(&fluvio).await?;
-                fluvio
-                    .topic_producer(&self.fluvio_topic)
-                    .await?
-                    .with_aggregate(data, Default::default(), initial)?
+                producer.with_aggregate(data, Default::default(), initial)?
             }
-            _ => fluvio.topic_producer(&self.fluvio_topic).await?,
+            _ => producer,
         };
 
         Ok(producer)
     }
 
     async fn get_aggregate_initial_value(&self, fluvio: &Fluvio) -> anyhow::Result<Vec<u8>> {
-        use std::time::Duration;
         use tokio_stream::StreamExt;
         if let Some(initial_value) = &self.aggregate_initial_value {
             if initial_value == "use-last" {
