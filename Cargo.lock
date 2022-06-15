@@ -1541,7 +1541,7 @@ dependencies = [
  "dirs",
  "event-listener",
  "fluvio-compression",
- "fluvio-dataplane-protocol 0.11.1",
+ "fluvio-dataplane-protocol",
  "fluvio-future",
  "fluvio-protocol",
  "fluvio-sc-schema",
@@ -1600,34 +1600,12 @@ checksum = "8d876315d312d61a7822df10f60363a5ef396b40ea29b8ad4ab7ecfded7122e1"
 dependencies = [
  "async-trait",
  "base64 0.13.0",
- "fluvio-dataplane-protocol 0.11.1",
+ "fluvio-dataplane-protocol",
  "fluvio-future",
  "fluvio-protocol",
  "fluvio-stream-model",
  "fluvio-types",
  "flv-util",
- "thiserror",
- "tracing",
-]
-
-[[package]]
-name = "fluvio-dataplane-protocol"
-version = "0.10.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "780ead32b5912e9edb5a6f1d224de31b833fba78da985e404943b48d978b5d55"
-dependencies = [
- "bytes",
- "cfg-if 1.0.0",
- "content_inspector",
- "crc32c",
- "eyre",
- "fluvio-compression",
- "fluvio-future",
- "fluvio-protocol",
- "flv-util",
- "futures-util",
- "once_cell",
- "semver 1.0.10",
  "thiserror",
  "tracing",
 ]
@@ -1721,7 +1699,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a9f16db4cf0036c3c5890e3e63c48c460c5a7b59c73440fba6696d4b8bed6e1d"
 dependencies = [
  "fluvio-controlplane-metadata",
- "fluvio-dataplane-protocol 0.11.1",
+ "fluvio-dataplane-protocol",
  "fluvio-protocol",
  "fluvio-types",
  "log",
@@ -1738,7 +1716,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "09dc4eb495c5ef4f6efc6dd5ac9c87ff8db448f5bc69914f644111097babd5da"
 dependencies = [
  "anyhow",
- "fluvio-dataplane-protocol 0.11.1",
+ "fluvio-dataplane-protocol",
  "fluvio-future",
  "fluvio-spu-schema",
  "futures-util",
@@ -1754,7 +1732,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1ef31561078a389034e04bbeae58cd4cac64282bd7e75c8195422fba4fe68b53"
 dependencies = [
  "eyre",
- "fluvio-dataplane-protocol 0.11.1",
+ "fluvio-dataplane-protocol",
  "fluvio-smartmodule-derive",
 ]
 
@@ -1800,7 +1778,7 @@ checksum = "a300a9e13672016511b71d3046c061fcfae2f66b48d5540decba7965b4975d4c"
 dependencies = [
  "bytes",
  "flate2",
- "fluvio-dataplane-protocol 0.11.1",
+ "fluvio-dataplane-protocol",
  "fluvio-protocol",
  "log",
  "serde",
@@ -2207,7 +2185,7 @@ name = "http"
 version = "0.2.1"
 dependencies = [
  "fluvio-connectors-common",
- "fluvio-dataplane-protocol 0.10.1",
+ "fluvio-dataplane-protocol",
  "fluvio-future",
  "reqwest",
  "rstest",
@@ -4318,7 +4296,7 @@ dependencies = [
  "anyhow",
  "async-std",
  "fluvio-connectors-common",
- "fluvio-dataplane-protocol 0.10.1",
+ "fluvio-dataplane-protocol",
  "schemars",
  "serde",
  "serde_json",
@@ -4718,8 +4696,8 @@ version = "1.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
- "cfg-if 1.0.0",
- "rand 0.8.5",
+ "cfg-if 0.1.10",
+ "rand 0.7.3",
  "static_assertions",
 ]
 
