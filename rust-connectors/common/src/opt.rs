@@ -77,17 +77,17 @@ pub struct CommonSourceOpt {
     /// Time to wait before sending
     /// Ex: '150ms', '20s'
     #[structopt(long, parse(try_from_str = parse_duration))]
-    pub fluvio_source_linger: Option<Duration>,
+    pub source_linger: Option<Duration>,
 
     /// Compression algorithm to use when sending records.
     /// Supported values: none, gzip, snappy and lz4.
     #[structopt(long)]
     #[schemars(skip)]
-    pub fluvio_source_compression: Option<Compression>,
+    pub source_compression: Option<Compression>,
 
     /// Max amount of bytes accumulated before sending
     #[structopt(long)]
-    pub fluvio_source_batch_size: Option<usize>,
+    pub source_batch_size: Option<usize>,
 }
 
 impl CommonSourceOpt {
@@ -122,21 +122,21 @@ impl CommonSourceOpt {
         let config_builder = TopicProducerConfigBuilder::default();
 
         // Linger
-        let config_builder = if let Some(linger) = self.fluvio_source_linger {
+        let config_builder = if let Some(linger) = self.source_linger {
             config_builder.linger(linger)
         } else {
             config_builder
         };
 
         // Compression
-        let config_builder = if let Some(compression) = self.fluvio_source_compression {
+        let config_builder = if let Some(compression) = self.source_compression {
             config_builder.compression(compression)
         } else {
             config_builder
         };
 
         // Batch size
-        let config_builder = if let Some(batch_size) = self.fluvio_source_batch_size {
+        let config_builder = if let Some(batch_size) = self.source_batch_size {
             config_builder.batch_size(batch_size)
         } else {
             config_builder
