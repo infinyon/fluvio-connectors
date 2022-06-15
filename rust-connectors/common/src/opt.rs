@@ -159,7 +159,7 @@ impl CommonSourceOpt {
                 producer.with_filter(data, Default::default())?
             }
             (_, Some(filter_map_path), _, _, _) => {
-                let data = self.get_smartmodule(filter_map_path, &fluvio).await?;
+                let _data = self.get_smartmodule(filter_map_path, &fluvio).await?;
                 todo!("Filter map isn't in fluvio yet. https://github.com/infinyon/fluvio-connectors/issues/272");
                 //producer.with_filter_map(data, Default::default())?
             }
