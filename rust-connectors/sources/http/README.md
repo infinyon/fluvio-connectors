@@ -16,7 +16,7 @@ Controls the Source connector
 
 | Option   | default  | type  | description |
 | :---     | :---     | :---  | :----       |
-| interval | 300      | u64   | Interval between each HTTP Request |
+| interval | 10s       | String   | Interval between each HTTP Request. This is in the form of "1s", "10ms", "1m", "1ns", etc.|
 
 ### HTTP Request Configuration
 
