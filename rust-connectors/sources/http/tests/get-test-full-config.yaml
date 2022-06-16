@@ -9,4 +9,4 @@ parameters:
   method: GET
   output_parts: full
   body: ''
-  interval: 1
+  interval: 1s

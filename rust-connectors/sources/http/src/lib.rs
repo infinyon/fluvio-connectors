@@ -1,5 +1,7 @@
 use fluvio_connectors_common::opt::CommonSourceOpt;
+use humantime::parse_duration;
 use schemars::JsonSchema;
+use std::time::Duration;
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug, JsonSchema, Clone)]
@@ -20,9 +22,10 @@ pub struct HttpOpt {
     #[structopt(long, default_value = "GET")]
     pub method: String,
 
-    /// Interval between each request
-    #[structopt(long, default_value = "300")]
-    pub interval: u64,
+    /// Time to wait before sending
+    /// Ex: '150ms', '20s'
+    #[structopt(long, parse(try_from_str = parse_duration), default_value = "10s")]
+    pub interval: Duration,
 
     /// Headers to include in the HTTP request, in "Key=Value" format
     #[structopt(long = "header", alias = "headers")]

@@ -9,4 +9,4 @@ parameters:
   method: GET
   output_type: json
   body: ''
-  interval: 1
+  interval: 1s

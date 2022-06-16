@@ -5,9 +5,8 @@ topic: http-json-connector-topic
 create_topic: true
 direction: source
 parameters:
-  endpoint: http://IP_ADDRESS:8080/get
+  endpoint: http://IP_ADDRESS:8080/time
+  source-linger: 0ms
   method: GET
-  output_parts: full
-  output_type: json
   body: ''
-  interval: 1s
+  interval: "100ms"
