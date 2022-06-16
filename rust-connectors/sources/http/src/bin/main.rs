@@ -48,7 +48,7 @@ async fn main() -> Result<()> {
     );
 
     tracing::info!(
-        interval = %opts.interval,
+        interval = ?opts.interval,
         method = %opts.method,
         topic = %opts.common.fluvio_topic,
         output_parts = %opts.output_parts,
@@ -56,7 +56,7 @@ async fn main() -> Result<()> {
         endpoint = %opts.endpoint
     );
 
-    let timer = tokio::time::interval(tokio::time::Duration::from_secs(opts.interval));
+    let timer = tokio::time::interval(opts.interval);
     let mut timer_stream = tokio_stream::wrappers::IntervalStream::new(timer);
     let producer = opts
         .common

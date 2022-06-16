@@ -18,6 +18,7 @@ schemars = "0.8"
 serde = "1"
 serde_json = "1"
 thiserror = "1.0"
+humantime = "2.1.0"
 
 fluvio-connectors-common = { path = "../../common" }
 fluvio-dataplane-protocol = "0.10"

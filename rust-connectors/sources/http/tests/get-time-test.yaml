@@ -1,12 +1,12 @@
 version: dev
-name: http-json-connector
+name: http-time-test
 type: http
 topic: http-json-connector-topic
 create_topic: true
 direction: source
 parameters:
-  endpoint: http://IP_ADDRESS:8080/get
+  endpoint: http://192.168.1.12:8080/time
+  source-linger: 0ms
   method: GET
   body: ''
-  interval: 1s
-  map: http-json-connector-map
+  interval: 1

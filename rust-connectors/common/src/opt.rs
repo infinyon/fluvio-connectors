@@ -26,14 +26,12 @@ pub struct CommonSourceOpt {
     pub fluvio_topic: String,
 
     #[structopt(long, default_value = "0")]
-    #[schemars(skip)]
     pub fluvio_partition: i32,
 
     /// The rust log level. If it is not defined, `RUST_LOG` environment variable
     /// will be used. If environment variable is not defined,
     /// then INFO level will be used.
     #[structopt(long)]
-    #[schemars(skip)]
     pub rust_log: Option<String>,
 
     /// Path of filter smartmodule used as a pre-produce step

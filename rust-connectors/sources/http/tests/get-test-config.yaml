@@ -1,5 +1,4 @@
-version: v1
-connector_version: dev
+version: dev
 name: http-json-connector
 type: http
 topic: http-json-connector-topic
@@ -9,4 +8,4 @@ parameters:
   endpoint: http://IP_ADDRESS:8080/get
   method: GET
   body: ''
-  interval: 1
+  interval: "1s"
