@@ -2,6 +2,7 @@
 
 ## http Version 0.3.0 - UNRELEASED
 * `interval` field uses human readable values, "1s", "20ms", etc. ([PR #274](https://github.com/infinyon/fluvio-connectors/pull/274))
+* `source-linger` field uses human readable values, "1s", "20ms", etc. ([PR #273](https://github.com/infinyon/fluvio-connectors/pull/273))
 
 ## http Version 0.2.1 - 2022-June
 * Support for `user-agent` argument. ([PR #216](https://github.com/infinyon/fluvio-connectors/pull/216))
