@@ -34,7 +34,10 @@ async fn get_request(req: Request<State>) -> tide::Result {
 use std::time::{SystemTime, UNIX_EPOCH};
 
 async fn get_time_request(_req: Request<State>) -> tide::Result {
-    let time = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos();
+    let time = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_nanos();
 
     Ok(format!("{}", time).into())
 }
