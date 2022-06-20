@@ -6,7 +6,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-async-std = { version = "1.8.0", default-features = false, features = ["attributes"] }
+async-std = { version = "1.12.0", default-features = false, features = ["attributes"] }
 fluvio-connectors-common = { path = "../../common" }
 fluvio-dataplane-protocol = "0.11"
 
