@@ -89,7 +89,6 @@ pub struct CommonConsumerOpt {
 
 #[derive(StructOpt, Debug, JsonSchema, Clone, Default)]
 pub struct CommonProducerOpt {
-
     /// Time to wait before sending
     /// Ex: '150ms', '20s'
     #[structopt(long, parse(try_from_str = parse_duration))]
