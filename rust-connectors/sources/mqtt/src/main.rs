@@ -1,6 +1,6 @@
 use fluvio_connectors_common::fluvio::RecordKey;
 use fluvio_connectors_common::git_hash_version;
-use fluvio_connectors_common::opt::CommonSourceOpt;
+use fluvio_connectors_common::opt::CommonConnectorOpt;
 
 mod error;
 use error::MqttConnectorError;
@@ -30,7 +30,7 @@ struct MqttOpts {
 
     #[structopt(flatten)]
     #[schemars(flatten)]
-    common: CommonSourceOpt,
+    common: CommonConnectorOpt,
 }
 
 #[derive(Debug, Serialize)]

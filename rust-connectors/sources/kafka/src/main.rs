@@ -1,5 +1,5 @@
 use fluvio_connectors_common::git_hash_version;
-use fluvio_connectors_common::opt::CommonSourceOpt;
+use fluvio_connectors_common::opt::CommonConnectorOpt;
 use fluvio_future::tracing::info;
 use kafka::consumer::{Consumer, FetchOffset, GroupOffsetStorage};
 use schemars::schema_for;
@@ -48,7 +48,7 @@ pub struct KafkaOpt {
 
     #[structopt(flatten)]
     #[schemars(flatten)]
-    pub common: CommonSourceOpt,
+    pub common: CommonConnectorOpt,
 }
 
 impl KafkaOpt {

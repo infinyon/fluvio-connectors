@@ -19,7 +19,7 @@ use tokio_stream::Stream;
 
 #[derive(StructOpt, Debug, JsonSchema, Clone, Default)]
 #[structopt(settings = &[AppSettings::DeriveDisplayOrder])]
-pub struct CommonSourceOpt {
+pub struct CommonConnectorOpt {
     /// The topic where this connector sends or receives records
     #[structopt(long)]
     #[schemars(skip)]
@@ -72,23 +72,41 @@ pub struct CommonSourceOpt {
     #[structopt(long)]
     pub aggregate_initial_value: Option<String>,
 
+    #[structopt(flatten)]
+    #[schemars(flatten)]
+    pub consumer_common: CommonConsumerOpt,
+
+    #[structopt(flatten)]
+    #[schemars(flatten)]
+    pub producer_common: CommonProducerOpt,
+}
+
+#[derive(StructOpt, Debug, JsonSchema, Clone, Default)]
+pub struct CommonConsumerOpt {
+    #[structopt(long, default_value = "0")]
+    pub consumer_partition: i32,
+}
+
+#[derive(StructOpt, Debug, JsonSchema, Clone, Default)]
+pub struct CommonProducerOpt {
+
     /// Time to wait before sending
     /// Ex: '150ms', '20s'
     #[structopt(long, parse(try_from_str = parse_duration))]
-    pub source_linger: Option<Duration>,
+    pub producer_linger: Option<Duration>,
 
     /// Compression algorithm to use when sending records.
     /// Supported values: none, gzip, snappy and lz4.
     #[structopt(long)]
     #[schemars(skip)]
-    pub source_compression: Option<Compression>,
+    pub producer_compression: Option<Compression>,
 
     /// Max amount of bytes accumulated before sending
     #[structopt(long)]
-    pub source_batch_size: Option<usize>,
+    pub producer_batch_size: Option<usize>,
 }
 
-impl CommonSourceOpt {
+impl CommonConnectorOpt {
     pub fn enable_logging(&self) {
         if let Some(ref rust_log) = self.rust_log {
             std::env::set_var("RUST_LOG", rust_log);
@@ -120,21 +138,21 @@ impl CommonSourceOpt {
         let config_builder = TopicProducerConfigBuilder::default();
 
         // Linger
-        let config_builder = if let Some(linger) = self.source_linger {
+        let config_builder = if let Some(linger) = self.producer_common.producer_linger {
             config_builder.linger(linger)
         } else {
             config_builder
         };
 
         // Compression
-        let config_builder = if let Some(compression) = self.source_compression {
+        let config_builder = if let Some(compression) = self.producer_common.producer_compression {
             config_builder.compression(compression)
         } else {
             config_builder
         };
 
         // Batch size
-        let config_builder = if let Some(batch_size) = self.source_batch_size {
+        let config_builder = if let Some(batch_size) = self.producer_common.producer_batch_size {
             config_builder.batch_size(batch_size)
         } else {
             config_builder

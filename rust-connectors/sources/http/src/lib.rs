@@ -1,4 +1,4 @@
-use fluvio_connectors_common::opt::CommonSourceOpt;
+use fluvio_connectors_common::opt::CommonConnectorOpt;
 use humantime::parse_duration;
 use schemars::JsonSchema;
 use std::time::Duration;
@@ -45,7 +45,7 @@ pub struct HttpOpt {
 
     #[structopt(flatten)]
     #[schemars(flatten)]
-    pub common: CommonSourceOpt,
+    pub common: CommonConnectorOpt,
 }
 
 pub mod error;

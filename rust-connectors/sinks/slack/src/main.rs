@@ -1,5 +1,5 @@
 use fluvio_connectors_common::git_hash_version;
-use fluvio_connectors_common::opt::{CommonSourceOpt, Record};
+use fluvio_connectors_common::opt::{CommonConnectorOpt, Record};
 use fluvio_future::tracing::{debug, info};
 use schemars::schema_for;
 use schemars::JsonSchema;
@@ -38,7 +38,7 @@ pub struct SlackOpt {
 
     #[structopt(flatten)]
     #[schemars(flatten)]
-    pub common: CommonSourceOpt,
+    pub common: CommonConnectorOpt,
 }
 
 impl SlackOpt {
