@@ -1,4 +1,4 @@
-use fluvio_connectors_common::opt::CommonConnectorOpt;
+use fluvio_connectors_common::opt::{CommonConnectorOpt, GetOpts};
 use humantime::parse_duration;
 use schemars::JsonSchema;
 use std::time::Duration;
@@ -46,6 +46,19 @@ pub struct HttpOpt {
     #[structopt(flatten)]
     #[schemars(flatten)]
     pub common: CommonConnectorOpt,
+}
+
+impl GetOpts for HttpOpt {
+    type Opt = HttpOpt;
+    fn name() -> &'static str {
+        env!("CARGO_PKG_NAME")
+    }
+    fn version() -> &'static str {
+        env!("CARGO_PKG_VERSION")
+    }
+    fn description() -> &'static str {
+        env!("CARGO_PKG_DESCRIPTION")
+    }
 }
 
 pub mod error;

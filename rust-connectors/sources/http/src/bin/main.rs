@@ -7,28 +7,17 @@ use tokio_stream::StreamExt;
 type Result<T, E = Box<dyn std::error::Error + Send + Sync + 'static>> = core::result::Result<T, E>;
 
 use ::http::HttpOpt;
-use schemars::schema_for;
-use structopt::StructOpt;
 
 use ::http::error::Error;
+use fluvio_connectors_common::opt::GetOpts;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    if let Some("metadata") = std::env::args().nth(1).as_deref() {
-        let schema = schema_for!(HttpOpt);
-        let metadata = serde_json::json!({
-            "name": env!("CARGO_PKG_NAME"),
-            "version": env!("CARGO_PKG_VERSION"),
-            "description": env!("CARGO_PKG_DESCRIPTION"),
-            "direction": "source",
-            "schema": schema,
-        });
-        let metadata_json = serde_json::to_string_pretty(&metadata).unwrap();
-        println!("{}", metadata_json);
+    let opts = if let Some(opts) = HttpOpt::get_opt() {
+        opts
+    } else {
         return Ok(());
-    }
-
-    let opts: HttpOpt = HttpOpt::from_args();
+    };
 
     // Enable logging, setting default RUST_LOG if not given
     opts.common.enable_logging();

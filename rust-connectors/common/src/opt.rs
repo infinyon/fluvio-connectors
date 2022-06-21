@@ -25,9 +25,6 @@ pub struct CommonConnectorOpt {
     #[schemars(skip)]
     pub fluvio_topic: String,
 
-    #[structopt(long, default_value = "0")]
-    pub fluvio_partition: i32,
-
     /// The rust log level. If it is not defined, `RUST_LOG` environment variable
     /// will be used. If environment variable is not defined,
     /// then INFO level will be used.
@@ -203,7 +200,10 @@ impl CommonConnectorOpt {
         if let Some(initial_value) = &self.aggregate_initial_value {
             if initial_value == "use-last" {
                 let consumer = fluvio
-                    .partition_consumer(self.fluvio_topic.clone(), self.fluvio_partition)
+                    .partition_consumer(
+                        self.fluvio_topic.clone(),
+                        self.consumer_common.consumer_partition,
+                    )
                     .await?;
                 let stream = consumer.stream(fluvio::Offset::from_end(1)).await?;
                 let timeout = stream.timeout(Duration::from_millis(3000));
@@ -254,7 +254,7 @@ impl CommonConnectorOpt {
 
     async fn create_consumer(&self) -> anyhow::Result<PartitionConsumer> {
         self.ensure_topic_exists().await?;
-        Ok(fluvio::consumer(&self.fluvio_topic, self.fluvio_partition).await?)
+        Ok(fluvio::consumer(&self.fluvio_topic, self.consumer_common.consumer_partition).await?)
     }
 
     pub async fn create_consumer_stream(
@@ -304,4 +304,28 @@ impl CommonConnectorOpt {
         let offset = fluvio::Offset::end();
         Ok(consumer.stream_with_config(offset, config).await?)
     }
+}
+use schemars::schema_for;
+
+pub trait GetOpts {
+    type Opt: StructOpt + JsonSchema;
+    fn get_opt() -> Option<Self::Opt> {
+        if let Some("metadata") = std::env::args().nth(1).as_deref() {
+            let schema = schema_for!(Self::Opt);
+            let metadata = serde_json::json!({
+                "name": Self::name(),
+                "version": Self::version(),
+                "description": Self::description(),
+                "schema": schema,
+            });
+            let metadata_json = serde_json::to_string_pretty(&metadata).unwrap();
+            println!("{}", metadata_json);
+            None
+        } else {
+            Some(Self::Opt::from_args())
+        }
+    }
+    fn name() -> &'static str;
+    fn version() -> &'static str;
+    fn description() -> &'static str;
 }
