@@ -1378,7 +1378,7 @@ checksum = "140206b78fb2bc3edbcfc9b5ccbd0b30699cfe8d348b8b31b330e47df5291a5a"
 
 [[package]]
 name = "dynamodb-sink"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "aws-config",
@@ -1808,7 +1808,7 @@ dependencies = [
 
 [[package]]
 name = "fluvio-syslog"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "cfg-if 1.0.0",
  "fluvio",
@@ -2190,7 +2190,18 @@ dependencies = [
 
 [[package]]
 name = "http"
-version = "0.2.1"
+version = "0.2.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "75f43d41e26995c17e71ee126451dd3941010b0514a81a9d11f3b341debc2399"
+dependencies = [
+ "bytes",
+ "fnv",
+ "itoa",
+]
+
+[[package]]
+name = "http"
+version = "0.3.0"
 dependencies = [
  "fluvio-connectors-common",
  "fluvio-dataplane-protocol",
@@ -2207,17 +2218,6 @@ dependencies = [
  "tokio",
  "tokio-stream",
  "tracing",
-]
-
-[[package]]
-name = "http"
-version = "0.2.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "75f43d41e26995c17e71ee126451dd3941010b0514a81a9d11f3b341debc2399"
-dependencies = [
- "bytes",
- "fnv",
- "itoa",
 ]
 
 [[package]]
@@ -2493,7 +2493,7 @@ dependencies = [
 
 [[package]]
 name = "kafka-sink"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "fluvio-connectors-common",
@@ -2510,7 +2510,7 @@ dependencies = [
 
 [[package]]
 name = "kafka-source"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "fluvio-connectors-common",
@@ -2723,7 +2723,7 @@ checksum = "7843ec2de400bcbc6a6328c958dc38e5359da6e93e72e37bc5246bf1ae776389"
 
 [[package]]
 name = "mqtt"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "anyhow",
  "async-global-executor",
@@ -3164,7 +3164,7 @@ dependencies = [
 
 [[package]]
 name = "postgres-sink"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "bytes",
  "color-backtrace",
@@ -3193,7 +3193,7 @@ dependencies = [
 
 [[package]]
 name = "postgres-source"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "adaptive_backoff",
  "bytes",
@@ -4075,7 +4075,7 @@ dependencies = [
 
 [[package]]
 name = "slack-sink"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "fluvio-connectors-common",

@@ -271,11 +271,11 @@ impl CommonConnectorOpt {
 
 impl CommonConnectorOpt {
     pub fn enable_logging(&self) {
-        if let Some(ref rust_log) = self.rust_log {
-            std::env::set_var("RUST_LOG", rust_log);
-        }
         if std::env::var("RUST_LOG").is_err() {
             std::env::set_var("RUST_LOG", "info")
+        }
+        if let Some(ref rust_log) = self.rust_log {
+            std::env::set_var("RUST_LOG", rust_log);
         }
         fluvio_future::subscriber::init_logger();
     }
