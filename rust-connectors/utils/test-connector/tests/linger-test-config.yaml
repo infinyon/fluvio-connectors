@@ -6,4 +6,4 @@ create_topic: true
 parameters:
   timeout: "10s"
 producer:
-  linger: "1mb"
+  linger: "1ms"

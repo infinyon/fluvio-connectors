@@ -4,7 +4,7 @@ setup() {
     FILE=$(mktemp --suffix .yaml)
     UUID=$(uuidgen)
     TOPIC=${UUID}-topic
-    cp ./tests/linger-config.yaml $FILE
+    cp ./tests/linger-test-config.yaml $FILE
 
     sed -i.BAK "s/test-connector-name/${UUID}/g" $FILE
     fluvio connector create --config $FILE
