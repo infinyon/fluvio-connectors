@@ -1,8 +1,8 @@
-use std::time::Duration;
+use fluvio_connectors_common::opt::CommonConnectorOpt;
 use humantime::parse_duration;
 use schemars::JsonSchema;
+use std::time::Duration;
 use structopt::StructOpt;
-use fluvio_connectors_common::opt::CommonConnectorOpt;
 
 #[derive(StructOpt, Debug, JsonSchema)]
 pub enum TestConnectorSubCmd {

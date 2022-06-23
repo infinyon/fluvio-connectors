@@ -1,11 +1,11 @@
 use anyhow::Context;
+use bytesize::ByteSize;
 use humantime::parse_duration;
 use schemars::{schema_for, JsonSchema};
 use std::time::Duration;
 use structopt::clap::AppSettings;
 use structopt::StructOpt;
 use tokio_stream::Stream;
-use bytesize::ByteSize;
 
 pub use fluvio::{
     consumer,
