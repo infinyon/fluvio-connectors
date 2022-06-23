@@ -3,8 +3,7 @@ name: test-connector-name
 type: test-connector
 topic: test-connector-name-topic
 create_topic: true
-direction: source
 parameters:
-  timeout: "1ms"
+  timeout: "10s"
 producer:
-  linger: 1ms
+  linger: "1mb"

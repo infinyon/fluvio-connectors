@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-fluvio-connectors-common = { path = "../../common" }
+fluvio-connectors-common = { path = "../../common", features = ["sink"]}
 anyhow = "1.0.56"
 schemars = { version = "0.8", features = ["url"] }
 structopt = "0.3"

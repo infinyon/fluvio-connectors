@@ -1,6 +1,8 @@
-use fluvio_connectors_common::opt::CommonConnectorOpt;
+use std::time::Duration;
+use humantime::parse_duration;
 use schemars::JsonSchema;
 use structopt::StructOpt;
+use fluvio_connectors_common::opt::CommonConnectorOpt;
 
 #[derive(StructOpt, Debug, JsonSchema)]
 pub enum TestConnectorSubCmd {
@@ -17,8 +19,8 @@ pub struct TestConnectorOpts {
     #[structopt(long)]
     pub count: Option<i64>,
 
-    #[structopt(long)]
-    pub timeout: Option<u64>,
+    #[structopt(long, parse(try_from_str = parse_duration))]
+    pub timeout: Option<Duration>,
 
     #[structopt(flatten)]
     pub test_opts: FluvioTestOpts,

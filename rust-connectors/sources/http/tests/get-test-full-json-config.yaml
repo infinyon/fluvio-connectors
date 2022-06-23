@@ -3,7 +3,6 @@ name: http-json-connector
 type: http
 topic: http-json-connector-topic
 create_topic: true
-direction: source
 parameters:
   endpoint: http://IP_ADDRESS:8080/get
   method: GET

@@ -40,6 +40,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("{}", serde_json::to_string(&mqtt_schema).unwrap());
         return Ok(());
     };
+    let args = std::env::args();
+    println!("ARGS {args:?}");
 
     // Otherwise parse the CLI flags to determine the running mode
     let opts = TestConnectorOpts::from_args();

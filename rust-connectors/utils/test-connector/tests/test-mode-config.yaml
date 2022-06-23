@@ -1,11 +1,13 @@
 version: dev
-#connector_version: dev 
+#connector_version: dev
 name: test-connector-name-fluvio-test
 type: test-connector
-topic: longevity 
+topic: longevity
 create_topic: true
 direction: source
 parameters:
   test-name: longevity
   runner-opts: --timeout 30s --producer 1 --consumer 1
-  
+
+producer:
+  linger: 1ms
