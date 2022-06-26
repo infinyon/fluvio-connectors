@@ -1,5 +1,5 @@
 use fluvio_connectors_common::git_hash_version;
-use fluvio_connectors_common::opt::{CommonSourceOpt, Record};
+use fluvio_connectors_common::opt::{CommonConnectorOpt, Record};
 use fluvio_future::tracing::{debug, info};
 use schemars::schema_for;
 use schemars::JsonSchema;
@@ -13,7 +13,6 @@ async fn main() -> anyhow::Result<()> {
             "name": env!("CARGO_PKG_NAME"),
             "version": env!("CARGO_PKG_VERSION"),
             "description": env!("CARGO_PKG_DESCRIPTION"),
-            "direction": "Source",
             "schema": schema_for!(KafkaOpt),
         });
         println!("{}", serde_json::to_string_pretty(&schema).unwrap());
@@ -43,9 +42,13 @@ pub struct KafkaOpt {
     #[structopt(long)]
     pub kafka_partition: Option<i32>,
 
+    /// A key value pair in the form key:value
+    #[structopt(long)]
+    pub kafka_option: Vec<String>,
+
     #[structopt(flatten)]
     #[schemars(flatten)]
-    pub common: CommonSourceOpt,
+    pub common: CommonConnectorOpt,
 }
 
 use rdkafka::config::ClientConfig;
@@ -60,18 +63,24 @@ impl KafkaOpt {
             .as_ref()
             .unwrap_or(&self.common.fluvio_topic);
 
-        let admin = AdminClient::from_config(
-            ClientConfig::new()
-                .set("bootstrap.servers", self.kafka_url.clone())
-                .set("session.timeout.ms", "45000"),
-            /*
-            * TODO: Add SASL Authentication
-            .set("security.protocol", "SASL_SSL")
-            .set("sasl.mechanisms", "PLAIN")
-            .set("sasl.username", "")
-            .set("sasl.password", "")
-            */
-        )?;
+        let mut kafka_options: Vec<(String, String)> = Vec::new();
+        for opt in &self.kafka_option {
+            let mut splits = opt.split(':');
+            let (key, value) = (
+                splits.next().unwrap().to_string(),
+                splits.next().unwrap().to_string(),
+            );
+            kafka_options.push((key, value));
+        }
+        info!("kafka_options: {:?}", kafka_options);
+
+        let mut client_config = ClientConfig::new();
+        client_config.set("bootstrap.servers", self.kafka_url.clone());
+        for (key, value) in &kafka_options {
+            client_config.set(key, value);
+        }
+
+        let admin = AdminClient::from_config(&client_config)?;
 
         let new_topic = NewTopic::new(kafka_topic.as_str(), 1, TopicReplication::Fixed(1));
         let _ = admin
@@ -80,7 +89,6 @@ impl KafkaOpt {
 
         let producer: &FutureProducer = &ClientConfig::new()
             .set("bootstrap.servers", self.kafka_url.clone())
-            .set("session.timeout.ms", "45000")
             .create()
             .expect("Producer creation error");
 

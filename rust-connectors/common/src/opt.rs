@@ -1,32 +1,29 @@
 use anyhow::Context;
+use bytesize::ByteSize;
 use humantime::parse_duration;
-use schemars::JsonSchema;
+use schemars::{schema_for, JsonSchema};
 use std::time::Duration;
 use structopt::clap::AppSettings;
 use structopt::StructOpt;
+use tokio_stream::Stream;
 
 pub use fluvio::{
     consumer,
     consumer::{Record, SmartModuleInvocation, SmartModuleInvocationWasm, SmartModuleKind},
     dataplane::ErrorCode,
+    metadata::smartmodule::SmartModuleSpec,
     metadata::topic::TopicSpec,
     Compression, ConsumerConfig, Fluvio, FluvioError, PartitionConsumer, TopicProducer,
     TopicProducerConfigBuilder,
 };
 
-use fluvio::metadata::smartmodule::SmartModuleSpec;
-use tokio_stream::Stream;
-
 #[derive(StructOpt, Debug, JsonSchema, Clone, Default)]
 #[structopt(settings = &[AppSettings::DeriveDisplayOrder])]
-pub struct CommonSourceOpt {
+pub struct CommonConnectorOpt {
     /// The topic where this connector sends or receives records
     #[structopt(long)]
     #[schemars(skip)]
     pub fluvio_topic: String,
-
-    #[structopt(long, default_value = "0")]
-    pub fluvio_partition: i32,
 
     /// The rust log level. If it is not defined, `RUST_LOG` environment variable
     /// will be used. If environment variable is not defined,
@@ -34,6 +31,29 @@ pub struct CommonSourceOpt {
     #[structopt(long)]
     pub rust_log: Option<String>,
 
+    #[cfg(feature = "sink")]
+    #[structopt(flatten)]
+    #[schemars(flatten)]
+    pub consumer_common: CommonConsumerOpt,
+
+    #[cfg(feature = "source")]
+    #[structopt(flatten)]
+    #[schemars(flatten)]
+    pub producer_common: CommonProducerOpt,
+
+    #[structopt(flatten)]
+    #[schemars(flatten)]
+    pub smartmodule_common: CommonSmartModuleOpt,
+}
+
+#[derive(StructOpt, Debug, JsonSchema, Clone, Default)]
+pub struct CommonConsumerOpt {
+    #[structopt(long, default_value = "0")]
+    pub consumer_partition: i32,
+}
+
+#[derive(StructOpt, Debug, JsonSchema, Clone, Default)]
+pub struct CommonSmartModuleOpt {
     /// Path of filter smartmodule used as a pre-produce step
     ///
     /// If the value is not a path to a file, it will be used
@@ -71,71 +91,51 @@ pub struct CommonSourceOpt {
 
     #[structopt(long)]
     pub aggregate_initial_value: Option<String>,
+}
 
+#[derive(StructOpt, Debug, JsonSchema, Clone, Default)]
+pub struct CommonProducerOpt {
     /// Time to wait before sending
     /// Ex: '150ms', '20s'
     #[structopt(long, parse(try_from_str = parse_duration))]
-    pub source_linger: Option<Duration>,
+    pub producer_linger: Option<Duration>,
 
     /// Compression algorithm to use when sending records.
     /// Supported values: none, gzip, snappy and lz4.
     #[structopt(long)]
     #[schemars(skip)]
-    pub source_compression: Option<Compression>,
+    pub producer_compression: Option<Compression>,
 
     /// Max amount of bytes accumulated before sending
     #[structopt(long)]
-    pub source_batch_size: Option<usize>,
+    #[schemars(skip)]
+    pub producer_batch_size: Option<ByteSize>,
 }
 
-impl CommonSourceOpt {
-    pub fn enable_logging(&self) {
-        if let Some(ref rust_log) = self.rust_log {
-            std::env::set_var("RUST_LOG", rust_log);
-        }
-        if std::env::var("RUST_LOG").is_err() {
-            std::env::set_var("RUST_LOG", "info")
-        }
-        fluvio_future::subscriber::init_logger();
-    }
-    pub async fn ensure_topic_exists(&self) -> anyhow::Result<()> {
-        let admin = fluvio::FluvioAdmin::connect().await?;
-        let topics = admin.list::<TopicSpec, _>(vec![]).await?;
-        let topic_exists = topics.iter().any(|t| t.name == self.fluvio_topic);
-        if !topic_exists {
-            let _ = admin
-                .create(
-                    self.fluvio_topic.clone(),
-                    false,
-                    TopicSpec::new_computed(1, 1, Some(false)),
-                )
-                .await;
-        }
-        Ok(())
-    }
-
+#[cfg(feature = "source")]
+impl CommonConnectorOpt {
     pub async fn create_producer(&self) -> anyhow::Result<TopicProducer> {
         let fluvio = fluvio::Fluvio::connect().await?;
         self.ensure_topic_exists().await?;
         let config_builder = TopicProducerConfigBuilder::default();
 
         // Linger
-        let config_builder = if let Some(linger) = self.source_linger {
+        let config_builder = if let Some(linger) = self.producer_common.producer_linger {
             config_builder.linger(linger)
         } else {
             config_builder
         };
 
         // Compression
-        let config_builder = if let Some(compression) = self.source_compression {
+        let config_builder = if let Some(compression) = self.producer_common.producer_compression {
             config_builder.compression(compression)
         } else {
             config_builder
         };
 
         // Batch size
-        let config_builder = if let Some(batch_size) = self.source_batch_size {
-            config_builder.batch_size(batch_size)
+        let config_builder = if let Some(batch_size) = self.producer_common.producer_batch_size {
+            config_builder.batch_size(batch_size.0 as usize)
         } else {
             config_builder
         };
@@ -146,11 +146,11 @@ impl CommonSourceOpt {
             .await?;
 
         let producer = match (
-            &self.filter,
-            &self.filter_map,
-            &self.map,
-            &self.arraymap,
-            &self.aggregate,
+            &self.smartmodule_common.filter,
+            &self.smartmodule_common.filter_map,
+            &self.smartmodule_common.map,
+            &self.smartmodule_common.arraymap,
+            &self.smartmodule_common.aggregate,
         ) {
             (Some(filter_path), _, _, _, _) => {
                 let data = self.get_smartmodule(filter_path, &fluvio).await?;
@@ -180,13 +180,12 @@ impl CommonSourceOpt {
 
         Ok(producer)
     }
-
     async fn get_aggregate_initial_value(&self, fluvio: &Fluvio) -> anyhow::Result<Vec<u8>> {
         use tokio_stream::StreamExt;
-        if let Some(initial_value) = &self.aggregate_initial_value {
+        if let Some(initial_value) = &self.smartmodule_common.aggregate_initial_value {
             if initial_value == "use-last" {
                 let consumer = fluvio
-                    .partition_consumer(self.fluvio_topic.clone(), self.fluvio_partition)
+                    .partition_consumer(self.fluvio_topic.clone(), 0)
                     .await?;
                 let stream = consumer.stream(fluvio::Offset::from_end(1)).await?;
                 let timeout = stream.timeout(Duration::from_millis(3000));
@@ -208,6 +207,92 @@ impl CommonSourceOpt {
         } else {
             Ok(Vec::new())
         }
+    }
+}
+#[cfg(feature = "sink")]
+impl CommonConnectorOpt {
+    pub async fn create_consumer(&self) -> anyhow::Result<PartitionConsumer> {
+        self.ensure_topic_exists().await?;
+        Ok(fluvio::consumer(&self.fluvio_topic, self.consumer_common.consumer_partition).await?)
+    }
+
+    pub async fn create_consumer_stream(
+        &self,
+    ) -> anyhow::Result<impl Stream<Item = Result<Record, ErrorCode>>> {
+        let fluvio = fluvio::Fluvio::connect().await?;
+        let wasm_invocation: Option<SmartModuleInvocation> = match (
+            &self.smartmodule_common.filter,
+            &self.smartmodule_common.map,
+            &self.smartmodule_common.arraymap,
+            &self.smartmodule_common.filter_map,
+        ) {
+            (Some(filter_path), _, _, _) => {
+                let data = self.get_smartmodule(filter_path, &fluvio).await?;
+                Some(SmartModuleInvocation {
+                    wasm: SmartModuleInvocationWasm::adhoc_from_bytes(&data)?,
+                    kind: SmartModuleKind::Filter,
+                    params: Default::default(),
+                })
+            }
+            (_, Some(map_path), _, _) => {
+                let data = self.get_smartmodule(map_path, &fluvio).await?;
+                Some(SmartModuleInvocation {
+                    wasm: SmartModuleInvocationWasm::adhoc_from_bytes(&data)?,
+                    kind: SmartModuleKind::Map,
+                    params: Default::default(),
+                })
+            }
+            (_, _, Some(array_map_path), _) => {
+                let data = self.get_smartmodule(array_map_path, &fluvio).await?;
+                Some(SmartModuleInvocation {
+                    wasm: SmartModuleInvocationWasm::adhoc_from_bytes(&data)?,
+                    kind: SmartModuleKind::ArrayMap,
+                    params: Default::default(),
+                })
+            }
+            (_, _, _, Some(filter_map_path)) => {
+                let data = self.get_smartmodule(filter_map_path, &fluvio).await?;
+                Some(SmartModuleInvocation {
+                    wasm: SmartModuleInvocationWasm::adhoc_from_bytes(&data)?,
+                    kind: SmartModuleKind::FilterMap,
+                    params: Default::default(),
+                })
+            }
+            _ => None,
+        };
+        let mut builder = ConsumerConfig::builder();
+        builder.smartmodule(wasm_invocation);
+        let config = builder.build()?;
+        let consumer = self.create_consumer().await?;
+        let offset = fluvio::Offset::end();
+        Ok(consumer.stream_with_config(offset, config).await?)
+    }
+}
+
+impl CommonConnectorOpt {
+    pub fn enable_logging(&self) {
+        if std::env::var("RUST_LOG").is_err() {
+            std::env::set_var("RUST_LOG", "info")
+        }
+        if let Some(ref rust_log) = self.rust_log {
+            std::env::set_var("RUST_LOG", rust_log);
+        }
+        fluvio_future::subscriber::init_logger();
+    }
+    pub async fn ensure_topic_exists(&self) -> anyhow::Result<()> {
+        let admin = fluvio::FluvioAdmin::connect().await?;
+        let topics = admin.list::<TopicSpec, _>(vec![]).await?;
+        let topic_exists = topics.iter().any(|t| t.name == self.fluvio_topic);
+        if !topic_exists {
+            let _ = admin
+                .create(
+                    self.fluvio_topic.clone(),
+                    false,
+                    TopicSpec::new_computed(1, 1, Some(false)),
+                )
+                .await;
+        }
+        Ok(())
     }
 
     pub async fn get_smartmodule(&self, name: &str, fluvio: &Fluvio) -> anyhow::Result<Vec<u8>> {
@@ -234,57 +319,27 @@ impl CommonSourceOpt {
             }
         }
     }
+}
 
-    async fn create_consumer(&self) -> anyhow::Result<PartitionConsumer> {
-        self.ensure_topic_exists().await?;
-        Ok(fluvio::consumer(&self.fluvio_topic, self.fluvio_partition).await?)
+pub trait GetOpts {
+    type Opt: StructOpt + JsonSchema;
+    fn get_opt() -> Option<Self::Opt> {
+        if let Some("metadata") = std::env::args().nth(1).as_deref() {
+            let schema = schema_for!(Self::Opt);
+            let metadata = serde_json::json!({
+                "name": Self::name(),
+                "version": Self::version(),
+                "description": Self::description(),
+                "schema": schema,
+            });
+            let metadata_json = serde_json::to_string_pretty(&metadata).unwrap();
+            println!("{}", metadata_json);
+            None
+        } else {
+            Some(Self::Opt::from_args())
+        }
     }
-
-    pub async fn create_consumer_stream(
-        &self,
-    ) -> anyhow::Result<impl Stream<Item = Result<Record, ErrorCode>>> {
-        let fluvio = fluvio::Fluvio::connect().await?;
-        let wasm_invocation: Option<SmartModuleInvocation> =
-            match (&self.filter, &self.map, &self.arraymap, &self.filter_map) {
-                (Some(filter_path), _, _, _) => {
-                    let data = self.get_smartmodule(filter_path, &fluvio).await?;
-                    Some(SmartModuleInvocation {
-                        wasm: SmartModuleInvocationWasm::adhoc_from_bytes(&data)?,
-                        kind: SmartModuleKind::Filter,
-                        params: Default::default(),
-                    })
-                }
-                (_, Some(map_path), _, _) => {
-                    let data = self.get_smartmodule(map_path, &fluvio).await?;
-                    Some(SmartModuleInvocation {
-                        wasm: SmartModuleInvocationWasm::adhoc_from_bytes(&data)?,
-                        kind: SmartModuleKind::Map,
-                        params: Default::default(),
-                    })
-                }
-                (_, _, Some(array_map_path), _) => {
-                    let data = self.get_smartmodule(array_map_path, &fluvio).await?;
-                    Some(SmartModuleInvocation {
-                        wasm: SmartModuleInvocationWasm::adhoc_from_bytes(&data)?,
-                        kind: SmartModuleKind::ArrayMap,
-                        params: Default::default(),
-                    })
-                }
-                (_, _, _, Some(filter_map_path)) => {
-                    let data = self.get_smartmodule(filter_map_path, &fluvio).await?;
-                    Some(SmartModuleInvocation {
-                        wasm: SmartModuleInvocationWasm::adhoc_from_bytes(&data)?,
-                        kind: SmartModuleKind::FilterMap,
-                        params: Default::default(),
-                    })
-                }
-                _ => None,
-            };
-        let mut builder = ConsumerConfig::builder();
-        builder.smartmodule(wasm_invocation);
-        let config = builder.build()?;
-        let consumer = self.create_consumer().await?;
-        let offset = fluvio::Offset::end();
-        Ok(consumer.stream_with_config(offset, config).await?)
-    }
+    fn name() -> &'static str;
+    fn version() -> &'static str;
+    fn description() -> &'static str;
 }

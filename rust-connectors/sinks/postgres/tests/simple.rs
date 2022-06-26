@@ -1,5 +1,5 @@
 use fluvio::metadata::topic::TopicSpec;
-use fluvio_connectors_common::opt::CommonSourceOpt;
+use fluvio_connectors_common::opt::CommonConnectorOpt;
 use tokio::task::JoinHandle;
 use tokio::time::{sleep, Duration};
 use tokio_postgres::{Client, NoTls};
@@ -320,7 +320,7 @@ async fn start_pg_sink(fluvio_topic: String) -> eyre::Result<(JoinHandle<()>, Cl
 
     let mut connector = PgConnector::new(PgConnectorOpt {
         url: Url::parse(&postgres_sink_url).expect("Failed to parse connector url"),
-        common: CommonSourceOpt {
+        common: CommonConnectorOpt {
             fluvio_topic: fluvio_topic.clone(),
             ..Default::default()
         },
@@ -361,7 +361,7 @@ async fn start_pg_source(fluvio_topic: String) -> eyre::Result<(JoinHandle<()>, 
         slot,
         resume_timeout: 1000,
         skip_setup: false,
-        common: CommonSourceOpt {
+        common: CommonConnectorOpt {
             fluvio_topic: fluvio_topic.clone(),
             ..Default::default()
         },

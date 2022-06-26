@@ -1,5 +1,5 @@
 use fluvio::metadata::topic::TopicSpec;
-use fluvio_connectors_common::opt::CommonSourceOpt;
+use fluvio_connectors_common::opt::CommonConnectorOpt;
 use fluvio_model_postgres::ReplicationEvent;
 use fluvio_model_postgres::{LogicalReplicationMessage, TupleData};
 use postgres_source::{PgConnector, PgConnectorOpt};
@@ -31,7 +31,7 @@ async fn postgres_inserts() -> eyre::Result<()> {
         slot,
         resume_timeout: 1000,
         skip_setup: false,
-        common: CommonSourceOpt {
+        common: CommonConnectorOpt {
             fluvio_topic: fluvio_topic.clone(),
             ..Default::default()
         },

@@ -1,4 +1,4 @@
-use fluvio_connectors_common::opt::CommonSourceOpt;
+use fluvio_connectors_common::opt::CommonConnectorOpt;
 use schemars::JsonSchema;
 use structopt::StructOpt;
 use url::Url;
@@ -15,5 +15,5 @@ pub struct PgConnectorOpt {
 
     #[structopt(flatten)]
     #[schemars(flatten)]
-    pub common: CommonSourceOpt,
+    pub common: CommonConnectorOpt,
 }
