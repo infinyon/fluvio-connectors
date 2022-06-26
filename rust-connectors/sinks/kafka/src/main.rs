@@ -25,8 +25,6 @@ async fn main() -> anyhow::Result<()> {
         git_hash = git_hash_version(),
         "Starting Kafka sink connector",
     );
-    let args = std::env::args();
-    info!("ARGS {args:?}");
 
     let _ = opts.execute().await?;
     Ok(())
