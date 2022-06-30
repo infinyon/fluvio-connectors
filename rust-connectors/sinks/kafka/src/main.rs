@@ -87,10 +87,7 @@ impl KafkaOpt {
             .create_topics(&[new_topic], &AdminOptions::new())
             .await?;
 
-        let producer: &FutureProducer = &ClientConfig::new()
-            .set("bootstrap.servers", self.kafka_url.clone())
-            .create()
-            .expect("Producer creation error");
+        let producer: &FutureProducer = &client_config.create().expect("Producer creation error");
 
         info!("Starting stream");
         let mut stream = self.common.create_consumer_stream().await?;
