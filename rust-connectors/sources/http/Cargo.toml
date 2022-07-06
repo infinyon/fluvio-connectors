@@ -5,7 +5,7 @@ description = "A Fluvio connector that fetches data from HTTP endpoints"
 edition = "2021"
 
 [[bin]]
-name = "http"
+name = "http-source"
 path = "src/bin/main.rs"
 
 [dependencies]
