@@ -35,7 +35,6 @@ mod tests {
         let accumulated_stars: GithubStars = GithubStars {
             stargazers_count: 1,
             star_update: false,
-            ..Default::default()
         };
         let current_stars: GithubStars = GithubStars {
             stargazers_count: 1,
@@ -49,7 +48,7 @@ mod tests {
         let out = out.unwrap();
         let out: GithubStars = out.try_into().unwrap();
         assert_eq!(out.stargazers_count, 1);
-        assert_eq!(out.star_update, false);
+        assert!(out.star_update);
     }
     #[test]
     fn check_aggregator_increment() {
@@ -69,6 +68,6 @@ mod tests {
         let out = out.unwrap();
         let out: GithubStars = out.try_into().unwrap();
         assert_eq!(out.stargazers_count, 2);
-        assert_eq!(out.star_update, true);
+        assert!(out.star_update);
     }
 }

@@ -39,6 +39,6 @@ async fn main() -> eyre::Result<()> {
         git_hash = git_hash_version(),
         "Starting Postgres sink connector",
     );
-    let _ = connector.process_stream().await?;
+    connector.process_stream().await?;
     Ok(())
 }

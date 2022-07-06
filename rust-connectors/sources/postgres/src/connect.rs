@@ -40,7 +40,7 @@ impl PgConnector {
         let fluvio = Fluvio::connect().await?;
         tracing::info!("Connected to Fluvio");
         if !config.skip_setup {
-            let _ = Self::create_replication_slot(&config).await?;
+            Self::create_replication_slot(&config).await?;
         }
 
         let admin = fluvio.admin().await;

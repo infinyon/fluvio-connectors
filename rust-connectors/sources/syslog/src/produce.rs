@@ -38,7 +38,7 @@ impl ProducerOpts {
             .collect::<String>();
 
         if !topics.contains(&topic) {
-            let _ = admin
+            admin
                 .create(
                     topic.clone(),
                     false,

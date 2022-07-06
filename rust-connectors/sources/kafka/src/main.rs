@@ -27,7 +27,7 @@ async fn main() -> anyhow::Result<()> {
         "Starting Kafka source connector",
     );
 
-    let _ = opts.execute().await?;
+    opts.execute().await?;
     Ok(())
 }
 
@@ -76,11 +76,11 @@ impl KafkaOpt {
             for ms in consumer.poll().unwrap().iter() {
                 for m in ms.messages() {
                     info!("Sending {:?} to fluvio", m);
-                    let _ = producer.send(m.key, m.value).await?;
+                    producer.send(m.key, m.value).await?;
                 }
-                let _ = consumer.consume_messageset(ms)?;
+                consumer.consume_messageset(ms)?;
             }
-            let _ = consumer.commit_consumed()?;
+            consumer.commit_consumed()?;
         }
     }
 }

@@ -27,7 +27,7 @@ async fn main() -> anyhow::Result<()> {
         git_hash = git_hash_version(),
         "Starting Slack sink connector",
     );
-    let _ = opts.execute().await?;
+    opts.execute().await?;
     Ok(())
 }
 

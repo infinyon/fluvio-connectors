@@ -187,10 +187,10 @@ mod tests {
                 let hdr_value =
                     HeaderValue::from_str(&hdr_val).expect("data_test_header hdr_value Error");
 
-                let hdr_name = HeaderName::from_bytes(&hdr_key.as_bytes())
+                let hdr_name = HeaderName::from_bytes(hdr_key.as_bytes())
                     .expect("data_test_header hdr_name Error");
 
-                if test_header_input.append(hdr_name, hdr_value) == true {
+                if test_header_input.append(hdr_name, hdr_value) {
                     panic!("data_test_header ret.append -> true! duplicate?!");
                 }
                 expect_output_vec_type.push(HttpHeader {
@@ -223,16 +223,16 @@ mod tests {
         let expected_record = format!(
             "{} {} {}\n{}\n\n{}",
             version.clone().unwrap(),
-            status.clone().unwrap(),
-            status_string.clone().unwrap_or("".to_string()),
+            status.unwrap(),
+            status_string.clone().unwrap_or_else(|| "".to_string()),
             expected_headers,
             fuzz_body_input
         );
 
         let response_record = HttpResponseRecord {
-            version: version,
+            version,
             status_code: status,
-            status_string: status_string,
+            status_string,
             headers: Some(data_headers),
             body: None,
             output_parts: Some(HttpOutputParts::HttpRecordFull),

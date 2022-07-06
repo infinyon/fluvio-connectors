@@ -25,10 +25,10 @@ async fn main() -> Result<(), ConnectorError> {
     let opts = ConnectorOpts::from_args();
     match opts {
         ConnectorOpts::Produce(opts) => {
-            let _ = opts.exec().await?;
+            opts.exec().await?;
         }
         ConnectorOpts::Consume(opts) => {
-            let _ = opts.exec().await?;
+            opts.exec().await?;
         }
     }
 
