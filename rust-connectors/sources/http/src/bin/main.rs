@@ -6,9 +6,9 @@ use tokio_stream::StreamExt;
 
 type Result<T, E = Box<dyn std::error::Error + Send + Sync + 'static>> = core::result::Result<T, E>;
 
-use ::http::HttpOpt;
+use ::http_source::HttpOpt;
 
-use ::http::error::Error;
+use ::http_source::error::Error;
 use fluvio_connectors_common::opt::GetOpts;
 
 #[tokio::main]
@@ -71,7 +71,7 @@ async fn main() -> Result<()> {
         }
         let response = req.send().await.map_err(|e| Error::Request(e))?;
 
-        let mut formatter = ::http::formatter::HttpResponseRecord::try_from(&response)
+        let mut formatter = ::http_source::formatter::HttpResponseRecord::try_from(&response)
             .map_err(|e| Error::Record(e))?;
 
         formatter
