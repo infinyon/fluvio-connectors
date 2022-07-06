@@ -1,8 +1,7 @@
-version: v1
+version: dev
 name: mqtt-connector-name
-type: mqtt
+type: mqtt-source
 topic: mqtt-connector-name-topic
 create_topic: false
-direction: source
 parameters:
   fluvio-topic: "mqtt-connector-name-topic"

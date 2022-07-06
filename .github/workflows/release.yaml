@@ -23,11 +23,11 @@ jobs:
         image-name: [infinyon/fluvio-connect-test-connector]
         include:
           - os: ubuntu-latest
-            connector-name: mqtt
-            image-name: infinyon/fluvio-connect-mqtt
+            connector-name: mqtt-source
+            image-name: infinyon/fluvio-connect-mqtt-source
           - os: ubuntu-latest
-            connector-name: http
-            image-name: infinyon/fluvio-connect-http
+            connector-name: http-source
+            image-name: infinyon/fluvio-connect-http-source
           - os: ubuntu-latest
             connector-name: postgres-source
             image-name: infinyon/fluvio-connect-postgres-source

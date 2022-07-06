@@ -1,6 +1,6 @@
 version: dev
 name: http-json-connector
-type: http
+type: http-source
 topic: http-json-connector-topic
 create_topic: true
 parameters:
