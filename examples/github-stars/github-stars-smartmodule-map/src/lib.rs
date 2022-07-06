@@ -48,7 +48,7 @@ mod tests {
         let out = out.unwrap();
         let out: GithubStars = out.try_into().unwrap();
         assert_eq!(out.stargazers_count, 1);
-        assert!(out.star_update);
+        assert!(!out.star_update);
     }
     #[test]
     fn check_aggregator_increment() {
