@@ -3,7 +3,7 @@ name: RELEASE
 on:
   workflow_dispatch:
     inputs:
-      connector-name:
+      connector_name:
         required: true
         description: 'The fluvio connector to be released'
         type: choice
@@ -19,8 +19,8 @@ on:
           - kafka-sink
 
 env:
-  CONNECTOR_NAME: ${{ github.event.inputs.connector-name }}
-  IMAGE_NAME: fluvio-connect-${{ github.event.inputs.connector-name }}
+  CONNECTOR_NAME: ${{ github.event.inputs.connector_name }}
+  IMAGE_NAME: fluvio-connect-${{ github.event.inputs.connector_name }}
 
 jobs:
   cancel_previous_runs:
