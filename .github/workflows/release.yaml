@@ -18,10 +18,6 @@ on:
           - kafka-source
           - kafka-sink
 
-env:
-  CONNECTOR_NAME: ${{ github.event.inputs.connector_name }}
-  IMAGE_NAME: fluvio-connect-${{ github.event.inputs.connector_name }}
-
 jobs:
   cancel_previous_runs:
     name: Cancel Previous Runs
@@ -35,6 +31,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+
+  env:
+    CONNECTOR_NAME: ${{ github.event.inputs.connector_name }}
+    IMAGE_NAME: fluvio-connect-${{ github.event.inputs.connector_name }}
 
     steps:
       - uses: actions/checkout@v3
