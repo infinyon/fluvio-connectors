@@ -20,7 +20,7 @@ on:
 
 env:
   CONNECTOR_NAME: ${{ github.event.inputs.connector_name }}
-  IMAGE_NAME: fluvio-connect-${{ github.event.inputs.connector_name }}
+  IMAGE_NAME: infinyon/fluvio-connect-${{ github.event.inputs.connector_name }}
 
 jobs:
   cancel_previous_runs:
