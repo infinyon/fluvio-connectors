@@ -26,7 +26,7 @@ async fn main() -> anyhow::Result<()> {
         "Starting Kafka sink connector",
     );
 
-    let _ = opts.execute().await?;
+    opts.execute().await?;
     Ok(())
 }
 
@@ -83,7 +83,7 @@ impl KafkaOpt {
         let admin = AdminClient::from_config(&client_config)?;
 
         let new_topic = NewTopic::new(kafka_topic.as_str(), 1, TopicReplication::Fixed(1));
-        let _ = admin
+        admin
             .create_topics(&[new_topic], &AdminOptions::new())
             .await?;
 
@@ -92,7 +92,7 @@ impl KafkaOpt {
         info!("Starting stream");
         let mut stream = self.common.create_consumer_stream().await?;
         while let Some(Ok(record)) = stream.next().await {
-            let _ = self.send_to_kafka(&record, producer).await?;
+            self.send_to_kafka(&record, producer).await?;
         }
         Ok(())
     }

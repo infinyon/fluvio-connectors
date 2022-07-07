@@ -34,7 +34,7 @@ async fn main() -> anyhow::Result<()> {
         "Starting DynamoDB sink connector",
     );
 
-    let _ = opts.execute().await?;
+    opts.execute().await?;
     Ok(())
 }
 
@@ -69,7 +69,7 @@ impl DynamoDbOpt {
         let dynamodb_local_config = builder.build();
 
         let client = Client::from_conf(dynamodb_local_config);
-        let _ = self.create_table(&client).await?;
+        self.create_table(&client).await?;
 
         let mut stream = self.common.create_consumer_stream().await?;
         info!("Starting stream");

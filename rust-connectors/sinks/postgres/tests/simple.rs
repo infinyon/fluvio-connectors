@@ -9,7 +9,7 @@ use url::Url;
 async fn postgres_sink_and_source() -> eyre::Result<()> {
     fluvio_future::subscriber::init_logger();
     //let fluvio_topic = "postgres".to_string(); // To help debug, use "postgres"
-    let fluvio_topic = uuid::Uuid::new_v4().to_string().replace("-", "");
+    let fluvio_topic = uuid::Uuid::new_v4().to_string().replace('-', "");
     let admin = fluvio::FluvioAdmin::connect().await?;
     let _ = admin
         .create(
@@ -352,8 +352,8 @@ async fn start_pg_source(fluvio_topic: String) -> eyre::Result<(JoinHandle<()>, 
         .connect(NoTls)
         .await?;
 
-    let slot = uuid::Uuid::new_v4().to_string().replace("-", "");
-    let publication = uuid::Uuid::new_v4().to_string().replace("-", "");
+    let slot = uuid::Uuid::new_v4().to_string().replace('-', "");
+    let publication = uuid::Uuid::new_v4().to_string().replace('-', "");
 
     let config = PgConnectorOpt {
         url: Url::parse(&postgres_source_url).expect("Failed to parse connector url"),

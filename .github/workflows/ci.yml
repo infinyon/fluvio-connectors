@@ -62,7 +62,7 @@ jobs:
 
       - name: Cargo clippy
         if: ${{ matrix.check == 'clippy' }}
-        run: cargo clippy -- -D warnings
+        run: cargo clippy --all-targets -- -D warnings
 
 
   build_connector_bins:
@@ -77,8 +77,8 @@ jobs:
           - aarch64-unknown-linux-musl
         connector-name:
           - test-connector
-          - mqtt
-          - http
+          - mqtt-source
+          - http-source
           - postgres-source
           - postgres-sink
           - slack-sink
@@ -141,8 +141,8 @@ jobs:
           - aarch64-unknown-linux-musl
         connector-name:
           - test-connector
-          - mqtt
-          - http
+          - mqtt-source
+          - http-source
           - postgres-source
           - postgres-sink
           - slack-sink
@@ -229,8 +229,8 @@ jobs:
         rust: [stable]
         connector-name:
           - test-connector
-          - mqtt
-          - http
+          - mqtt-source
+          - http-source
     env:
       RUST_BACKTRACE: full
     steps:
@@ -316,8 +316,8 @@ jobs:
         os: [ubuntu-latest]
         connector-name:
           - test-connector
-          - mqtt
-          - http
+          - mqtt-source
+          - http-source
           - postgres-source
           - postgres-sink
           - slack-sink

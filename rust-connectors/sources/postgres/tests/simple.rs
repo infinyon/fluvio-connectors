@@ -14,8 +14,8 @@ async fn postgres_inserts() -> eyre::Result<()> {
         .expect("No FLUVIO_PG_DATABASE_URL environment variable found");
 
     let fluvio_topic = "postgres".to_string();
-    let slot = uuid::Uuid::new_v4().to_string().replace("-", "");
-    let publication = uuid::Uuid::new_v4().to_string().replace("-", "");
+    let slot = uuid::Uuid::new_v4().to_string().replace('-', "");
+    let publication = uuid::Uuid::new_v4().to_string().replace('-', "");
 
     let admin = fluvio::FluvioAdmin::connect().await?;
     let _ = admin
@@ -53,12 +53,12 @@ async fn postgres_inserts() -> eyre::Result<()> {
 
     let table_create =
         r#"CREATE TABLE IF NOT EXISTS foo(ID SERIAL PRIMARY KEY, NAME TEXT NOT NULL)"#;
-    let _ = pg_client.execute(table_create, &[]).await?;
+    pg_client.execute(table_create, &[]).await?;
     let consumer = fluvio::consumer(fluvio_topic.clone(), 0).await?;
     let mut stream = consumer.stream(fluvio::Offset::beginning()).await?;
     let query = "INSERT INTO foo (NAME) VALUES($1)";
     let name = format!("Fluvio - {}", 1);
-    let _ = pg_client.query(query, &[&name]).await?;
+    pg_client.query(query, &[&name]).await?;
     let mut received_relation = false;
     let mut received_first_insert = false;
     for i in 0..8 {
@@ -94,12 +94,12 @@ async fn postgres_inserts() -> eyre::Result<()> {
             _other => {}
         }
     }
-    assert_eq!(
-        received_relation, true,
+    assert!(
+        received_relation,
         "Verifying that the fluvio stream has the table create"
     );
-    assert_eq!(
-        received_first_insert, true,
+    assert!(
+        received_first_insert,
         "Verifying that the fluvio stream has first insert"
     );
 
@@ -150,7 +150,7 @@ async fn postgres_inserts() -> eyre::Result<()> {
             .expect("Failed to get next fluvio steram")?;
     }
     let table_drop = "DROP TABLE foo";
-    let _ = pg_client.execute(table_drop, &[]).await?;
+    pg_client.execute(table_drop, &[]).await?;
     let admin = fluvio::FluvioAdmin::connect().await?;
     let _ = admin.delete::<TopicSpec, String>(fluvio_topic).await;
 

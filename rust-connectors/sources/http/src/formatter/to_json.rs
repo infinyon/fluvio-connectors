@@ -107,8 +107,8 @@ mod tests {
     fn test_one_val_header(fuzz_key: &str, fuzz_val: &str) {
         let (_, vec_httpheader_input, _) = data_test_header(fuzz_key, fuzz_val, 1);
         let expected = HashMap::from([(
-            format!("x-{}-key-0", fuzz_key).to_string(),
-            One(format!("x-{}-val-0", fuzz_val).to_string()),
+            format!("x-{}-key-0", fuzz_key),
+            One(format!("x-{}-val-0", fuzz_val)),
         )]);
         let tested = headers_to_json(&vec_httpheader_input);
 
@@ -116,9 +116,9 @@ mod tests {
     }
     #[rstest(fuzz_key, fuzz_val, case("basic", "basic"), case("basic", "🦄"))]
     fn test_many_vals_header(fuzz_key: &str, fuzz_val: &str) {
-        let hdr_key = format!("x-{}-key-0", fuzz_key).to_string();
-        let hdr_val1 = format!("x-{}-val-0", fuzz_val).to_string();
-        let hdr_val2 = format!("x-{}-val-1", fuzz_val).to_string();
+        let hdr_key = format!("x-{}-key-0", fuzz_key);
+        let hdr_val1 = format!("x-{}-val-0", fuzz_val);
+        let hdr_val2 = format!("x-{}-val-1", fuzz_val);
 
         let vec_header_input = vec![
             HttpHeader {
