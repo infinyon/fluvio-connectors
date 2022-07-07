@@ -18,6 +18,10 @@ on:
           - kafka-source
           - kafka-sink
 
+env:
+  CONNECTOR_NAME: ${{ github.event.inputs.connector_name }}
+  IMAGE_NAME: fluvio-connect-${{ github.event.inputs.connector_name }}
+
 jobs:
   cancel_previous_runs:
     name: Cancel Previous Runs
@@ -27,18 +31,14 @@ jobs:
         with:
           access_token: ${{ secrets.GITHUB_TOKEN }}
   docker_push:
-    name: Publish ${{ env.CONNECTOR_NAME }} images to Docker Hub
+    name: Publish ${{ github.event.inputs.connector_name }} images to Docker Hub
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
 
-  env:
-    CONNECTOR_NAME: ${{ github.event.inputs.connector_name }}
-    IMAGE_NAME: fluvio-connect-${{ github.event.inputs.connector_name }}
-
     steps:
       - uses: actions/checkout@v3
-      - name: Try pulling ${{ env.CONNECTOR_NAME }} x86_64-unknown-linux-musl docker images
+      - name: Try pulling ${{ github.event.inputs.connector_name }} x86_64-unknown-linux-musl docker images
         continue-on-error: true
         id: docker_check
         run: |
@@ -65,6 +65,6 @@ jobs:
             "docker.io/${{ env.IMAGE_NAME }}:${CONNECTOR_VERSION}-arm64v8"
           docker manifest push "docker.io/${{ env.IMAGE_NAME }}:${CONNECTOR_VERSION}"
 
-      - name: Publishing ${{ env.CONNECTOR_}} failed
+      - name: Publishing ${{ github.event.inputs.connector_name }} failed
         if: ${{ failure() }}
         run: docker image ls -a
