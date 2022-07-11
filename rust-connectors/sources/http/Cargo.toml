@@ -22,7 +22,7 @@ humantime = "2.1.0"
 
 fluvio-connectors-common = { path = "../../common", features = ["source"]}
 fluvio-dataplane-protocol = "0.11"
-fluvio-future = { version = "0.3.15", features = ["subscriber"] }
+fluvio-future = { version = "0.4.0", features = ["subscriber"] }
 
 [dev-dependencies]
 rstest = "0.15"
