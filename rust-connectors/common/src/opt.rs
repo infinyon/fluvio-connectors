@@ -79,8 +79,8 @@ pub struct CommonSmartModuleOpt {
     ///
     /// If the value is not a path to a file, it will be used
     /// to lookup a SmartModule by name
-    #[structopt(long, group("smartmodule"))]
-    pub arraymap: Option<String>,
+    #[structopt(long, group("smartmodule"), alias = "arraymap")]
+    pub array_map: Option<String>,
 
     /// Path of aggregate smartmodule used as a pre-produce step
     ///
@@ -149,7 +149,7 @@ impl CommonConnectorOpt {
             &self.smartmodule_common.filter,
             &self.smartmodule_common.filter_map,
             &self.smartmodule_common.map,
-            &self.smartmodule_common.arraymap,
+            &self.smartmodule_common.array_map,
             &self.smartmodule_common.aggregate,
         ) {
             (Some(filter_path), _, _, _, _) => {
@@ -157,9 +157,8 @@ impl CommonConnectorOpt {
                 producer.with_filter(data, Default::default())?
             }
             (_, Some(filter_map_path), _, _, _) => {
-                let _data = self.get_smartmodule(filter_map_path, &fluvio).await?;
-                todo!("Filter map isn't in fluvio yet. https://github.com/infinyon/fluvio-connectors/issues/272");
-                //producer.with_filter_map(data, Default::default())?
+                let data = self.get_smartmodule(filter_map_path, &fluvio).await?;
+                producer.with_filter_map(data, Default::default())?
             }
             (_, _, Some(map_path), _, _) => {
                 let data = self.get_smartmodule(map_path, &fluvio).await?;
@@ -223,7 +222,7 @@ impl CommonConnectorOpt {
         let wasm_invocation: Option<SmartModuleInvocation> = match (
             &self.smartmodule_common.filter,
             &self.smartmodule_common.map,
-            &self.smartmodule_common.arraymap,
+            &self.smartmodule_common.array_map,
             &self.smartmodule_common.filter_map,
         ) {
             (Some(filter_path), _, _, _) => {
