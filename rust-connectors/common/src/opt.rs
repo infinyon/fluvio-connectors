@@ -120,7 +120,12 @@ pub struct CommonSmartModuleOpt {
     pub smart_module: Option<String>,
 
     /// (Optional) Extra input parameters passed to the smartmodule module.
-    /// They should be passed using key=value format
+    /// They should be passed using key:value format.
+    ///
+    /// It only accepts one key:value pair. In order to pass multiple pairs, call this option multiple times.
+    ///
+    /// Example:
+    /// --smartmodule-parameters key1:value --smartmodyle-parameters key2:value
     #[structopt(
         long,
         parse(try_from_str = parse_key_val),
@@ -131,8 +136,8 @@ pub struct CommonSmartModuleOpt {
 }
 
 fn parse_key_val(s: &str) -> Result<(String, String), CliError> {
-    let pos = s.find('=').ok_or_else(|| {
-        CliError::InvalidArg(format!("invalid KEY=value: no `=` found in `{}`", s))
+    let pos = s.find(':').ok_or_else(|| {
+        CliError::InvalidArg(format!("invalid KEY=value: no `:` found in `{}`", s))
     })?;
     Ok((s[..pos].parse()?, s[pos + 1..].parse()?))
 }
