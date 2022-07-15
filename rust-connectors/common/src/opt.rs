@@ -105,7 +105,7 @@ pub struct CommonSmartModuleOpt {
     #[structopt(long, requires = "aggregate_group")]
     pub aggregate_initial_value: Option<String>,
 
-    /// Path of aggregate smartmodule used as a pre-produce step
+    /// Path of smartmodule used as a pre-produce step
     /// if using source connector. If using sink connector this smartmodule
     /// will be used in consumer.    
     ///
@@ -168,6 +168,7 @@ impl CommonConnectorOpt {
         let config_builder = TopicProducerConfigBuilder::default();
         let params = self.smartmodule_parameters();
 
+        println!("{:?}", params);
         // Linger
         let config_builder = if let Some(linger) = self.producer_common.producer_linger {
             config_builder.linger(linger)
