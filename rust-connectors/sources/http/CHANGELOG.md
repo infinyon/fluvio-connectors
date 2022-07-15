@@ -1,6 +1,8 @@
 # Connector Change Log
+## http Version 0.3.1 - UNRELEASED
+* Added support to smartmodule-parameters and smartmodule without explicit type. ([PR #287](https://github.com/infinyon/fluvio-connectors/pull/287)
 
-## http Version 0.3.0 - UNRELEASED
+## http Version 0.3.0 - 2022-Jul-07
 * `interval` field uses human readable values, "1s", "20ms", etc. ([PR #274](https://github.com/infinyon/fluvio-connectors/pull/274))
 * `source-linger` field uses human readable values, "1s", "20ms", etc. ([PR #273](https://github.com/infinyon/fluvio-connectors/pull/273))
 

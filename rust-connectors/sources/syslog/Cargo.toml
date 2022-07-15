@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 syslog_loose = "0.16.0"
 structopt = "0.3"
-fluvio = "0.12"
+fluvio = "0.13"
 thiserror = "1.0.25"
 tokio = { version = "1.18.0", features = ["macros", "rt", ] }
 notify = "5.0.0-pre.14"

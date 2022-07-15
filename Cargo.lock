@@ -1396,7 +1396,7 @@ checksum = "140206b78fb2bc3edbcfc9b5ccbd0b30699cfe8d348b8b31b330e47df5291a5a"
 
 [[package]]
 name = "dynamodb-sink"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "anyhow",
  "aws-config",
@@ -1549,44 +1549,6 @@ dependencies = [
 
 [[package]]
 name = "fluvio"
-version = "0.12.14"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9a0cab7f75c6163d40a37263cd5bb0c611211e971e2b47b198fa2376d5509ea3"
-dependencies = [
- "async-channel",
- "async-lock",
- "async-rwlock",
- "async-trait",
- "base64 0.13.0",
- "built",
- "bytes",
- "cfg-if 1.0.0",
- "derive_builder",
- "dirs",
- "event-listener",
- "fluvio-compression",
- "fluvio-dataplane-protocol",
- "fluvio-future 0.3.18",
- "fluvio-protocol",
- "fluvio-sc-schema",
- "fluvio-socket 0.11.5",
- "fluvio-spu-schema 0.9.4",
- "fluvio-types",
- "futures-util",
- "once_cell",
- "pin-project-lite 0.2.9",
- "semver 1.0.12",
- "serde",
- "serde_json",
- "siphasher",
- "thiserror",
- "tokio",
- "toml",
- "tracing",
-]
-
-[[package]]
-name = "fluvio"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1ae5bad5447007ac26627fd3eee8fd6d4b866a4396eff86d699b0afc9ede7d8d"
@@ -1608,8 +1570,8 @@ dependencies = [
  "fluvio-protocol",
  "fluvio-sc-schema",
  "fluvio-smartengine",
- "fluvio-socket 0.12.0",
- "fluvio-spu-schema 0.10.0",
+ "fluvio-socket",
+ "fluvio-spu-schema",
  "fluvio-types",
  "futures-util",
  "once_cell",
@@ -1644,9 +1606,9 @@ dependencies = [
  "anyhow",
  "bytesize",
  "flate2",
- "fluvio 0.13.0",
+ "fluvio",
  "fluvio-future 0.3.18",
- "fluvio-spu-schema 0.10.0",
+ "fluvio-spu-schema",
  "humantime",
  "schemars",
  "serde",
@@ -1707,17 +1669,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1e2d1fad8e412d44c516add2349a34f6d71d9279b108c8e012325ab17fcbf982"
 dependencies = [
  "async-io",
- "async-net",
  "async-std",
- "async-trait",
  "cfg-if 1.0.0",
  "fluvio-test-derive",
  "fluvio-wasm-timer",
  "futures-lite",
- "futures-util",
  "log",
- "openssl",
- "openssl-sys",
  "pin-project",
  "thiserror",
  "tracing",
@@ -1808,7 +1765,7 @@ dependencies = [
  "anyhow",
  "fluvio-dataplane-protocol",
  "fluvio-future 0.4.1",
- "fluvio-spu-schema 0.10.0",
+ "fluvio-spu-schema",
  "futures-util",
  "nix",
  "thiserror",
@@ -1840,29 +1797,6 @@ dependencies = [
 
 [[package]]
 name = "fluvio-socket"
-version = "0.11.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6c35259517081cd708d7b13d7afe1728d77f983e78b029924e8bd51ebfe0f219"
-dependencies = [
- "async-channel",
- "async-lock",
- "async-trait",
- "bytes",
- "cfg-if 1.0.0",
- "event-listener",
- "fluvio-future 0.3.18",
- "fluvio-protocol",
- "futures-util",
- "once_cell",
- "pin-project",
- "thiserror",
- "tokio",
- "tokio-util 0.7.3",
- "tracing",
-]
-
-[[package]]
-name = "fluvio-socket"
 version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39e03cddb6830ab51fa84352a6a0592c0c8e06c32cc4b4d9af90e33125fcff6d"
@@ -1881,22 +1815,6 @@ dependencies = [
  "thiserror",
  "tokio",
  "tokio-util 0.7.3",
- "tracing",
-]
-
-[[package]]
-name = "fluvio-spu-schema"
-version = "0.9.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a300a9e13672016511b71d3046c061fcfae2f66b48d5540decba7965b4975d4c"
-dependencies = [
- "bytes",
- "flate2",
- "fluvio-dataplane-protocol",
- "fluvio-protocol",
- "log",
- "serde",
- "static_assertions",
  "tracing",
 ]
 
@@ -1933,7 +1851,7 @@ name = "fluvio-syslog"
 version = "0.2.0"
 dependencies = [
  "cfg-if 1.0.0",
- "fluvio 0.12.14",
+ "fluvio",
  "futures-util",
  "notify",
  "serde",
@@ -2373,7 +2291,7 @@ dependencies = [
 
 [[package]]
 name = "http-source"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "fluvio-connectors-common",
  "fluvio-dataplane-protocol",
@@ -2633,7 +2551,7 @@ dependencies = [
 
 [[package]]
 name = "kafka-sink"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "anyhow",
  "fluvio-connectors-common",
@@ -2863,7 +2781,7 @@ checksum = "7843ec2de400bcbc6a6328c958dc38e5359da6e93e72e37bc5246bf1ae776389"
 
 [[package]]
 name = "mqtt-source"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "anyhow",
  "async-global-executor",
@@ -3283,13 +3201,13 @@ dependencies = [
 
 [[package]]
 name = "postgres-sink"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "bytes",
  "color-backtrace",
  "dotenv",
  "eyre",
- "fluvio 0.12.14",
+ "fluvio",
  "fluvio-connectors-common",
  "fluvio-future 0.3.18",
  "fluvio-model-postgres",
@@ -3312,14 +3230,14 @@ dependencies = [
 
 [[package]]
 name = "postgres-source"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "adaptive_backoff",
  "bytes",
  "color-backtrace",
  "dotenv",
  "eyre",
- "fluvio 0.13.0",
+ "fluvio",
  "fluvio-connectors-common",
  "fluvio-future 0.3.18",
  "fluvio-model-postgres",
@@ -4188,7 +4106,7 @@ dependencies = [
 
 [[package]]
 name = "slack-sink"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "anyhow",
  "fluvio-connectors-common",

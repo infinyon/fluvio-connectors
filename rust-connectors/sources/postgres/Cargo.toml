@@ -1,6 +1,6 @@
 [package]
 name = "postgres-source"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 [[bin]]
 name = "postgres-source"
@@ -12,7 +12,7 @@ tracing = { version = "0.1" }
 tokio = { version = "1", features = ["full"] }
 tokio-stream = { version = "0.1" }
 fluvio = { version = "0.13" }
-fluvio-future = { version = "0.3", features = ["subscriber"] }
+fluvio-future = { version = "0.3", features = ["subscriber", "timer"] }
 fluvio-connectors-common = { path = "../../common", features = ["source"]}
 fluvio-model-postgres = { path = "../../models/fluvio-model-postgres" }
 bytes = "1"
