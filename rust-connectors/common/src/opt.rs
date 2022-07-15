@@ -108,7 +108,7 @@ pub struct CommonSmartModuleOpt {
     /// Path of aggregate smartmodule used as a pre-produce step
     /// if using source connector. If using sink connector this smartmodule
     /// will be used in consumer.    
-    /// 
+    ///
     /// If the value is not a path to a file, it will be used
     /// to lookup a SmartModule by name
     #[structopt(
@@ -122,8 +122,8 @@ pub struct CommonSmartModuleOpt {
     /// (Optional) Extra input parameters passed to the smartmodule module.
     /// They should be passed using key=value format
     #[structopt(
-        long, 
-        parse(try_from_str = parse_key_val), 
+        long,
+        parse(try_from_str = parse_key_val),
         requires = "smartmodule_group", 
         number_of_values = 1
     )]
@@ -199,9 +199,9 @@ impl CommonConnectorOpt {
         ) {
             (Some(smartmodule_name), _, _, _, _, _) => {
                 let context = match &self.smartmodule_common.aggregate_initial_value {
-                    Some(initial_value) => {
-                        SmartModuleContextData::Aggregate{accumulator: initial_value.as_bytes().to_vec()}
-                    }
+                    Some(initial_value) => SmartModuleContextData::Aggregate {
+                        accumulator: initial_value.as_bytes().to_vec(),
+                    },
                     None => SmartModuleContextData::None,
                 };
 
@@ -227,7 +227,6 @@ impl CommonConnectorOpt {
             (_, _, _, _, _, Some(aggregate)) => {
                 let data = self.get_smartmodule(aggregate, &fluvio).await?;
                 let initial = self.get_aggregate_initial_value(&fluvio).await?;
-                self.get_aggregate_initial_value(&fluvio).await?;
                 producer.with_aggregate(data, params, initial)?
             }
             _ => producer,
@@ -277,40 +276,53 @@ impl CommonConnectorOpt {
         let fluvio = fluvio::Fluvio::connect().await?;
         let params = self.smartmodule_parameters().into();
         let wasm_invocation: Option<SmartModuleInvocation> = match (
+            &self.smartmodule_common.smart_module,
             &self.smartmodule_common.filter,
             &self.smartmodule_common.map,
             &self.smartmodule_common.array_map,
             &self.smartmodule_common.filter_map,
+            &self.smartmodule_common.aggregate,
         ) {
-            (Some(filter_path), _, _, _) => {
-                let data = self.get_smartmodule(filter_path, &fluvio).await?;
+            (Some(smartmodule), _, _, _, _, _) => {
+                let context = match &self.smartmodule_common.aggregate_initial_value {
+                    Some(initial_value) => SmartModuleContextData::Aggregate {
+                        accumulator: initial_value.as_bytes().to_vec(),
+                    },
+                    None => SmartModuleContextData::None,
+                };
                 Some(SmartModuleInvocation {
-                    wasm: SmartModuleInvocationWasm::adhoc_from_bytes(&data)?,
-                    kind: SmartModuleKind::Filter,
+                    wasm: SmartModuleInvocationWasm::Predefined(smartmodule.to_owned()),
+                    kind: SmartModuleKind::Generic(context),
                     params,
                 })
             }
-            (_, Some(map_path), _, _) => {
-                let data = self.get_smartmodule(map_path, &fluvio).await?;
+            (_, Some(filter_path), _, _, _, _) => Some(SmartModuleInvocation {
+                wasm: SmartModuleInvocationWasm::Predefined(filter_path.to_owned()),
+                kind: SmartModuleKind::Filter,
+                params,
+            }),
+            (_, _, Some(map_path), _, _, _) => Some(SmartModuleInvocation {
+                wasm: SmartModuleInvocationWasm::Predefined(map_path.to_owned()),
+                kind: SmartModuleKind::Map,
+                params,
+            }),
+            (_, _, _, Some(array_map_path), _, _) => Some(SmartModuleInvocation {
+                wasm: SmartModuleInvocationWasm::Predefined(array_map_path.to_owned()),
+                kind: SmartModuleKind::ArrayMap,
+                params,
+            }),
+            (_, _, _, _, Some(filter_map_path), _) => Some(SmartModuleInvocation {
+                wasm: SmartModuleInvocationWasm::Predefined(filter_map_path.to_owned()),
+                kind: SmartModuleKind::FilterMap,
+                params,
+            }),
+            (_, _, _, _, _, Some(aggregate_path)) => {
+                let initial = self.get_aggregate_initial_value(&fluvio).await?;
                 Some(SmartModuleInvocation {
-                    wasm: SmartModuleInvocationWasm::adhoc_from_bytes(&data)?,
-                    kind: SmartModuleKind::Map,
-                    params,
-                })
-            }
-            (_, _, Some(array_map_path), _) => {
-                let data = self.get_smartmodule(array_map_path, &fluvio).await?;
-                Some(SmartModuleInvocation {
-                    wasm: SmartModuleInvocationWasm::adhoc_from_bytes(&data)?,
-                    kind: SmartModuleKind::ArrayMap,
-                    params,
-                })
-            }
-            (_, _, _, Some(filter_map_path)) => {
-                let data = self.get_smartmodule(filter_map_path, &fluvio).await?;
-                Some(SmartModuleInvocation {
-                    wasm: SmartModuleInvocationWasm::adhoc_from_bytes(&data)?,
-                    kind: SmartModuleKind::FilterMap,
+                    wasm: SmartModuleInvocationWasm::Predefined(aggregate_path.to_owned()),
+                    kind: SmartModuleKind::Aggregate {
+                        accumulator: initial,
+                    },
                     params,
                 })
             }
