@@ -168,7 +168,6 @@ impl CommonConnectorOpt {
         let config_builder = TopicProducerConfigBuilder::default();
         let params = self.smartmodule_parameters();
 
-        println!("{:?}", params);
         // Linger
         let config_builder = if let Some(linger) = self.producer_common.producer_linger {
             config_builder.linger(linger)
