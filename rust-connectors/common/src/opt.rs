@@ -1,8 +1,9 @@
 use anyhow::Context;
 use bytesize::ByteSize;
+use fluvio_spu_schema::server::stream_fetch::SmartModuleContextData;
 use humantime::parse_duration;
 use schemars::{schema_for, JsonSchema};
-use std::time::Duration;
+use std::{collections::BTreeMap, time::Duration};
 use structopt::clap::AppSettings;
 use structopt::StructOpt;
 use tokio_stream::Stream;
@@ -16,6 +17,8 @@ pub use fluvio::{
     Compression, ConsumerConfig, Fluvio, FluvioError, PartitionConsumer, TopicProducer,
     TopicProducerConfigBuilder,
 };
+
+use crate::error::CliError;
 
 #[derive(StructOpt, Debug, JsonSchema, Clone, Default)]
 #[structopt(settings = &[AppSettings::DeriveDisplayOrder])]
@@ -55,44 +58,89 @@ pub struct CommonConsumerOpt {
 #[derive(StructOpt, Debug, JsonSchema, Clone, Default)]
 pub struct CommonSmartModuleOpt {
     /// Path of filter smartmodule used as a pre-produce step
+    /// if using source connector. If using sink connector this smartmodule
+    /// will be used in consumer.
     ///
     /// If the value is not a path to a file, it will be used
     /// to lookup a SmartModule by name
-    #[structopt(long, group("smartmodule"))]
+    #[structopt(long, group("smartmodule_group"))]
     pub filter: Option<String>,
 
     /// Path of filter_map smartmodule used as a pre-produce step
+    /// if using source connector. If using sink connector this smartmodule
+    /// will be used in consumer.
     ///
     /// If the value is not a path to a file, it will be used
     /// to lookup a SmartModule by name
-    #[structopt(long, group("smartmodule"))]
+    #[structopt(long, group("smartmodule_group"))]
     pub filter_map: Option<String>,
 
     /// Path of map smartmodule used as a pre-produce step
+    /// if using source connector. If using sink connector this smartmodule
+    /// will be used in consumer.
     ///
     /// If the value is not a path to a file, it will be used
     /// to lookup a SmartModule by name
-    #[structopt(long, group("smartmodule"))]
+    #[structopt(long, group("smartmodule_group"))]
     pub map: Option<String>,
 
     /// Path of arraymap smartmodule used as a pre-produce step
+    /// if using source connector. If using sink connector this smartmodule
+    /// will be used in consumer.
     ///
     /// If the value is not a path to a file, it will be used
     /// to lookup a SmartModule by name
-    #[structopt(long, group("smartmodule"), alias = "arraymap")]
+    #[structopt(long, group("smartmodule_group"), alias = "arraymap")]
     pub array_map: Option<String>,
 
     /// Path of aggregate smartmodule used as a pre-produce step
+    /// if using source connector. If using sink connector this smartmodule
+    /// will be used in consumer.
     ///
     /// If the value is not a path to a file, it will be used
     /// to lookup a SmartModule by name
-    #[structopt(long, group("smartmodule"))]
+    #[structopt(long, group("aggregate_group"), group("smartmodule_group"))]
     pub aggregate: Option<String>,
 
-    #[structopt(long)]
+    #[structopt(long, requires = "aggregate_group")]
     pub aggregate_initial_value: Option<String>,
+
+    /// Path of smartmodule used as a pre-produce step
+    /// if using source connector. If using sink connector this smartmodule
+    /// will be used in consumer.    
+    ///
+    /// If the value is not a path to a file, it will be used
+    /// to lookup a SmartModule by name
+    #[structopt(
+        long,
+        alias = "smartmodule",
+        group("aggregate_group"),
+        group("smartmodule_group")
+    )]
+    pub smart_module: Option<String>,
+
+    /// (Optional) Extra input parameters passed to the smartmodule module.
+    /// They should be passed using key:value format.
+    ///
+    /// It only accepts one key:value pair. In order to pass multiple pairs, call this option multiple times.
+    ///
+    /// Example:
+    /// --smartmodule-parameters key1:value --smartmodule-parameters key2:value
+    #[structopt(
+        long,
+        parse(try_from_str = parse_key_val),
+        requires = "smartmodule_group", 
+        number_of_values = 1
+    )]
+    pub smartmodule_parameters: Option<Vec<(String, String)>>,
 }
 
+fn parse_key_val(s: &str) -> Result<(String, String), CliError> {
+    let pos = s.find(':').ok_or_else(|| {
+        CliError::InvalidArg(format!("invalid KEY=value: no `:` found in `{}`", s))
+    })?;
+    Ok((s[..pos].parse()?, s[pos + 1..].parse()?))
+}
 #[derive(StructOpt, Debug, JsonSchema, Clone, Default)]
 pub struct CommonProducerOpt {
     /// Time to wait before sending
@@ -118,6 +166,7 @@ impl CommonConnectorOpt {
         let fluvio = fluvio::Fluvio::connect().await?;
         self.ensure_topic_exists().await?;
         let config_builder = TopicProducerConfigBuilder::default();
+        let params = self.smartmodule_parameters();
 
         // Linger
         let config_builder = if let Some(linger) = self.producer_common.producer_linger {
@@ -146,33 +195,44 @@ impl CommonConnectorOpt {
             .await?;
 
         let producer = match (
+            &self.smartmodule_common.smart_module,
             &self.smartmodule_common.filter,
             &self.smartmodule_common.filter_map,
             &self.smartmodule_common.map,
             &self.smartmodule_common.array_map,
             &self.smartmodule_common.aggregate,
         ) {
-            (Some(filter_path), _, _, _, _) => {
+            (Some(smartmodule_name), _, _, _, _, _) => {
+                let context = match &self.smartmodule_common.aggregate_initial_value {
+                    Some(initial_value) => SmartModuleContextData::Aggregate {
+                        accumulator: initial_value.as_bytes().to_vec(),
+                    },
+                    None => SmartModuleContextData::None,
+                };
+
+                let data = self.get_smartmodule(smartmodule_name, &fluvio).await?;
+                producer.with_smartmodule(data, params, context)?
+            }
+            (_, Some(filter_path), _, _, _, _) => {
                 let data = self.get_smartmodule(filter_path, &fluvio).await?;
-                producer.with_filter(data, Default::default())?
+                producer.with_filter(data, params)?
             }
-            (_, Some(filter_map_path), _, _, _) => {
+            (_, _, Some(filter_map_path), _, _, _) => {
                 let data = self.get_smartmodule(filter_map_path, &fluvio).await?;
-                producer.with_filter_map(data, Default::default())?
+                producer.with_filter_map(data, params)?
             }
-            (_, _, Some(map_path), _, _) => {
+            (_, _, _, Some(map_path), _, _) => {
                 let data = self.get_smartmodule(map_path, &fluvio).await?;
-                producer.with_map(data, Default::default())?
+                producer.with_map(data, params)?
             }
-            (_, _, _, Some(array_map_path), _) => {
+            (_, _, _, _, Some(array_map_path), _) => {
                 let data = self.get_smartmodule(array_map_path, &fluvio).await?;
-                producer.with_array_map(data, Default::default())?
+                producer.with_array_map(data, params)?
             }
-            (_, _, _, _, Some(aggregate)) => {
+            (_, _, _, _, _, Some(aggregate)) => {
                 let data = self.get_smartmodule(aggregate, &fluvio).await?;
                 let initial = self.get_aggregate_initial_value(&fluvio).await?;
-                self.get_aggregate_initial_value(&fluvio).await?;
-                producer.with_aggregate(data, Default::default(), initial)?
+                producer.with_aggregate(data, params, initial)?
             }
             _ => producer,
         };
@@ -219,42 +279,56 @@ impl CommonConnectorOpt {
         &self,
     ) -> anyhow::Result<impl Stream<Item = Result<Record, ErrorCode>>> {
         let fluvio = fluvio::Fluvio::connect().await?;
+        let params = self.smartmodule_parameters().into();
         let wasm_invocation: Option<SmartModuleInvocation> = match (
+            &self.smartmodule_common.smart_module,
             &self.smartmodule_common.filter,
             &self.smartmodule_common.map,
             &self.smartmodule_common.array_map,
             &self.smartmodule_common.filter_map,
+            &self.smartmodule_common.aggregate,
         ) {
-            (Some(filter_path), _, _, _) => {
-                let data = self.get_smartmodule(filter_path, &fluvio).await?;
+            (Some(smartmodule), _, _, _, _, _) => {
+                let context = match &self.smartmodule_common.aggregate_initial_value {
+                    Some(initial_value) => SmartModuleContextData::Aggregate {
+                        accumulator: initial_value.as_bytes().to_vec(),
+                    },
+                    None => SmartModuleContextData::None,
+                };
                 Some(SmartModuleInvocation {
-                    wasm: SmartModuleInvocationWasm::adhoc_from_bytes(&data)?,
-                    kind: SmartModuleKind::Filter,
-                    params: Default::default(),
+                    wasm: SmartModuleInvocationWasm::Predefined(smartmodule.to_owned()),
+                    kind: SmartModuleKind::Generic(context),
+                    params,
                 })
             }
-            (_, Some(map_path), _, _) => {
-                let data = self.get_smartmodule(map_path, &fluvio).await?;
+            (_, Some(filter_path), _, _, _, _) => Some(SmartModuleInvocation {
+                wasm: SmartModuleInvocationWasm::Predefined(filter_path.to_owned()),
+                kind: SmartModuleKind::Filter,
+                params,
+            }),
+            (_, _, Some(map_path), _, _, _) => Some(SmartModuleInvocation {
+                wasm: SmartModuleInvocationWasm::Predefined(map_path.to_owned()),
+                kind: SmartModuleKind::Map,
+                params,
+            }),
+            (_, _, _, Some(array_map_path), _, _) => Some(SmartModuleInvocation {
+                wasm: SmartModuleInvocationWasm::Predefined(array_map_path.to_owned()),
+                kind: SmartModuleKind::ArrayMap,
+                params,
+            }),
+            (_, _, _, _, Some(filter_map_path), _) => Some(SmartModuleInvocation {
+                wasm: SmartModuleInvocationWasm::Predefined(filter_map_path.to_owned()),
+                kind: SmartModuleKind::FilterMap,
+                params,
+            }),
+            (_, _, _, _, _, Some(aggregate_path)) => {
+                let initial = self.get_aggregate_initial_value(&fluvio).await?;
                 Some(SmartModuleInvocation {
-                    wasm: SmartModuleInvocationWasm::adhoc_from_bytes(&data)?,
-                    kind: SmartModuleKind::Map,
-                    params: Default::default(),
-                })
-            }
-            (_, _, Some(array_map_path), _) => {
-                let data = self.get_smartmodule(array_map_path, &fluvio).await?;
-                Some(SmartModuleInvocation {
-                    wasm: SmartModuleInvocationWasm::adhoc_from_bytes(&data)?,
-                    kind: SmartModuleKind::ArrayMap,
-                    params: Default::default(),
-                })
-            }
-            (_, _, _, Some(filter_map_path)) => {
-                let data = self.get_smartmodule(filter_map_path, &fluvio).await?;
-                Some(SmartModuleInvocation {
-                    wasm: SmartModuleInvocationWasm::adhoc_from_bytes(&data)?,
-                    kind: SmartModuleKind::FilterMap,
-                    params: Default::default(),
+                    wasm: SmartModuleInvocationWasm::Predefined(aggregate_path.to_owned()),
+                    kind: SmartModuleKind::Aggregate {
+                        accumulator: initial,
+                    },
+                    params,
                 })
             }
             _ => None,
@@ -269,6 +343,14 @@ impl CommonConnectorOpt {
 }
 
 impl CommonConnectorOpt {
+    fn smartmodule_parameters(&self) -> BTreeMap<String, String> {
+        self.smartmodule_common
+            .smartmodule_parameters
+            .clone()
+            .map(|params| params.into_iter().collect())
+            .unwrap_or_default()
+    }
+
     pub fn enable_logging(&self) {
         if std::env::var("RUST_LOG").is_err() {
             std::env::set_var("RUST_LOG", "info")
