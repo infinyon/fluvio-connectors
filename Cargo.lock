@@ -1402,7 +1402,7 @@ dependencies = [
  "aws-config",
  "aws-sdk-dynamodb",
  "fluvio-connectors-common",
- "fluvio-future 0.3.18",
+ "fluvio-future 0.4.1",
  "schemars",
  "serde_json",
  "structopt",
@@ -1607,7 +1607,7 @@ dependencies = [
  "bytesize",
  "flate2",
  "fluvio",
- "fluvio-future 0.3.18",
+ "fluvio-future 0.4.1",
  "fluvio-spu-schema",
  "humantime",
  "schemars",
@@ -1668,17 +1668,10 @@ version = "0.3.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1e2d1fad8e412d44c516add2349a34f6d71d9279b108c8e012325ab17fcbf982"
 dependencies = [
- "async-io",
- "async-std",
- "cfg-if 1.0.0",
- "fluvio-test-derive",
  "fluvio-wasm-timer",
- "futures-lite",
  "log",
- "pin-project",
  "thiserror",
  "tracing",
- "tracing-subscriber",
  "ws_stream_wasm",
 ]
 
@@ -1693,6 +1686,7 @@ dependencies = [
  "async-std",
  "async-trait",
  "cfg-if 1.0.0",
+ "fluvio-test-derive",
  "fluvio-wasm-timer",
  "futures-lite",
  "futures-util",
@@ -2295,7 +2289,7 @@ version = "0.3.1"
 dependencies = [
  "fluvio-connectors-common",
  "fluvio-dataplane-protocol",
- "fluvio-future 0.3.18",
+ "fluvio-future 0.4.1",
  "humantime",
  "reqwest",
  "rstest",
@@ -2555,7 +2549,7 @@ version = "0.2.1"
 dependencies = [
  "anyhow",
  "fluvio-connectors-common",
- "fluvio-future 0.3.18",
+ "fluvio-future 0.4.1",
  "kafka",
  "rdkafka",
  "schemars",
@@ -2572,7 +2566,7 @@ version = "0.2.0"
 dependencies = [
  "anyhow",
  "fluvio-connectors-common",
- "fluvio-future 0.3.18",
+ "fluvio-future 0.4.1",
  "kafka",
  "schemars",
  "serde",
@@ -2786,7 +2780,7 @@ dependencies = [
  "anyhow",
  "async-global-executor",
  "fluvio-connectors-common",
- "fluvio-future 0.3.18",
+ "fluvio-future 0.4.1",
  "rumqttc",
  "rustls 0.20.6",
  "rustls-native-certs 0.6.2",
@@ -3209,7 +3203,7 @@ dependencies = [
  "eyre",
  "fluvio",
  "fluvio-connectors-common",
- "fluvio-future 0.3.18",
+ "fluvio-future 0.4.1",
  "fluvio-model-postgres",
  "once_cell",
  "postgres-protocol 0.6.1",
@@ -3239,7 +3233,7 @@ dependencies = [
  "eyre",
  "fluvio",
  "fluvio-connectors-common",
- "fluvio-future 0.3.18",
+ "fluvio-future 0.4.1",
  "fluvio-model-postgres",
  "once_cell",
  "postgres-protocol 0.6.1",
@@ -4110,7 +4104,7 @@ version = "0.2.1"
 dependencies = [
  "anyhow",
  "fluvio-connectors-common",
- "fluvio-future 0.3.18",
+ "fluvio-future 0.4.1",
  "reqwest",
  "schemars",
  "serde",
@@ -4743,7 +4737,7 @@ version = "1.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
- "cfg-if 1.0.0",
+ "cfg-if 0.1.10",
  "rand 0.8.5",
  "static_assertions",
 ]
