@@ -125,7 +125,7 @@ pub struct CommonSmartModuleOpt {
     /// It only accepts one key:value pair. In order to pass multiple pairs, call this option multiple times.
     ///
     /// Example:
-    /// --smartmodule-parameters key1:value --smartmodyle-parameters key2:value
+    /// --smartmodule-parameters key1:value --smartmodule-parameters key2:value
     #[structopt(
         long,
         parse(try_from_str = parse_key_val),
