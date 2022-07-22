@@ -1,13 +1,21 @@
 use fluvio_connectors_common::git_hash_version;
-use fluvio_connectors_common::opt::{CommonConnectorOpt, Record};
-use fluvio_future::tracing::{debug, info};
+use fluvio_connectors_common::opt::CommonConnectorOpt;
+use fluvio_future::tracing::{error, info};
+use rdkafka::config::ClientConfig;
+use rdkafka::producer::{FutureProducer, FutureRecord};
 use schemars::schema_for;
 use schemars::JsonSchema;
+use std::sync::Arc;
+use std::time::Duration;
 use structopt::StructOpt;
 use tokio_stream::StreamExt;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    // =======================================================
+    // Get raw params
+    // =======================================================
+
     if let Some("metadata") = std::env::args().nth(1).as_deref() {
         let schema = serde_json::json!({
             "name": env!("CARGO_PKG_NAME"),
@@ -18,15 +26,55 @@ async fn main() -> anyhow::Result<()> {
         println!("{}", serde_json::to_string_pretty(&schema).unwrap());
         return Ok(());
     }
-    let opts: KafkaOpt = KafkaOpt::from_args();
-    opts.common.enable_logging();
+    let raw_opts = KafkaOpt::from_args();
+    raw_opts.common.enable_logging();
     info!(
         connector_version = env!("CARGO_PKG_VERSION"),
         git_hash = git_hash_version(),
         "Starting Kafka sink connector",
     );
 
-    opts.execute().await?;
+    // =======================================================
+    // Setup objects and actors based on opts
+    // =======================================================
+
+    // KafkaSinkWorker members need to be inside Arc because it is referenced inside tokio::spawn
+    // That expect things moved inside to be static
+    // An optimization point for this would be to own the runtime (rather than calling tokio::*)
+    // So that runtime::spawn does not need producer to be in Arc
+    let kafka_sink_deps = KafkaSinkDependencies::from_kafka_opt(raw_opts).await?;
+
+    // =======================================================
+    // Streaming sequence starts here
+    // =======================================================
+
+    info!("Starting stream");
+
+    let mut stream = kafka_sink_deps
+        .common_connector_opt
+        .create_consumer_stream()
+        .await?;
+
+    while let Some(Ok(record)) = stream.next().await {
+        // Clone arcs to be sent to async block's scopes
+        let producer = kafka_sink_deps.kafka_producer.clone();
+        let kafka_partition = kafka_sink_deps.kafka_partition.clone();
+        let kafka_topic = kafka_sink_deps.kafka_topic.clone();
+
+        tokio::spawn(async move {
+            let mut kafka_record = FutureRecord::to(kafka_topic.as_str())
+                .payload(record.value())
+                .key(record.key().unwrap_or(&[]));
+            if let Some(kafka_partition) = &(*kafka_partition) {
+                kafka_record = kafka_record.partition(*kafka_partition);
+            }
+            let res = producer.send(kafka_record, Duration::from_secs(0)).await;
+            if let Err(e) = res {
+                error!("Kafka produce {:?}", e)
+            }
+        });
+    }
+
     Ok(())
 }
 
@@ -51,112 +99,70 @@ pub struct KafkaOpt {
     pub common: CommonConnectorOpt,
 }
 
-use rdkafka::config::ClientConfig;
-use rdkafka::producer::{FutureProducer, FutureRecord};
-use std::time::Duration;
-impl KafkaOpt {
-    pub async fn execute(&self) -> anyhow::Result<()> {
+pub struct KafkaSinkDependencies {
+    pub kafka_topic: Arc<String>,
+    pub kafka_partition: Arc<Option<i32>>,
+    pub kafka_producer: Arc<FutureProducer>,
+    pub common_connector_opt: CommonConnectorOpt,
+}
+
+impl KafkaSinkDependencies {
+    async fn from_kafka_opt(opts: KafkaOpt) -> anyhow::Result<KafkaSinkDependencies> {
         use rdkafka::admin::{AdminClient, AdminOptions, NewTopic, TopicReplication};
         use rdkafka::config::FromClientConfig;
-        let kafka_topic = self
-            .kafka_topic
-            .as_ref()
-            .unwrap_or(&self.common.fluvio_topic);
+        let KafkaOpt {
+            kafka_url,
+            kafka_topic,
+            kafka_partition,
+            kafka_option,
+            common: common_connector_opt,
+        } = opts;
 
-        let mut kafka_options: Vec<(String, String)> = Vec::new();
-        for opt in &self.kafka_option {
-            let mut splits = opt.split(':');
-            let (key, value) = (
-                splits.next().unwrap().to_string(),
-                splits.next().unwrap().to_string(),
-            );
-            kafka_options.push((key, value));
-        }
-        info!("kafka_options: {:?}", kafka_options);
+        let kafka_topic = kafka_topic.unwrap_or_else(|| common_connector_opt.fluvio_topic.clone());
 
-        let mut client_config = ClientConfig::new();
-        client_config.set("bootstrap.servers", self.kafka_url.clone());
-        for (key, value) in &kafka_options {
-            client_config.set(key, value);
-        }
+        let client_config = {
+            let mut kafka_options: Vec<(String, String)> = Vec::new();
+            for opt in &kafka_option {
+                let mut splits = opt.split(':');
+                let (key, value) = (
+                    splits.next().unwrap().to_string(),
+                    splits.next().unwrap().to_string(),
+                );
+                kafka_options.push((key, value));
+            }
+            info!("kafka_options: {:?}", kafka_options);
+
+            let mut client_config = ClientConfig::new();
+            for (key, value) in &kafka_options {
+                client_config.set(key, value);
+            }
+            client_config.set("bootstrap.servers", kafka_url.clone());
+            client_config
+        };
+
+        // =======================================================
+        // Prepare topic, ensure it exists before creating producer
+        // =======================================================
 
         let admin = AdminClient::from_config(&client_config)?;
-
-        let new_topic = NewTopic::new(kafka_topic.as_str(), 1, TopicReplication::Fixed(1));
         admin
-            .create_topics(&[new_topic], &AdminOptions::new())
+            .create_topics(
+                &[NewTopic::new(
+                    kafka_topic.as_str(),
+                    1,
+                    TopicReplication::Fixed(1),
+                )],
+                &AdminOptions::new(),
+            )
             .await?;
 
-        let producer: &FutureProducer = &client_config.create().expect("Producer creation error");
+        let kafka_producer = client_config.create().expect("Producer creation error");
 
-        info!("Starting stream");
-        let mut stream = self.common.create_consumer_stream().await?;
-        while let Some(Ok(record)) = stream.next().await {
-            self.send_to_kafka(&record, producer).await?;
-        }
-        Ok(())
-    }
-    pub async fn send_to_kafka(
-        &self,
-        record: &Record,
-        kafka_producer: &FutureProducer,
-    ) -> anyhow::Result<()> {
-        let kafka_topic = self
-            .kafka_topic
-            .as_ref()
-            .unwrap_or(&self.common.fluvio_topic);
-        let mut kafka_record = FutureRecord::to(kafka_topic.as_str())
-            .payload(record.value())
-            .key(record.key().unwrap_or(&[]));
-        if let Some(kafka_partition) = self.kafka_partition {
-            kafka_record = kafka_record.partition(kafka_partition);
-        }
-        let res = kafka_producer
-            .send(kafka_record, Duration::from_secs(0))
-            .await;
-        debug!("Kafka produce {:?}", res);
-        Ok(())
+        Ok(KafkaSinkDependencies {
+            kafka_topic: Arc::new(kafka_topic),
+            kafka_partition: Arc::new(kafka_partition),
+            kafka_producer: Arc::new(kafka_producer),
+            common_connector_opt,
+        })
     }
 }
-/*
-use kafka::client::{KafkaClient, ProduceMessage, RequiredAcks};
-use std::time::Duration;
-
-impl KafkaOpt {
-    pub async fn execute(&self) -> anyhow::Result<()> {
-        let mut stream = self.common.create_consumer_stream().await?;
-        let mut kafka_client = KafkaClient::new(vec![self.kafka_url.clone()]);
-        //let mut kafka_client = KafkaClient::new(vec![self.kafka_url.clone()]);
-        let _ = kafka_client.load_metadata_all()?;
-
-        info!("Starting stream");
-        while let Some(Ok(record)) = stream.next().await {
-            let _ = self.send_to_kafka(&record, &mut kafka_client).await?;
-        }
-        Ok(())
-    }
-    pub async fn send_to_kafka(
-        &self,
-        record: &Record,
-        kafka_client: &mut KafkaClient,
-    ) -> anyhow::Result<()> {
-        let kafka_topic = self
-            .kafka_topic
-            .as_ref()
-            .unwrap_or(&self.common.fluvio_topic);
-        let text = String::from_utf8_lossy(record.value());
-        debug!("Sending {:?}, to kafka", text);
-        let msg = ProduceMessage::new(
-            kafka_topic,
-            self.common.fluvio_partition,
-            record.key(),
-            Some(record.value()),
-        );
-        let req = vec![msg];
-        let resp =
-            kafka_client.produce_messages(RequiredAcks::All, Duration::from_millis(10000), req)?;
-        debug!("Sent {:?}", resp);
-        Ok(())
-    }
-}
-*/
