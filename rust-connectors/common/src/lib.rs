@@ -5,6 +5,7 @@ pub mod fluvio {
 
 pub(crate) mod error;
 pub mod opt;
+pub mod config;
 
 pub fn git_hash_version() -> &'static str {
     env!("GIT_HASH")
