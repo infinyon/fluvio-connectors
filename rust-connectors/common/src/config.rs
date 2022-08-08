@@ -82,8 +82,8 @@ impl ConnectorConfig {
 
 #[test]
 fn full_yaml_test() {
-    use pretty_assertions::assert_eq;
-    let connector_cfg = ConnectorConfig::from_file("test-data/connectors/full-config.yaml")
+    //use pretty_assertions::assert_eq;
+    let _connector_cfg = ConnectorConfig::from_file("test-data/connectors/full-config.yaml")
         .expect("Failed to load test config");
     /*
      * TODO; Check that this matches.
@@ -125,7 +125,7 @@ fn full_yaml_test() {
 }
 #[test]
 fn simple_yaml_test() {
-    let connector_cfg = ConnectorConfig::from_file("test-data/connectors/simple.yaml")
+    let _connector_cfg = ConnectorConfig::from_file("test-data/connectors/simple.yaml")
         .expect("Failed to load test config");
 }
 
