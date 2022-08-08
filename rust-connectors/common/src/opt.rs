@@ -107,7 +107,7 @@ pub struct CommonSmartModuleOpt {
 
     /// Path of smartmodule used as a pre-produce step
     /// if using source connector. If using sink connector this smartmodule
-    /// will be used in consumer.    
+    /// will be used in consumer.
     ///
     /// If the value is not a path to a file, it will be used
     /// to lookup a SmartModule by name
@@ -129,7 +129,7 @@ pub struct CommonSmartModuleOpt {
     #[structopt(
         long,
         parse(try_from_str = parse_key_val),
-        requires = "smartmodule_group", 
+        requires = "smartmodule_group",
         number_of_values = 1
     )]
     pub smartmodule_parameters: Option<Vec<(String, String)>>,

@@ -1,26 +1,18 @@
-
-//use std::sync::Arc;
-
-use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
-use std::path::PathBuf;
+use std::convert::Infallible;
+use std::fmt;
 use std::fs::File;
 use std::io::Read;
+use std::ops::Deref;
+use std::path::PathBuf;
+use std::str::FromStr;
 use std::time::Duration;
-//use std::str::FromStr;
+
+use serde::{Deserialize, Serialize};
+
 use bytesize::ByteSize;
 
 use fluvio::Compression;
-
-/*
-use fluvio::metadata::connector::{
-    ManagedConnectorSpec, SecretString, ManagedConnectorParameterValue,
-    ManagedConnectorParameterValueInner,
-};
-use fluvio_extension_common::Terminal;
-use fluvio_extension_common::COMMAND_TEMPLATE;
-*/
-
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct ConnectorConfig {
@@ -32,12 +24,10 @@ pub struct ConnectorConfig {
     pub(crate) version: String,
 
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
-    parameters: BTreeMap<String, String>,
-    //parameters: BTreeMap<String, ManagedConnectorParameterValue>,
+    parameters: BTreeMap<String, ManagedConnectorParameterValue>,
 
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
-    secrets: BTreeMap<String, String>,
-    //secrets: BTreeMap<String, SecretString>,
+    secrets: BTreeMap<String, SecretString>,
 
     #[serde(default, skip_serializing_if = "Option::is_none")]
     producer: Option<ProducerParameters>,
@@ -82,8 +72,7 @@ impl ConnectorConfig {
         // serde support for BatchSize serializes and deserializes as bytes.
         if let Some(ref mut producer) = &mut connector_config.producer {
             if let Some(batch_size_string) = &producer.batch_size_string {
-                let batch_size = batch_size_string
-                    .parse::<ByteSize>()?;
+                let batch_size = batch_size_string.parse::<ByteSize>()?;
                 producer.batch_size = Some(batch_size);
             }
         }
@@ -91,122 +80,13 @@ impl ConnectorConfig {
     }
 }
 
-/*
-impl From<ConnectorConfig> for ManagedConnectorSpec {
-    fn from(config: ConnectorConfig) -> ManagedConnectorSpec {
-        let mut parameters = config.parameters;
-
-        // Producer arguments are prefixed with `producer`
-        if let Some(producer) = config.producer {
-            if let Some(linger) = producer.linger {
-                let linger = humantime::format_duration(linger).to_string();
-                parameters.insert("producer-linger".to_string(), linger.into());
-            }
-            if let Some(compression) = producer.compression {
-                let compression = format!("{:?}", compression).to_lowercase();
-                parameters.insert("producer-compression".to_string(), compression.into());
-            }
-            if let Some(batch_size) = producer.batch_size {
-                let batch_size = format!("{}", batch_size);
-                parameters.insert("producer-batch-size".to_string(), batch_size.into());
-            }
-        }
-
-        // Consumer arguments are prefixed with `consumer`.
-        if let Some(consumer) = config.consumer {
-            if let Some(partition) = consumer.partition {
-                let partition = format!("{}", partition);
-                parameters.insert("consumer-partition".to_string(), partition.into());
-            }
-        }
-        ManagedConnectorSpec {
-            name: config.name,
-            type_: config.type_,
-            topic: config.topic,
-            parameters,
-            secrets: config.secrets,
-            version: config.version.into(),
-        }
-    }
-}
-impl From<ManagedConnectorSpec> for ConnectorConfig {
-    fn from(spec: ManagedConnectorSpec) -> ConnectorConfig {
-        let mut parameters = spec.parameters;
-        let mut producer: ProducerParameters = ProducerParameters {
-            linger: None,
-            compression: None,
-            batch_size_string: None,
-            batch_size: None,
-        };
-        if let Some(ManagedConnectorParameterValue(ManagedConnectorParameterValueInner::String(
-            linger,
-        ))) = parameters.remove("producer-linger")
-        {
-            producer.linger = humantime::parse_duration(&linger).ok();
-        }
-        if let Some(ManagedConnectorParameterValue(ManagedConnectorParameterValueInner::String(
-            compression,
-        ))) = parameters.remove("producer-compression")
-        {
-            producer.compression = Compression::from_str(&compression).ok();
-        }
-        if let Some(ManagedConnectorParameterValue(ManagedConnectorParameterValueInner::String(
-            batch_size_string,
-        ))) = parameters.remove("producer-batch-size")
-        {
-            let batch_size = batch_size_string.parse::<ByteSize>().ok();
-            producer.batch_size_string = Some(batch_size_string);
-            producer.batch_size = batch_size;
-        }
-
-        let producer = if producer.linger.is_none()
-            && producer.compression.is_none()
-            && producer.batch_size_string.is_none()
-        {
-            None
-        } else {
-            Some(producer)
-        };
-
-        let consumer = if let Some(ManagedConnectorParameterValue(
-            ManagedConnectorParameterValueInner::String(partition),
-        )) = parameters.remove("consumer-partition")
-        {
-            Some(ConsumerParameters {
-                partition: partition.parse::<i32>().ok(),
-            })
-        } else {
-            None
-        };
-        ConnectorConfig {
-            name: spec.name,
-            type_: spec.type_,
-            topic: spec.topic,
-            version: spec.version.to_string(),
-            parameters,
-            secrets: spec.secrets,
-            producer,
-            consumer,
-        }
-    }
-}
-*/
-/*
-#[test]
-fn full_yaml_in_and_out() {
-    use pretty_assertions::assert_eq;
-    let connector_input = ConnectorConfig::from_file("test-data/connectors/full-config.yaml")
-        .expect("Failed to load test config");
-    let spec_middle: ManagedConnectorSpec = connector_input.clone().into();
-    let connector_output: ConnectorConfig = spec_middle.into();
-    assert_eq!(connector_input, connector_output);
-}
-
 #[test]
 fn full_yaml_test() {
     use pretty_assertions::assert_eq;
     let connector_cfg = ConnectorConfig::from_file("test-data/connectors/full-config.yaml")
         .expect("Failed to load test config");
+    /*
+     * TODO; Check that this matches.
     let out: ManagedConnectorSpec = connector_cfg.into();
     let expected_params = BTreeMap::from([
         ("consumer-partition".to_string(), "10".to_string().into()),
@@ -241,15 +121,12 @@ fn full_yaml_test() {
         ),
     ]);
     assert_eq!(out.parameters, expected_params);
+    */
 }
-
 #[test]
 fn simple_yaml_test() {
     let connector_cfg = ConnectorConfig::from_file("test-data/connectors/simple.yaml")
         .expect("Failed to load test config");
-    let out: ManagedConnectorSpec = connector_cfg.into();
-    let expected_params = BTreeMap::new();
-    assert_eq!(out.parameters, expected_params);
 }
 
 #[test]
@@ -257,19 +134,207 @@ fn error_yaml_tests() {
     let connector_cfg = ConnectorConfig::from_file("test-data/connectors/error-linger.yaml")
         .expect_err("This yaml should error");
     #[cfg(unix)]
-    assert_eq!("ConnectorConfig(Message(\"invalid value: string \\\"1\\\", expected a duration\", Some(Pos { marker: Marker { index: 118, line: 8, col: 10 }, path: \"producer.linger\" })))", format!("{:?}", connector_cfg));
+    assert_eq!("Message(\"invalid value: string \\\"1\\\", expected a duration\", Some(Pos { marker: Marker { index: 118, line: 8, col: 10 }, path: \"producer.linger\" }))", format!("{:?}", connector_cfg));
     let connector_cfg = ConnectorConfig::from_file("test-data/connectors/error-compression.yaml")
         .expect_err("This yaml should error");
     #[cfg(unix)]
-    assert_eq!("ConnectorConfig(Message(\"unknown variant `gzipaoeu`, expected one of `none`, `gzip`, `snappy`, `lz4`\", Some(Pos { marker: Marker { index: 123, line: 8, col: 15 }, path: \"producer.compression\" })))", format!("{:?}", connector_cfg));
+    assert_eq!("Message(\"unknown variant `gzipaoeu`, expected one of `none`, `gzip`, `snappy`, `lz4`\", Some(Pos { marker: Marker { index: 123, line: 8, col: 15 }, path: \"producer.compression\" }))", format!("{:?}", connector_cfg));
 
     let connector_cfg = ConnectorConfig::from_file("test-data/connectors/error-batchsize.yaml")
         .expect_err("This yaml should error");
     #[cfg(unix)]
-    assert_eq!("Other(\"couldn't parse \\\"aoeu\\\" into a known SI unit, couldn't parse unit of \\\"aoeu\\\"\")", format!("{:?}", connector_cfg));
+    assert_eq!(
+        "\"couldn't parse \\\"aoeu\\\" into a known SI unit, couldn't parse unit of \\\"aoeu\\\"\"",
+        format!("{:?}", connector_cfg)
+    );
     let connector_cfg = ConnectorConfig::from_file("test-data/connectors/error-version.yaml")
         .expect_err("This yaml should error");
     #[cfg(unix)]
-    assert_eq!("ConnectorConfig(Message(\"missing field `version`\", Some(Pos { marker: Marker { index: 4, line: 1, col: 4 }, path: \".\" })))", format!("{:?}", connector_cfg));
+    assert_eq!("Message(\"missing field `version`\", Some(Pos { marker: Marker { index: 4, line: 1, col: 4 }, path: \".\" }))", format!("{:?}", connector_cfg));
 }
-*/
+
+#[derive(Default, PartialEq, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+
+/// Wrapper for string that does not reveal its internal
+/// content in its display and debug implementation
+pub struct SecretString(String);
+
+impl fmt::Debug for SecretString {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("[REDACTED]")
+    }
+}
+
+impl fmt::Display for SecretString {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str("[REDACTED]")
+    }
+}
+
+impl FromStr for SecretString {
+    type Err = Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self(s.into()))
+    }
+}
+
+impl From<String> for SecretString {
+    fn from(s: String) -> Self {
+        Self(s)
+    }
+}
+
+impl Deref for SecretString {
+    type Target = str;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+#[derive(PartialEq, Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase", untagged)]
+pub enum ManagedConnectorParameterValue {
+    Vec(Vec<String>),
+    Map(BTreeMap<String, String>),
+    String(String),
+}
+
+impl Default for ManagedConnectorParameterValue {
+    fn default() -> Self {
+        Self::Vec(Vec::new())
+    }
+}
+use serde::de::{self, MapAccess, SeqAccess, Visitor};
+use serde::Deserializer;
+struct ParameterValueVisitor;
+impl<'de> Deserialize<'de> for ManagedConnectorParameterValue {
+    fn deserialize<D>(deserializer: D) -> Result<ManagedConnectorParameterValue, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        deserializer.deserialize_any(ParameterValueVisitor)
+    }
+}
+
+impl<'de> Visitor<'de> for ParameterValueVisitor {
+    type Value = ManagedConnectorParameterValue;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str("string, map or sequence")
+    }
+
+    fn visit_none<E>(self) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        self.visit_str("null")
+    }
+    fn visit_unit<E>(self) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        self.visit_str("null")
+    }
+
+    fn visit_f64<E>(self, v: f64) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        self.visit_str(&v.to_string())
+    }
+    fn visit_bool<E>(self, v: bool) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        self.visit_str(&v.to_string())
+    }
+
+    fn visit_i64<E>(self, v: i64) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        self.visit_str(&v.to_string())
+    }
+
+    fn visit_u64<E>(self, v: u64) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        self.visit_str(&v.to_string())
+    }
+
+    fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        Ok(ManagedConnectorParameterValue::String(value.to_string()))
+    }
+
+    fn visit_map<M>(self, mut map: M) -> Result<Self::Value, M::Error>
+    where
+        M: MapAccess<'de>,
+    {
+        let mut inner = BTreeMap::new();
+        while let Some((key, value)) = map.next_entry::<String, String>()? {
+            inner.insert(key.clone(), value.clone());
+        }
+
+        Ok(ManagedConnectorParameterValue::Map(inner))
+    }
+
+    fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+    where
+        A: SeqAccess<'de>,
+    {
+        let mut vec_inner = Vec::new();
+        while let Some(param) = seq.next_element::<String>()? {
+            vec_inner.push(param);
+        }
+        Ok(ManagedConnectorParameterValue::Vec(vec_inner))
+    }
+}
+
+#[test]
+fn deserialize_test() {
+    let yaml = r#"
+name: kafka-out
+parameters:
+  param_1: "param_str"
+  param_2:
+   - item_1
+   - item_2
+   - 10
+   - 10.0
+   - true
+   - On
+   - Off
+   - null
+  param_3:
+    arg1: val1
+    arg2: 10
+    arg3: -10
+    arg4: false
+    arg5: 1.0
+    arg6: null
+    arg7: On
+    arg8: Off
+  param_4: 10
+  param_5: 10.0
+  param_6: -10
+  param_7: True
+  param_8: 0xf1
+  param_9: null
+  param_10: 12.3015e+05
+  param_11: [On, Off]
+  param_12: true
+secrets: {}
+topic: poc1
+type: kafka-sink
+version: latest
+"#;
+    let connector_spec: ConnectorConfig =
+        serde_yaml::from_str(yaml).expect("Failed to deserialize");
+    println!("{:?}", connector_spec);
+}
