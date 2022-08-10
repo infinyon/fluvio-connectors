@@ -14,26 +14,26 @@ use bytesize::ByteSize;
 
 use fluvio::Compression;
 
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Clone, PartialEq, Default, Deserialize, Serialize)]
 pub struct ConnectorConfig {
-    name: String,
+    pub name: String,
     #[serde(rename = "type")]
-    type_: String,
+    pub type_: String,
 
-    pub(crate) topic: String,
-    pub(crate) version: String,
-
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
-    parameters: BTreeMap<String, ManagedConnectorParameterValue>,
+    pub topic: String,
+    pub version: String,
 
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
-    secrets: BTreeMap<String, SecretString>,
+    pub parameters: BTreeMap<String, ManagedConnectorParameterValue>,
+
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub secrets: BTreeMap<String, SecretString>,
 
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    producer: Option<ProducerParameters>,
+    pub producer: Option<ProducerParameters>,
 
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    consumer: Option<ConsumerParameters>,
+    pub consumer: Option<ConsumerParameters>,
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
