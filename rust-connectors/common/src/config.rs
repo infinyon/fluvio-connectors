@@ -14,13 +14,17 @@ use bytesize::ByteSize;
 
 use fluvio::Compression;
 
+pub use crate::error::ConnectorLoadError;
+
 #[derive(Debug, Clone, PartialEq, Default, Deserialize, Serialize)]
 pub struct ConnectorConfig {
     pub name: String,
+
     #[serde(rename = "type")]
     pub type_: String,
 
     pub topic: String,
+
     pub version: String,
 
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
@@ -62,7 +66,7 @@ pub struct ProducerParameters {
 }
 
 impl ConnectorConfig {
-    pub fn from_file<P: Into<PathBuf>>(path: P) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn from_file<P: Into<PathBuf>>(path: P) -> Result<Self, ConnectorLoadError> {
         let mut file = File::open(path.into())?;
         let mut contents = String::new();
         file.read_to_string(&mut contents)?;
@@ -72,7 +76,7 @@ impl ConnectorConfig {
         // serde support for BatchSize serializes and deserializes as bytes.
         if let Some(ref mut producer) = &mut connector_config.producer {
             if let Some(batch_size_string) = &producer.batch_size_string {
-                let batch_size = batch_size_string.parse::<ByteSize>()?;
+                let batch_size = batch_size_string.parse::<ByteSize>().map_err(|e| ConnectorLoadError::ByteSizeParse(e))?;
                 producer.batch_size = Some(batch_size);
             }
         }
