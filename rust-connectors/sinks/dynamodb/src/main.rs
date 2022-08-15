@@ -154,7 +154,7 @@ impl DynamoDbOpt {
         }
         let primary_key = column_names.first().unwrap().to_string();
 
-        if !column_names.contains(&&*primary_key.as_str()) {
+        if !column_names.contains(&primary_key.as_str()) {
             panic!("Key Schema must be a column");
         }
 
