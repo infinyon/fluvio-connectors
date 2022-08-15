@@ -16,7 +16,7 @@ use fluvio::Compression;
 
 pub use crate::error::ConnectorLoadError;
 
-#[derive(Debug, Clone, PartialEq, Default, Deserialize, Serialize)]
+#[derive(Debug, Clone, Default, Deserialize, Serialize)]
 pub struct ConnectorConfig {
     pub name: String,
 
@@ -40,13 +40,13 @@ pub struct ConnectorConfig {
     pub consumer: Option<ConsumerParameters>,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct ConsumerParameters {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     partition: Option<i32>,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct ProducerParameters {
     #[serde(with = "humantime_serde")]
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -76,7 +76,9 @@ impl ConnectorConfig {
         // serde support for BatchSize serializes and deserializes as bytes.
         if let Some(ref mut producer) = &mut connector_config.producer {
             if let Some(batch_size_string) = &producer.batch_size_string {
-                let batch_size = batch_size_string.parse::<ByteSize>().map_err(|e| ConnectorLoadError::ByteSizeParse(e))?;
+                let batch_size = batch_size_string
+                    .parse::<ByteSize>()
+                    .map_err(ConnectorLoadError::ByteSizeParse)?;
                 producer.batch_size = Some(batch_size);
             }
         }
@@ -157,9 +159,8 @@ fn error_yaml_tests() {
     assert_eq!("Message(\"missing field `version`\", Some(Pos { marker: Marker { index: 4, line: 1, col: 4 }, path: \".\" }))", format!("{:?}", connector_cfg));
 }
 
-#[derive(Default, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(Default, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-
 /// Wrapper for string that does not reveal its internal
 /// content in its display and debug implementation
 pub struct SecretString(String);
@@ -197,7 +198,7 @@ impl Deref for SecretString {
     }
 }
 
-#[derive(PartialEq, Clone, Debug, Serialize)]
+#[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase", untagged)]
 pub enum ManagedConnectorParameterValue {
     Vec(Vec<String>),
