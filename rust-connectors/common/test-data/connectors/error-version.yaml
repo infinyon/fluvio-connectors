@@ -2,4 +2,3 @@ name: my-test-mqtt
 type: mqtt
 topic: my-mqtt
 create_topic: false
-direction: source

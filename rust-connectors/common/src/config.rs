@@ -143,11 +143,11 @@ fn error_yaml_tests() {
     let connector_cfg = ConnectorConfig::from_file("test-data/connectors/error-linger.yaml")
         .expect_err("This yaml should error");
     #[cfg(unix)]
-    assert_eq!("Yaml(Message(\"invalid value: string \\\"1\\\", expected a duration\", Some(Pos { marker: Marker { index: 118, line: 8, col: 10 }, path: \"producer.linger\" })))", format!("{:?}", connector_cfg));
+    assert_eq!("Yaml(Message(\"invalid value: string \\\"1\\\", expected a duration\", Some(Pos { marker: Marker { index: 100, line: 7, col: 10 }, path: \"producer.linger\" })))", format!("{:?}", connector_cfg));
     let connector_cfg = ConnectorConfig::from_file("test-data/connectors/error-compression.yaml")
         .expect_err("This yaml should error");
     #[cfg(unix)]
-    assert_eq!("Yaml(Message(\"unknown variant `gzipaoeu`, expected one of `none`, `gzip`, `snappy`, `lz4`\", Some(Pos { marker: Marker { index: 123, line: 8, col: 15 }, path: \"producer.compression\" })))", format!("{:?}", connector_cfg));
+    assert_eq!("Yaml(Message(\"unknown variant `gzipaoeu`, expected one of `none`, `gzip`, `snappy`, `lz4`\", Some(Pos { marker: Marker { index: 105, line: 7, col: 15 }, path: \"producer.compression\" })))", format!("{:?}", connector_cfg));
 
     let connector_cfg = ConnectorConfig::from_file("test-data/connectors/error-batchsize.yaml")
         .expect_err("This yaml should error");
