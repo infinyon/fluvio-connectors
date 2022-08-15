@@ -140,23 +140,23 @@ fn error_yaml_tests() {
     let connector_cfg = ConnectorConfig::from_file("test-data/connectors/error-linger.yaml")
         .expect_err("This yaml should error");
     #[cfg(unix)]
-    assert_eq!("Message(\"invalid value: string \\\"1\\\", expected a duration\", Some(Pos { marker: Marker { index: 118, line: 8, col: 10 }, path: \"producer.linger\" }))", format!("{:?}", connector_cfg));
+    assert_eq!("Yaml(Message(\"invalid value: string \\\"1\\\", expected a duration\", Some(Pos { marker: Marker { index: 118, line: 8, col: 10 }, path: \"producer.linger\" })))", format!("{:?}", connector_cfg));
     let connector_cfg = ConnectorConfig::from_file("test-data/connectors/error-compression.yaml")
         .expect_err("This yaml should error");
     #[cfg(unix)]
-    assert_eq!("Message(\"unknown variant `gzipaoeu`, expected one of `none`, `gzip`, `snappy`, `lz4`\", Some(Pos { marker: Marker { index: 123, line: 8, col: 15 }, path: \"producer.compression\" }))", format!("{:?}", connector_cfg));
+    assert_eq!("Yaml(Message(\"unknown variant `gzipaoeu`, expected one of `none`, `gzip`, `snappy`, `lz4`\", Some(Pos { marker: Marker { index: 123, line: 8, col: 15 }, path: \"producer.compression\" })))", format!("{:?}", connector_cfg));
 
     let connector_cfg = ConnectorConfig::from_file("test-data/connectors/error-batchsize.yaml")
         .expect_err("This yaml should error");
     #[cfg(unix)]
     assert_eq!(
-        "\"couldn't parse \\\"aoeu\\\" into a known SI unit, couldn't parse unit of \\\"aoeu\\\"\"",
+        "ByteSizeParse(\"couldn't parse \\\"aoeu\\\" into a known SI unit, couldn't parse unit of \\\"aoeu\\\"\")",
         format!("{:?}", connector_cfg)
     );
     let connector_cfg = ConnectorConfig::from_file("test-data/connectors/error-version.yaml")
         .expect_err("This yaml should error");
     #[cfg(unix)]
-    assert_eq!("Message(\"missing field `version`\", Some(Pos { marker: Marker { index: 4, line: 1, col: 4 }, path: \".\" }))", format!("{:?}", connector_cfg));
+    assert_eq!("Yaml(Message(\"missing field `version`\", Some(Pos { marker: Marker { index: 4, line: 1, col: 4 }, path: \".\" })))", format!("{:?}", connector_cfg));
 }
 
 #[derive(Default, Clone, Serialize, Deserialize)]
