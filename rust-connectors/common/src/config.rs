@@ -16,7 +16,8 @@ use fluvio::Compression;
 
 pub use crate::error::ConnectorLoadError;
 
-#[derive(Debug, Clone, Default, Deserialize, Serialize)]
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Debug, Clone, Default, PartialEq, Deserialize, Serialize)]
 pub struct ConnectorConfig {
     pub name: String,
 
@@ -40,13 +41,15 @@ pub struct ConnectorConfig {
     pub consumer: Option<ConsumerParameters>,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct ConsumerParameters {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     partition: Option<i32>,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct ProducerParameters {
     #[serde(with = "humantime_serde")]
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -159,7 +162,8 @@ fn error_yaml_tests() {
     assert_eq!("Yaml(Message(\"missing field `version`\", Some(Pos { marker: Marker { index: 4, line: 1, col: 4 }, path: \".\" })))", format!("{:?}", connector_cfg));
 }
 
-#[derive(Default, Clone, Serialize, Deserialize)]
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Default, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 /// Wrapper for string that does not reveal its internal
 /// content in its display and debug implementation
@@ -198,7 +202,8 @@ impl Deref for SecretString {
     }
 }
 
-#[derive(Clone, Debug, Serialize)]
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase", untagged)]
 pub enum ManagedConnectorParameterValue {
     Vec(Vec<String>),
