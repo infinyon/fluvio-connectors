@@ -445,6 +445,15 @@ jobs:
         run: |
           make -C ./rust-connectors/sinks/postgres test-dev
 
+  examples:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: "Start postgres instance"
+        run: |
+          make -C ./examples/github-stars test
+
+
 
   ## Job that follows the success of all required jobs in this workflow.
   ## Used by Bors to detect that all required jobs have completed successfully

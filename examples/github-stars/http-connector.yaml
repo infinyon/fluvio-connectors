@@ -1,8 +1,8 @@
 name: github-stars-input
-type: http
+type: http-source
+version: latest
 topic: github-stars
 create_topic: true
-direction: source
 parameters:
   endpoint: 'https://api.github.com/repos/infinyon/fluvio'
   method: GET

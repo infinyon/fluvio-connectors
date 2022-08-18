@@ -20,11 +20,12 @@ slack-connector: smart-module-create
 http-connector: smart-module-create
 	fluvio connector create -c ./http-connector.yaml
 
-
-
 clean:
 	fluvio sm delete $(GH_SM_NAME) || true
 	fluvio sm delete $(SLACK_SM_NAME) || true
 	fluvio connector delete github-stars-output || true
 	fluvio connector delete github-stars-input || true
 	fluvio topic delete github-stars || true
+
+
+test: slack-connector http-connector clean
