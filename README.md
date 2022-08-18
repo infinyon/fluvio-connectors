@@ -71,11 +71,13 @@
 
 ## Examples (examples/)
 
-| Example                   | Language(s) | Types  | Protocols/Description   |
-| :---                      | :---        | :----: | :---                    |
-| [python-client-connector] | Python      | Source | Source random cat facts |
+| Example                   | Language(s) | Types          | Protocols/Description   | Status |
+| :---                      | :---        | :----:         | :---                    | :---   |
+| [python-client-connector] | Python      | Source         | Source random cat facts | Alpha  |
+| [github-stars]            | Rust        | Source and Sink| Uses the `http-source` connector to fetch github stars from the github API with an `aggregate` smartmodule. The `slack-sink` connector consumes the same fluvio topic sends changes to a slack channel via a `filter_map` smartmodule. | Beta |
 
 [python-client-connector]: https://github.com/infinyon/fluvio-connectors/tree/main/examples/python-client-connector
+[github-stars]: https://github.com/infinyon/fluvio-connectors/tree/main/examples/github-stars
 
 ## Mocks (rust-connectors/utils/mocks)
 
