@@ -1,12 +1,10 @@
 use anyhow::Context;
 use bytesize::ByteSize;
-use fluvio_spu_schema::server::stream_fetch::SmartModuleContextData;
 use humantime::parse_duration;
 use schemars::{schema_for, JsonSchema};
 use std::{collections::BTreeMap, time::Duration};
 use structopt::clap::AppSettings;
 use structopt::StructOpt;
-use tokio_stream::Stream;
 
 pub use fluvio::{
     consumer,
@@ -203,6 +201,7 @@ impl CommonConnectorOpt {
             &self.smartmodule_common.aggregate,
         ) {
             (Some(smartmodule_name), _, _, _, _, _) => {
+                use fluvio_spu_schema::server::stream_fetch::SmartModuleContextData;
                 let context = match &self.smartmodule_common.aggregate_initial_value {
                     Some(initial_value) => SmartModuleContextData::Aggregate {
                         accumulator: initial_value.as_bytes().to_vec(),
@@ -277,7 +276,7 @@ impl CommonConnectorOpt {
 
     pub async fn create_consumer_stream(
         &self,
-    ) -> anyhow::Result<impl Stream<Item = Result<Record, ErrorCode>>> {
+    ) -> anyhow::Result<impl tokio_stream::Stream<Item = Result<Record, ErrorCode>>> {
         let fluvio = fluvio::Fluvio::connect().await?;
         let params = self.smartmodule_parameters().into();
         let wasm_invocation: Option<SmartModuleInvocation> = match (
@@ -289,6 +288,7 @@ impl CommonConnectorOpt {
             &self.smartmodule_common.aggregate,
         ) {
             (Some(smartmodule), _, _, _, _, _) => {
+                use fluvio_spu_schema::server::stream_fetch::SmartModuleContextData;
                 let context = match &self.smartmodule_common.aggregate_initial_value {
                     Some(initial_value) => SmartModuleContextData::Aggregate {
                         accumulator: initial_value.as_bytes().to_vec(),
@@ -343,7 +343,7 @@ impl CommonConnectorOpt {
 }
 
 impl CommonConnectorOpt {
-    fn smartmodule_parameters(&self) -> BTreeMap<String, String> {
+    pub fn smartmodule_parameters(&self) -> BTreeMap<String, String> {
         self.smartmodule_common
             .smartmodule_parameters
             .clone()

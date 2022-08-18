@@ -64,7 +64,6 @@ jobs:
         if: ${{ matrix.check == 'clippy' }}
         run: cargo clippy --all-targets -- -D warnings
 
-
   build_connector_bins:
     name:  Build binary ${{ matrix.connector-name }} for ${{ matrix.rust-target }} on (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
@@ -470,6 +469,21 @@ jobs:
       - name: "Start postgres instance"
         run: |
           make -C ./examples/github-stars test
+
+  check-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Rust stable
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          components: clippy
+          target: x86_64-pc-windows-msvc
+      - name: Cargo windows with no-default-features
+        run: |
+          cargo check -p fluvio-connectors-common --no-default-features
 
 
 
