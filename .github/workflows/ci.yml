@@ -32,7 +32,7 @@ jobs:
         os: [ubuntu-latest]
         rust: [stable]
         rust-target: [x86_64-unknown-linux-gnu]
-        check: [test, check, fmt, clippy, windows]
+        check: [test, check, fmt, clippy]
     env:
       RUST_BACKTRACE: full
       RUSTV: ${{ matrix.rust }}
@@ -63,13 +63,6 @@ jobs:
       - name: Cargo clippy
         if: ${{ matrix.check == 'clippy' }}
         run: cargo clippy --all-targets -- -D warnings
-
-      - name: Cargo windows
-        if: ${{ matrix.check == 'windows' }}
-        run: |
-          rustup target add x86_64-pc-windows-gnu
-          cargo check -p fluvio-connectors-common --target x86_64-pc-windows-gnu --no-default-features
-
 
   build_connector_bins:
     name:  Build binary ${{ matrix.connector-name }} for ${{ matrix.rust-target }} on (${{ matrix.os }})
@@ -476,6 +469,21 @@ jobs:
       - name: "Start postgres instance"
         run: |
           make -C ./examples/github-stars test
+
+  check-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Rust stable
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          components: clippy
+          target: x86_64-pc-windows-msvc
+      - name: Cargo windows with no-default-features
+        run: |
+          cargo check -p fluvio-connectors-common --no-default-features
 
 
 
