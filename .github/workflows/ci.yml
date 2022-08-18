@@ -32,7 +32,7 @@ jobs:
         os: [ubuntu-latest]
         rust: [stable]
         rust-target: [x86_64-unknown-linux-gnu]
-        check: [test, check, fmt, clippy]
+        check: [test, check, fmt, clippy, windows]
     env:
       RUST_BACKTRACE: full
       RUSTV: ${{ matrix.rust }}
@@ -63,6 +63,12 @@ jobs:
       - name: Cargo clippy
         if: ${{ matrix.check == 'clippy' }}
         run: cargo clippy --all-targets -- -D warnings
+
+      - name: Cargo windows
+        if: ${{ matrix.check == 'windows' }}
+        run: |
+          rustup target add x86_64-pc-windows-gnu
+          cargo check -p fluvio-connectors-common --target x86_64-pc-windows-gnu --no-default-features
 
 
   build_connector_bins:
