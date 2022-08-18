@@ -448,6 +448,18 @@ jobs:
   examples:
     runs-on: ubuntu-latest
     steps:
+      - uses: AbsaOSS/k3d-action@v1.5.0
+        name: "Create fluvio k3d Cluster"
+        with:
+          cluster-name: "fluvio"
+          args: --timeout 5m
+      - name: Sleep 20 to ensure k3d cluster is ready
+        run: sleep 20
+      - name: Install Fluvio Local Cluster
+        uses: infinyon/fluvio@master
+        with:
+          cluster-type: k3d
+          version: latest
       - uses: actions/checkout@v3
       - name: Install Rust stable
         uses: actions-rs/toolchain@v1
