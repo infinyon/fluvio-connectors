@@ -1,7 +1,11 @@
 [package]
 name = "fluvio-connectors-common"
 version = "0.1.0"
-edition = "2018"
+edition = "2021"
+license = "Apache-2.0"
+authors = ["Fluvio Contributors <team@fluvio.io>"]
+repository = "https://github.com/infinyon/fluvio-connectors"
+description = "The common-utils crate to use when building a fluvio connector in rust"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
