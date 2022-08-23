@@ -12,7 +12,7 @@ use k8_types::{
     Env, InputK8Obj, LabelProvider, LabelSelector, TemplateMeta, TemplateSpec,
 };
 
-const DEFAULT_CONNECTOR_NAME: &'static str = "fluvio-connector";
+const DEFAULT_CONNECTOR_NAME: &str = "fluvio-connector";
 
 #[tokio::main]
 async fn main() {
