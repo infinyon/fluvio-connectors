@@ -9,7 +9,7 @@ use k8_types::{
         ConfigMapVolumeSource, ContainerSpec, ImagePullPolicy, KeyToPath, PodSecurityContext,
         PodSpec, VolumeMount, VolumeSpec,
     },
-    Env, InputK8Obj, LabelProvider, LabelSelector, TemplateMeta, TemplateSpec,
+    Env, InputK8Obj, InputObjectMeta, LabelProvider, LabelSelector, TemplateMeta, TemplateSpec,
 };
 
 const DEFAULT_CONNECTOR_NAME: &str = "fluvio-connector";
@@ -21,35 +21,96 @@ async fn main() {
 }
 
 #[derive(Debug, Parser)]
-pub struct ConfigOpt {
+pub enum ConfigOpt {
+    Apply(ApplyOpt),
+    Delete(DeleteOpt),
+    Print(PrintOpt),
+}
+
+#[derive(Debug, Parser)]
+pub struct ApplyOpt {
     /// path to the connector config
     #[clap(short = 'c', long)]
     config: String,
-    /// apply to current kubernetes context
-    apply: bool,
+}
+
+#[derive(Debug, Parser)]
+pub struct DeleteOpt {
+    /// path to the connector config
+    #[clap(short = 'c', long)]
+    config: String,
+}
+
+#[derive(Debug, Parser)]
+pub struct PrintOpt {
+    /// path to the connector config
+    #[clap(short = 'c', long)]
+    config: String,
 }
 
 impl ConfigOpt {
     pub async fn execute(self) -> anyhow::Result<()> {
-        let config = ConnectorConfig::from_file(self.config)?;
-        let deployment = convert_to_k8_deployment(config)?;
-
-        if self.apply {
-            let k8_config = K8Config::load().expect("no k8 config found");
-            let client = k8_client::new_shared(k8_config).expect("failed to create k8 client");
-
-            let input = InputK8Obj::new(deployment, Default::default());
-
-            client.apply(input).await?;
-        } else {
-            println!("{}", serde_yaml::to_string(&deployment)?);
-        }
+        match self {
+            Self::Apply(apply) => apply.execute().await?,
+            Self::Delete(delete) => delete.execute().await?,
+            Self::Print(print) => print.execute()?,
+        };
 
         Ok(())
     }
 }
 
-fn convert_to_k8_deployment(config: ConnectorConfig) -> anyhow::Result<DeploymentSpec> {
+impl ApplyOpt {
+    async fn execute(self) -> anyhow::Result<()> {
+        let config = ConnectorConfig::from_file(self.config)?;
+        let deployment = convert_to_k8_deployment(&config)?;
+
+        let k8_config = K8Config::load().expect("no k8 config found");
+        let namespace = k8_config.namespace().to_owned();
+
+        let client = k8_client::new_shared(k8_config).expect("failed to create k8 client");
+        let meta = InputObjectMeta {
+            name: config.name,
+            namespace,
+            ..Default::default()
+        };
+        let input = InputK8Obj::new(deployment, meta);
+
+        client.apply(input).await?;
+        Ok(())
+    }
+}
+
+impl DeleteOpt {
+    async fn execute(self) -> anyhow::Result<()> {
+        let config = ConnectorConfig::from_file(self.config)?;
+
+        let k8_config = K8Config::load().expect("no k8 config found");
+        let namespace = k8_config.namespace().to_owned();
+
+        let client = k8_client::new_shared(k8_config).expect("failed to create k8 client");
+        let metadata = InputObjectMeta {
+            name: config.name,
+            namespace,
+            ..Default::default()
+        };
+        client
+            .delete_item::<DeploymentSpec, InputObjectMeta>(&metadata)
+            .await?;
+        Ok(())
+    }
+}
+
+impl PrintOpt {
+    fn execute(self) -> anyhow::Result<()> {
+        let config = ConnectorConfig::from_file(self.config)?;
+        let deployment = convert_to_k8_deployment(&config)?;
+        println!("{}", serde_yaml::to_string(&deployment)?);
+        Ok(())
+    }
+}
+
+fn convert_to_k8_deployment(config: &ConnectorConfig) -> anyhow::Result<DeploymentSpec> {
     // Volume:
     // - configMap:
     //     defaultMode: 420

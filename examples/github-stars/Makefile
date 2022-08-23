@@ -15,10 +15,10 @@ smart-module-create: smart-module-compile
 	fluvio sm create $(SLACK_SM_NAME) --wasm-file $(SLACK_SM)
 
 slack-connector: smart-module-create
-	cargo run --bin connector-deploy --manifest-path ../../Cargo.toml -- --apply  -c ./slack-connector.yaml
+	cargo run --bin connector-deploy --manifest-path ../../Cargo.toml -- apply  -c ./slack-connector.yaml
 
 http-connector: smart-module-create
-	cargo run --bin connector-deploy --manifest-path ../../Cargo.toml -- --apply  -c ./http-connector.yaml
+	cargo run --bin connector-deploy --manifest-path ../../Cargo.toml -- apply  -c ./http-connector.yaml
 
 clean:
 	fluvio sm delete $(GH_SM_NAME) || true

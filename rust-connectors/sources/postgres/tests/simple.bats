@@ -22,7 +22,7 @@ setup() {
     echo "Got TOPIC $TOPIC" >&2
     sed -i.BAK "s/postgres-connector-name/${UUID}/g" $FILE
     fluvio topic create $TOPIC
-    cargo run --bin connector-deploy --manifest-path ../../../Cargo.toml -- --apply  --config $FILE
+    cargo run --bin connector-deploy --manifest-path ../../../Cargo.toml -- apply  --config $FILE
 }
 
 teardown() {

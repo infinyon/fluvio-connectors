@@ -12,7 +12,7 @@ setup() {
     cp ./tests/test-mode-config.yaml $FILE
 
     sed -i.BAK "s/test-connector-name/${UUID}/g" $FILE
-    cargo run --bin connector-deploy --manifest-path ../../../Cargo.toml -- --apply  --config $FILE
+    cargo run --bin connector-deploy --manifest-path ../../../Cargo.toml -- apply  --config $FILE
 }
 
 teardown() {
