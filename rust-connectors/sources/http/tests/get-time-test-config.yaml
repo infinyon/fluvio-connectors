@@ -1,4 +1,4 @@
-version: dev
+version: latest
 name: http-json-connector
 type: http-source
 topic: http-json-connector-topic
@@ -6,7 +6,7 @@ create_topic: true
 parameters:
   endpoint: http://IP_ADDRESS:8080/time
   method: GET
-  body: ''
+  body: ""
   interval: "100ms"
 producer:
   linger: 0ms

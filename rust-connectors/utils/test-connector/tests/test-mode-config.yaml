@@ -1,5 +1,5 @@
-version: dev
-#connector_version: dev
+version: latest
+#connector_version: latest
 name: test-connector-name-fluvio-test
 type: test-connector
 topic: longevity

@@ -1,4 +1,4 @@
-version: dev
+version: latest
 name: http-json-connector
 type: http-source
 topic: http-json-connector-topic
@@ -6,6 +6,6 @@ create_topic: true
 parameters:
   endpoint: http://IP_ADDRESS:8080/get
   method: GET
-  body: ''
+  body: ""
   interval: 1s
   map: http-json-connector-map

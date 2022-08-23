@@ -40,9 +40,9 @@ function main() {
   # Tag the image with a commit hash if we provide it
   if [[ -z "$DOCKER_TAG" ]];
   then
-    IMAGE_TAGS="-t $IMAGE_NAME:latest"
+    IMAGE_TAGS="-t $IMAGE_NAME:latest -t $IMAGE_NAME:dev"
   else
-    IMAGE_TAGS="-t $IMAGE_NAME:latest -t $IMAGE_NAME:$DOCKER_TAG-${TARGET}"
+    IMAGE_TAGS="-t $IMAGE_NAME:latest -t $IMAGE_NAME:$DOCKER_TAG-${TARGET} -t $IMAGE_NAME:dev"
   fi
   DOCKER_IMAGE_TAR=/tmp/infinyon-fluvio-connector-${CONNECTOR_NAME}-${TARGET}.tar
 
