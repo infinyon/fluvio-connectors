@@ -1,46 +1,46 @@
+use clap::Parser;
 use fluvio_connectors_common::opt::CommonConnectorOpt;
 use humantime::parse_duration;
 use schemars::JsonSchema;
 use std::time::Duration;
-use structopt::StructOpt;
 
-#[derive(StructOpt, Debug, JsonSchema)]
+#[derive(Parser, Debug, JsonSchema)]
 pub enum TestConnectorSubCmd {
     /// Return connector metadata
     Metadata,
 }
 
-#[derive(StructOpt, Debug, JsonSchema)]
+#[derive(Parser, Debug, JsonSchema)]
 pub struct TestConnectorOpts {
-    #[structopt(flatten)]
+    #[clap(flatten)]
     #[schemars(flatten)]
     pub common: CommonConnectorOpt,
 
-    #[structopt(long)]
+    #[clap(long)]
     pub count: Option<i64>,
 
-    #[structopt(long, parse(try_from_str = parse_duration))]
+    #[clap(long, parse(try_from_str = parse_duration))]
     pub timeout: Option<Duration>,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     pub test_opts: FluvioTestOpts,
 }
 
-#[derive(StructOpt, Debug, JsonSchema)]
+#[derive(Parser, Debug, JsonSchema)]
 pub struct FluvioTestOpts {
     /// File path to a `fluvio-test` binary
-    #[structopt(long, default_value = "/usr/local/bin/fluvio-test")]
+    #[clap(long, default_value = "/usr/local/bin/fluvio-test")]
     pub fluvio_test_path: String,
     /// CLI opts for `fluvio-test`
-    #[structopt(long)]
+    #[clap(long)]
     pub runner_opts: Option<String>,
     /// The name of the `fluvio-test` test name to run
-    #[structopt(long)]
+    #[clap(long)]
     pub test_name: Option<String>,
     /// CLI opts for a `fluvio-test` test
-    #[structopt(long)]
+    #[clap(long)]
     pub test_opts: Option<String>,
     /// Tests will restart after completion unless this flag is set to "true"
-    #[structopt(long, default_value = "false")]
+    #[clap(long, default_value = "false")]
     pub skip_loop: String,
 }

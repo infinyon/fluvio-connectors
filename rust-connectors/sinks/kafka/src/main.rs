@@ -1,3 +1,4 @@
+use clap::Parser;
 use fluvio_connectors_common::git_hash_version;
 use fluvio_connectors_common::opt::CommonConnectorOpt;
 use fluvio_future::tracing::{error, info};
@@ -5,7 +6,6 @@ use rdkafka::config::ClientConfig;
 use rdkafka::producer::{FutureProducer, FutureRecord};
 use schemars::schema_for;
 use schemars::JsonSchema;
-use structopt::StructOpt;
 use tokio_stream::StreamExt;
 
 #[tokio::main]
@@ -61,23 +61,23 @@ async fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[derive(StructOpt, Debug, JsonSchema, Clone)]
+#[derive(Parser, Debug, JsonSchema, Clone)]
 pub struct KafkaOpt {
     /// A Comma separated list of the kafka brokers to connect to
-    #[structopt(long, env = "KAFKA_URL", hide_env_values = true)]
+    #[clap(long, env = "KAFKA_URL", hide_env_values = true)]
     pub kafka_url: String,
 
-    #[structopt(long)]
+    #[clap(long)]
     pub kafka_topic: Option<String>,
 
-    #[structopt(long)]
+    #[clap(long)]
     pub kafka_partition: Option<i32>,
 
     /// A key value pair in the form key:value
-    #[structopt(long)]
+    #[clap(long)]
     pub kafka_option: Vec<String>,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     #[schemars(flatten)]
     pub common: CommonConnectorOpt,
 }

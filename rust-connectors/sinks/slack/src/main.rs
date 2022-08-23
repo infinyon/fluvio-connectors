@@ -1,10 +1,10 @@
+use clap::Parser;
 use fluvio_connectors_common::git_hash_version;
 use fluvio_connectors_common::opt::{CommonConnectorOpt, Record};
 use fluvio_future::tracing::{debug, info};
 use schemars::schema_for;
 use schemars::JsonSchema;
 use std::collections::HashMap;
-use structopt::StructOpt;
 use tokio_stream::StreamExt;
 
 #[tokio::main]
@@ -31,12 +31,12 @@ async fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[derive(StructOpt, Debug, JsonSchema, Clone)]
+#[derive(Parser, Debug, JsonSchema, Clone)]
 pub struct SlackOpt {
-    #[structopt(long, env = "WEBHOOK_URL", hide_env_values = true)]
+    #[clap(long, env = "WEBHOOK_URL", hide_env_values = true)]
     pub webhook_url: String,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     #[schemars(flatten)]
     pub common: CommonConnectorOpt,
 }

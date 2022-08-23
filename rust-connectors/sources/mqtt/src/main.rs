@@ -5,30 +5,30 @@ use fluvio_connectors_common::opt::CommonConnectorOpt;
 mod error;
 use error::MqttConnectorError;
 
+use clap::Parser;
 use fluvio_future::tracing::{debug, error, info};
 use rumqttc::{v4::Packet, AsyncClient, ClientConfig, Event, MqttOptions, QoS, Transport};
 use schemars::{schema_for, JsonSchema};
 use serde::Serialize;
 use std::convert::TryFrom;
 use std::time::Duration;
-use structopt::StructOpt;
 use url::Url;
 
-#[derive(StructOpt, Debug, JsonSchema)]
+#[derive(Parser, Debug, JsonSchema)]
 struct MqttOpts {
-    #[structopt(long)]
+    #[clap(long)]
     timeout: Option<u64>,
 
-    #[structopt(short, long, env = "MQTT_URL", hide_env_values = true)]
+    #[clap(short, long, env = "MQTT_URL", hide_env_values = true)]
     mqtt_url: String,
 
-    #[structopt(long)]
+    #[clap(long)]
     mqtt_topic: String,
 
-    #[structopt(long)]
+    #[clap(long)]
     client_id: Option<String>,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     #[schemars(flatten)]
     common: CommonConnectorOpt,
 }

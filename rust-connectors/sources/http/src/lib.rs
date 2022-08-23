@@ -1,49 +1,49 @@
+use clap::Parser;
 use fluvio_connectors_common::opt::{CommonConnectorOpt, GetOpts};
 use humantime::parse_duration;
 use schemars::JsonSchema;
 use std::time::Duration;
-use structopt::StructOpt;
 
-#[derive(StructOpt, Debug, JsonSchema, Clone)]
+#[derive(Parser, Debug, JsonSchema, Clone)]
 pub struct HttpOpt {
     /// Endpoint for the http connector
-    #[structopt(long)]
+    #[clap(long)]
     pub endpoint: String,
 
     /// HTTP body for the request
-    #[structopt(long)]
+    #[clap(long)]
     pub body: Option<String>,
 
     /// HTTP body for the request
-    #[structopt(long, default_value = "fluvio/http-source 0.1.0")]
+    #[clap(long, default_value = "fluvio/http-source 0.1.0")]
     pub user_agent: String,
 
     /// HTTP method used in the request. Eg. GET, POST, PUT...
-    #[structopt(long, default_value = "GET")]
+    #[clap(long, default_value = "GET")]
     pub method: String,
 
     /// Time to wait before sending
     /// Ex: '150ms', '20s'
-    #[structopt(long, parse(try_from_str = parse_duration), default_value = "10s")]
+    #[clap(long, parse(try_from_str = parse_duration), default_value = "10s")]
     pub interval: Duration,
 
     /// Headers to include in the HTTP request, in "Key=Value" format
-    #[structopt(long = "header", alias = "headers")]
+    #[clap(long = "header", alias = "headers")]
     pub headers: Vec<String>,
 
     /// DEPRECATED: Response output parts: body | full
-    #[structopt(long, hidden(true))]
+    #[clap(long, hidden(true))]
     pub output_format: Option<String>,
 
     /// Response output parts: body | full
-    #[structopt(long, default_value = "body")]
+    #[clap(long, default_value = "body")]
     pub output_parts: String,
 
     /// Response output type: text | json
-    #[structopt(long, default_value = "text")]
+    #[clap(long, default_value = "text")]
     pub output_type: String,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     #[schemars(flatten)]
     pub common: CommonConnectorOpt,
 }
