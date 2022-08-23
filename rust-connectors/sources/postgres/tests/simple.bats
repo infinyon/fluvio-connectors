@@ -26,7 +26,7 @@ setup() {
 }
 
 teardown() {
-    fluvio connector delete $UUID && echo "Connector deleted: $UUID" >&2
+    cargo run --bin connector-deploy --manifest-path ../../../Cargo.toml -- delete  --config $FILE && echo "Connector deleted: $UUID" >&2
     fluvio topic delete $TOPIC
 
     kubectl delete pod postgres-leader

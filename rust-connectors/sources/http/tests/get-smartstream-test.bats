@@ -11,6 +11,7 @@ setup() {
     cp ./tests/get-smartstream-config.yaml $FILE
     UUID=$(uuidgen)
     TOPIC=${UUID}-topic
+    fluvio topic create $TOPIC || true
 
     MODULE=${UUID}-map
     fluvio smart-module create $MODULE --wasm-file ../../../target/wasm32-unknown-unknown/release/fluvio_wasm_map.wasm
@@ -23,7 +24,7 @@ setup() {
 }
 
 teardown() {
-    fluvio connector delete $UUID
+    cargo run --bin connector-deploy --manifest-path ../../../Cargo.toml -- delete  --config $FILE
     fluvio topic delete $TOPIC
     fluvio smart-module delete $MODULE
     kill $MOCK_PID

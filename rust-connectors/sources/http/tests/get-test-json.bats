@@ -11,6 +11,7 @@ setup() {
     cp ./tests/get-test-json-config.yaml $FILE
     UUID=$(uuidgen)
     TOPIC=${UUID}-topic
+    fluvio topic create $TOPIC || true
 
     sed -i.BAK "s/http-json-connector/${UUID}/g" $FILE
     IP_ADDRESS=$(ip route get 8.8.8.8 | awk -F"src " 'NR==1{split($2,a," ");print a[1]}')
@@ -19,7 +20,7 @@ setup() {
 }
 
 teardown() {
-    fluvio connector delete $UUID
+    cargo run --bin connector-deploy --manifest-path ../../../Cargo.toml -- delete  --config $FILE
     fluvio topic delete $TOPIC
     kill $MOCK_PID
 }

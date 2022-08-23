@@ -16,7 +16,7 @@ setup() {
 }
 
 teardown() {
-    fluvio connector delete $UUID-fluvio-test
+    cargo run --bin connector-deploy --manifest-path ../../../Cargo.toml -- delete  --config $FILE
     fluvio topic delete $TOPIC
 }
 

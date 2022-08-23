@@ -7,11 +7,12 @@ setup() {
     cp ./tests/batch-size-test-config.yaml $FILE
 
     sed -i.BAK "s/test-connector-name/${UUID}/g" $FILE
+    fluvio topic create $TOPIC || true
     cargo run --bin connector-deploy  --manifest-path ../../../Cargo.toml -- apply  --config $FILE
 }
 
 teardown() {
-    fluvio connector delete $UUID
+    cargo run --bin connector-deploy --manifest-path ../../../Cargo.toml -- delete  --config $FILE
     fluvio topic delete $TOPIC
 }
 

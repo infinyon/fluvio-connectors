@@ -200,7 +200,7 @@ fn convert_to_k8_deployment(config: &ConnectorConfig) -> anyhow::Result<Deployme
             containers: vec![ContainerSpec {
                 name: DEFAULT_CONNECTOR_NAME.to_owned(),
                 image: Some(image),
-                image_pull_policy: Some(ImagePullPolicy::IfNotPresent),
+                image_pull_policy: Some(ImagePullPolicy::Never),
                 env,
                 volume_mounts,
                 args,
