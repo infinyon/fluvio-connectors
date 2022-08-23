@@ -7,7 +7,7 @@ setup() {
     TOPIC=${UUID}-topic
     sed -i.BAK "s/mqtt-connector-name/${UUID}/g" $FILE
     fluvio topic create $TOPIC
-    fluvio connector create --config $FILE
+    cargo run --bin connector-deploy -- --apply  --config $FILE
 }
 
 teardown() {

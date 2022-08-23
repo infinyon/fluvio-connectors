@@ -19,7 +19,7 @@ setup() {
 
     IP_ADDRESS=$(ip route get 8.8.8.8 | awk -F"src " 'NR==1{split($2,a," ");print a[1]}')
     sed -i.BAK "s/IP_ADDRESS/${IP_ADDRESS}/g" $FILE
-    fluvio connector create --config $FILE
+    cargo run --bin connector-deploy -- --apply  --config $FILE
 }
 
 teardown() {

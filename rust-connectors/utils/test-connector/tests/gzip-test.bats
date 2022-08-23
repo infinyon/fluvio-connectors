@@ -7,7 +7,7 @@ setup() {
     cp ./tests/gzip-test-config.yaml $FILE
 
     sed -i.BAK "s/test-connector-name/${UUID}/g" $FILE
-    fluvio connector create --config $FILE
+    cargo run --bin connector-deploy -- --apply  --config $FILE
 }
 
 teardown() {
