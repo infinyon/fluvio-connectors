@@ -7,7 +7,7 @@ setup() {
     cp ./tests/simple-test-config.yaml $FILE
 
     sed -i.BAK "s/test-connector-name/${UUID}/g" $FILE
-    cargo run --bin connector-deploy -- --apply  --config $FILE
+    cargo run --bin connector-deploy --manifest-path ../../../Cargo.toml -- --apply  --config $FILE
 }
 
 teardown() {
