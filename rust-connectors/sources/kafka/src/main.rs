@@ -1,10 +1,10 @@
+use clap::Parser;
 use fluvio_connectors_common::git_hash_version;
 use fluvio_connectors_common::opt::CommonConnectorOpt;
 use fluvio_future::tracing::info;
 use kafka::consumer::{Consumer, FetchOffset, GroupOffsetStorage};
 use schemars::schema_for;
 use schemars::JsonSchema;
-use structopt::StructOpt;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -31,22 +31,22 @@ async fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[derive(StructOpt, Debug, JsonSchema, Clone)]
+#[derive(Parser, Debug, JsonSchema, Clone)]
 pub struct KafkaOpt {
-    #[structopt(long, env = "KAFKA_URL", hide_env_values = true)]
+    #[clap(long, env = "KAFKA_URL", hide_env_values = true)]
     pub kafka_url: String,
 
-    #[structopt(long)]
+    #[clap(long)]
     pub kafka_group: Option<String>,
 
-    #[structopt(long)]
+    #[clap(long)]
     pub kafka_topic: Option<String>,
 
-    #[structopt(long, default_value = "0")]
+    #[clap(long, default_value = "0")]
     #[schemars(skip)]
     pub kafka_partition: i32,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     #[schemars(flatten)]
     pub common: CommonConnectorOpt,
 }

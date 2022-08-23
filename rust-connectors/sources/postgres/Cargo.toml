@@ -18,7 +18,7 @@ fluvio-model-postgres = { path = "../../models/fluvio-model-postgres" }
 bytes = "1"
 eyre = "0.6"
 thiserror = "1"
-structopt = "0.3"
+clap = { version = "3.1", features = ["std", "derive", "env"], default-features = false }
 dotenv = "0.15"
 url = "2.2"
 serde = { version = "1", features = ["derive"] }

@@ -2,10 +2,10 @@ use anyhow::Error as AnyhowError;
 
 use fluvio_connectors_common::fluvio::FluvioError;
 
+use clap::Error as ClapError;
 use rumqttc::{ClientError as MqttClientError, ConnectionError as MqttConnectionError};
 use rumqttc::{Error as MqttError, OptionError as MqttOptionError};
 use serde_json::Error as SerdeJsonError;
-use structopt::clap::Error as ClapError;
 use thiserror::Error;
 use url::ParseError;
 

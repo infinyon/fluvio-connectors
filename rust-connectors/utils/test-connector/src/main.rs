@@ -1,8 +1,8 @@
+use clap::Parser;
 use schemars::schema_for;
 use serde::Serialize;
 use std::env;
 use std::process::Command;
-use structopt::StructOpt;
 
 mod produce;
 use produce::produce;

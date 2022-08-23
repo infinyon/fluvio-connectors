@@ -1,8 +1,8 @@
 use fluvio_connectors_common::git_hash_version;
 use postgres_sink::{PgConnector, PgConnectorOpt};
 
+use clap::Parser;
 use schemars::schema_for;
-use structopt::StructOpt;
 use tracing::info;
 
 #[tokio::main]

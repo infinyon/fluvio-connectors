@@ -1,10 +1,9 @@
 use anyhow::Context;
 use bytesize::ByteSize;
+use clap::{AppSettings, Parser};
 use humantime::parse_duration;
 use schemars::{schema_for, JsonSchema};
 use std::{collections::BTreeMap, time::Duration};
-use structopt::clap::AppSettings;
-use structopt::StructOpt;
 
 pub use fluvio::{
     consumer,
@@ -18,42 +17,42 @@ pub use fluvio::{
 
 use crate::error::CliError;
 
-#[derive(StructOpt, Debug, JsonSchema, Clone, Default)]
-#[structopt(settings = &[AppSettings::DeriveDisplayOrder])]
+#[derive(Parser, Debug, JsonSchema, Clone, Default)]
+#[clap(settings = &[AppSettings::DeriveDisplayOrder])]
 pub struct CommonConnectorOpt {
     /// The topic where this connector sends or receives records
-    #[structopt(long)]
+    #[clap(long)]
     #[schemars(skip)]
     pub fluvio_topic: String,
 
     /// The rust log level. If it is not defined, `RUST_LOG` environment variable
     /// will be used. If environment variable is not defined,
     /// then INFO level will be used.
-    #[structopt(long)]
+    #[clap(long)]
     pub rust_log: Option<String>,
 
     #[cfg(feature = "sink")]
-    #[structopt(flatten)]
+    #[clap(flatten)]
     #[schemars(flatten)]
     pub consumer_common: CommonConsumerOpt,
 
     #[cfg(feature = "source")]
-    #[structopt(flatten)]
+    #[clap(flatten)]
     #[schemars(flatten)]
     pub producer_common: CommonProducerOpt,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     #[schemars(flatten)]
     pub smartmodule_common: CommonSmartModuleOpt,
 }
 
-#[derive(StructOpt, Debug, JsonSchema, Clone, Default)]
+#[derive(Parser, Debug, JsonSchema, Clone, Default)]
 pub struct CommonConsumerOpt {
-    #[structopt(long, default_value = "0")]
+    #[clap(long, default_value = "0")]
     pub consumer_partition: i32,
 }
 
-#[derive(StructOpt, Debug, JsonSchema, Clone, Default)]
+#[derive(Parser, Debug, JsonSchema, Clone, Default)]
 pub struct CommonSmartModuleOpt {
     /// Path of filter smartmodule used as a pre-produce step
     /// if using source connector. If using sink connector this smartmodule
@@ -61,7 +60,7 @@ pub struct CommonSmartModuleOpt {
     ///
     /// If the value is not a path to a file, it will be used
     /// to lookup a SmartModule by name
-    #[structopt(long, group("smartmodule_group"))]
+    #[clap(long, group("smartmodule_group"))]
     pub filter: Option<String>,
 
     /// Path of filter_map smartmodule used as a pre-produce step
@@ -70,7 +69,7 @@ pub struct CommonSmartModuleOpt {
     ///
     /// If the value is not a path to a file, it will be used
     /// to lookup a SmartModule by name
-    #[structopt(long, group("smartmodule_group"))]
+    #[clap(long, group("smartmodule_group"))]
     pub filter_map: Option<String>,
 
     /// Path of map smartmodule used as a pre-produce step
@@ -79,7 +78,7 @@ pub struct CommonSmartModuleOpt {
     ///
     /// If the value is not a path to a file, it will be used
     /// to lookup a SmartModule by name
-    #[structopt(long, group("smartmodule_group"))]
+    #[clap(long, group("smartmodule_group"))]
     pub map: Option<String>,
 
     /// Path of arraymap smartmodule used as a pre-produce step
@@ -88,7 +87,7 @@ pub struct CommonSmartModuleOpt {
     ///
     /// If the value is not a path to a file, it will be used
     /// to lookup a SmartModule by name
-    #[structopt(long, group("smartmodule_group"), alias = "arraymap")]
+    #[clap(long, group("smartmodule_group"), alias = "arraymap")]
     pub array_map: Option<String>,
 
     /// Path of aggregate smartmodule used as a pre-produce step
@@ -97,10 +96,10 @@ pub struct CommonSmartModuleOpt {
     ///
     /// If the value is not a path to a file, it will be used
     /// to lookup a SmartModule by name
-    #[structopt(long, group("aggregate_group"), group("smartmodule_group"))]
+    #[clap(long, group("aggregate_group"), group("smartmodule_group"))]
     pub aggregate: Option<String>,
 
-    #[structopt(long, requires = "aggregate_group")]
+    #[clap(long, requires = "aggregate_group")]
     pub aggregate_initial_value: Option<String>,
 
     /// Path of smartmodule used as a pre-produce step
@@ -109,7 +108,7 @@ pub struct CommonSmartModuleOpt {
     ///
     /// If the value is not a path to a file, it will be used
     /// to lookup a SmartModule by name
-    #[structopt(
+    #[clap(
         long,
         alias = "smartmodule",
         group("aggregate_group"),
@@ -124,7 +123,7 @@ pub struct CommonSmartModuleOpt {
     ///
     /// Example:
     /// --smartmodule-parameters key1:value --smartmodule-parameters key2:value
-    #[structopt(
+    #[clap(
         long,
         parse(try_from_str = parse_key_val),
         requires = "smartmodule_group",
@@ -139,21 +138,21 @@ fn parse_key_val(s: &str) -> Result<(String, String), CliError> {
     })?;
     Ok((s[..pos].parse()?, s[pos + 1..].parse()?))
 }
-#[derive(StructOpt, Debug, JsonSchema, Clone, Default)]
+#[derive(Parser, Debug, JsonSchema, Clone, Default)]
 pub struct CommonProducerOpt {
     /// Time to wait before sending
     /// Ex: '150ms', '20s'
-    #[structopt(long, parse(try_from_str = parse_duration))]
+    #[clap(long, parse(try_from_str = parse_duration))]
     pub producer_linger: Option<Duration>,
 
     /// Compression algorithm to use when sending records.
     /// Supported values: none, gzip, snappy and lz4.
-    #[structopt(long)]
+    #[clap(long)]
     #[schemars(skip)]
     pub producer_compression: Option<Compression>,
 
     /// Max amount of bytes accumulated before sending
-    #[structopt(long)]
+    #[clap(long)]
     #[schemars(skip)]
     pub producer_batch_size: Option<ByteSize>,
 }
@@ -403,7 +402,7 @@ impl CommonConnectorOpt {
 }
 
 pub trait GetOpts {
-    type Opt: StructOpt + JsonSchema;
+    type Opt: Parser + JsonSchema;
     fn get_opt() -> Option<Self::Opt> {
         if let Some("metadata") = std::env::args().nth(1).as_deref() {
             let schema = schema_for!(Self::Opt);
