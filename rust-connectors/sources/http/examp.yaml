@@ -3,7 +3,6 @@ name: route-data
 type: http-json
 topic: routes-info
 create_topic: true
-direction: source
 parameters:
   endpoint: https://api.digitransit.fi/routing/v1/routers/hsl/index/graphql
   method: POST

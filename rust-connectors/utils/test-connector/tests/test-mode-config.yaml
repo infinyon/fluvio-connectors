@@ -4,7 +4,6 @@ name: test-connector-name-fluvio-test
 type: test-connector
 topic: longevity
 create_topic: true
-direction: source
 parameters:
   test-name: longevity
   runner-opts: --timeout 30s --producer 1 --consumer 1
