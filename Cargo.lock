@@ -976,6 +976,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "connector-deploy"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap 3.2.17",
+ "fluvio-connectors-common",
+ "k8-client",
+ "k8-types",
+ "serde",
+ "serde_yaml",
+ "tokio",
+]
+
+[[package]]
 name = "const_fn"
 version = "0.4.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1726,8 +1740,18 @@ version = "0.3.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1e2d1fad8e412d44c516add2349a34f6d71d9279b108c8e012325ab17fcbf982"
 dependencies = [
+ "async-io",
+ "async-net",
+ "async-std",
+ "async-trait",
+ "cfg-if 1.0.0",
  "fluvio-wasm-timer",
+ "futures-lite",
+ "futures-util",
  "log",
+ "openssl",
+ "openssl-sys",
+ "pin-project",
  "thiserror",
  "tracing",
  "ws_stream_wasm",
@@ -2307,6 +2331,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "hostfile"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c2733206bcc0550a15b450c64d8aa859f486d7281c4c0c36ef904b361960d658"
+
+[[package]]
 name = "http"
 version = "0.2.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2387,7 +2417,7 @@ dependencies = [
  "rand 0.7.3",
  "serde",
  "serde_json",
- "serde_qs",
+ "serde_qs 0.8.5",
  "serde_urlencoded",
  "url",
 ]
@@ -2598,6 +2628,85 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c3fac17f7123a73ca62df411b1bf727ccc805daa070338fda671c86dac1bdc27"
 dependencies = [
  "wasm-bindgen",
+]
+
+[[package]]
+name = "k8-client"
+version = "7.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d3807003ac1d68b31c1cccc9dd0375f2c582ac2f8bb8f35ff581a3b8ed52d9b4"
+dependencies = [
+ "async-trait",
+ "base64 0.13.0",
+ "bytes",
+ "cfg-if 1.0.0",
+ "fluvio-future 0.3.18",
+ "futures-util",
+ "http",
+ "hyper",
+ "k8-config",
+ "k8-diff",
+ "k8-metadata-client",
+ "k8-types",
+ "pin-utils",
+ "rand 0.8.5",
+ "serde",
+ "serde_json",
+ "serde_qs 0.9.2",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "k8-config"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "609ad86e094cea1739cd6caf462ee5d55b7d8143afc3a49962e35aaac560e7de"
+dependencies = [
+ "dirs",
+ "hostfile",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "thiserror",
+ "tracing",
+]
+
+[[package]]
+name = "k8-diff"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ef435d912eeb448129d7ae11d3c497691f1f383d2d2ff1dff4365a81c7bd4f3b"
+dependencies = [
+ "serde",
+ "serde_json",
+ "tracing",
+]
+
+[[package]]
+name = "k8-metadata-client"
+version = "4.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "14b5e61b295e6ba9428a64a6a8aee6b05626e8cbe6d4dbcd00617603a7fc8dfa"
+dependencies = [
+ "async-trait",
+ "futures-util",
+ "k8-diff",
+ "k8-types",
+ "pin-utils",
+ "serde",
+ "serde_json",
+ "tracing",
+]
+
+[[package]]
+name = "k8-types"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7652c08ed3d6416ff52f6fa3214519d4ec293921b3a51a21cbd003f2e74c771e"
+dependencies = [
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -4070,6 +4179,17 @@ name = "serde_qs"
 version = "0.8.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c7715380eec75f029a4ef7de39a9200e0a63823176b759d055b613f5a87df6a6"
+dependencies = [
+ "percent-encoding",
+ "serde",
+ "thiserror",
+]
+
+[[package]]
+name = "serde_qs"
+version = "0.9.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6af4cee6cd4b23b45e6709150d1e9af5c748131de7e3316a7c2b3008051ed725"
 dependencies = [
  "percent-encoding",
  "serde",

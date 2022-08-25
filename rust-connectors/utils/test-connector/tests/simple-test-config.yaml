@@ -1,9 +1,8 @@
-version: dev
+version: latest
 name: test-connector-name
 type: test-connector
 topic: test-connector-name-topic
 create_topic: true
-direction: source
 parameters:
   timeout: "1ms"
 producer:

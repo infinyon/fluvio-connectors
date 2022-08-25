@@ -12,11 +12,11 @@ setup() {
     cp ./tests/test-mode-config.yaml $FILE
 
     sed -i.BAK "s/test-connector-name/${UUID}/g" $FILE
-    fluvio connector create --config $FILE
+    cargo run --bin connector-deploy --manifest-path ../../../Cargo.toml -- apply  --config $FILE
 }
 
 teardown() {
-    fluvio connector delete $UUID-fluvio-test
+    cargo run --bin connector-deploy --manifest-path ../../../Cargo.toml -- delete  --config $FILE
     fluvio topic delete $TOPIC
 }
 

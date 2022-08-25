@@ -22,11 +22,11 @@ setup() {
     echo "Got TOPIC $TOPIC" >&2
     sed -i.BAK "s/postgres-connector-name/${UUID}/g" $FILE
     fluvio topic create $TOPIC
-    fluvio connector create --config $FILE
+    cargo run --bin connector-deploy --manifest-path ../../../Cargo.toml -- apply  --config $FILE
 }
 
 teardown() {
-    fluvio connector delete $UUID && echo "Connector deleted: $UUID" >&2
+    cargo run --bin connector-deploy --manifest-path ../../../Cargo.toml -- delete  --config $FILE && echo "Connector deleted: $UUID" >&2
     fluvio topic delete $TOPIC
 
     kubectl delete pod postgres-leader

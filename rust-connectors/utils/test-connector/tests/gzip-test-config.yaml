@@ -1,4 +1,4 @@
-version: dev
+version: latest
 name: test-connector-name
 type: test-connector
 topic: test-connector-name-topic

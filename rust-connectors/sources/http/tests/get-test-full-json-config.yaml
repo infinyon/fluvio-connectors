@@ -1,4 +1,4 @@
-version: dev
+version: latest
 name: http-json-connector
 type: http-source
 topic: http-json-connector-topic
@@ -8,5 +8,5 @@ parameters:
   method: GET
   output_parts: full
   output_type: json
-  body: ''
+  body: ""
   interval: 1s

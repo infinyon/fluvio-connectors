@@ -1,4 +1,4 @@
-version: dev
+version: latest
 name: http-json-connector
 type: http-source
 topic: http-json-connector-topic

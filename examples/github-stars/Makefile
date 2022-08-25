@@ -10,21 +10,24 @@ smart-module-compile:
 	cargo build -p github-stars-smartmodule-map --target wasm32-unknown-unknown --release
 	cargo build -p slack-display-smartmodule-map --target wasm32-unknown-unknown --release
 
+topic-create:
+	fluvio topic create github-stars || true
+
 smart-module-create: smart-module-compile
 	fluvio sm create $(GH_SM_NAME) --wasm-file $(GH_SM)
 	fluvio sm create $(SLACK_SM_NAME) --wasm-file $(SLACK_SM)
 
-slack-connector: smart-module-create
-	fluvio connector create -c ./slack-connector.yaml
+slack-connector: smart-module-create topic-create
+	cargo run --bin connector-deploy --manifest-path ../../Cargo.toml -- apply  -c ./slack-connector.yaml
 
-http-connector: smart-module-create
-	fluvio connector create -c ./http-connector.yaml
+http-connector: smart-module-create topic-create
+	cargo run --bin connector-deploy --manifest-path ../../Cargo.toml -- apply  -c ./http-connector.yaml
 
 clean:
 	fluvio sm delete $(GH_SM_NAME) || true
 	fluvio sm delete $(SLACK_SM_NAME) || true
-	fluvio connector delete github-stars-output || true
-	fluvio connector delete github-stars-input || true
+	cargo run --bin connector-deploy --manifest-path ../../../Cargo.toml -- delete --config  ./slack-connector.yaml || true
+	cargo run --bin connector-deploy --manifest-path ../../../Cargo.toml -- delete --config ./http-connector.yaml || true
 	fluvio topic delete github-stars || true
 
 

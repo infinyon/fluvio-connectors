@@ -1,5 +1,5 @@
 version: v1
-connector_version: dev
+connector_version: latest
 name: fluvio-postgres
 type: postgres
 topic: postgres

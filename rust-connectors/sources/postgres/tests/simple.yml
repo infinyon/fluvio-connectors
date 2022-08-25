@@ -1,5 +1,5 @@
 version: v1
-connector_version: dev
+connector_version: latest
 name: postgres-connector-name
 type: postgres-source
 topic: postgres-connector-name-topic

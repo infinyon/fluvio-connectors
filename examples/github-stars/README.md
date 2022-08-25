@@ -20,14 +20,14 @@ Alternatively:
 `make smart-module-create` does those four commands.
 
 ### Create the connectors
-* `fluvio connector create -c ./slack-connector.yaml`
-* `fluvio connector create -c ./http-connector.yaml`
+* `cargo run --bin connector-deploy --manifest-path ../../Cargo.toml -- apply  -c ./slack-connector.yaml`
+* `cargo run --bin connector-deploy  --manifest-path ../../Cargo.toml -- apply  -c ./http-connector.yaml`
 
 ## Simple instructions
 * If you feel like doing no work, `make all` will:
     - compile the `aggregate` smartmodule for the http connector
     - compile the `filter_map` smartmodule for the slack connector
     - Add the smartmodules to fluvio vio `fluvio smartmodule create` with the appropriate names and locations.
-    - `fluvio connector create -c ./http-connector.yaml`
-    - `fluvio connector create -c ./slack-connector.yaml`
+    - `cargo run --bin connector-deploy --manifest-path ../../Cargo.toml -- apply  -c ./http-connector.yaml`
+    - `cargo run --bin connector-deploy --manifest-path ../../Cargo.toml -- apply  -c ./slack-connector.yaml`
 * Similar to this `make clean` should destroy all
