@@ -1,4 +1,4 @@
-use std::{io, io::Write, process::Command};
+use std::process::Command;
 
 use clap::Parser;
 use fluvio_connectors_common::config::ConnectorConfig;

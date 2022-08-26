@@ -18,16 +18,16 @@ smart-module-create: smart-module-compile
 	fluvio sm create $(SLACK_SM_NAME) --wasm-file $(SLACK_SM)
 
 slack-connector: smart-module-create topic-create
-	cargo run --bin connector-deploy --manifest-path ../../Cargo.toml -- apply  -c ./slack-connector.yaml
+	cargo run --bin connector-run --manifest-path ../../Cargo.toml -- apply  -c ./slack-connector.yaml
 
 http-connector: smart-module-create topic-create
-	cargo run --bin connector-deploy --manifest-path ../../Cargo.toml -- apply  -c ./http-connector.yaml
+	cargo run --bin connector-run --manifest-path ../../Cargo.toml -- apply  -c ./http-connector.yaml
 
 clean:
 	fluvio sm delete $(GH_SM_NAME) || true
 	fluvio sm delete $(SLACK_SM_NAME) || true
-	cargo run --bin connector-deploy --manifest-path ../../../Cargo.toml -- delete --config  ./slack-connector.yaml || true
-	cargo run --bin connector-deploy --manifest-path ../../../Cargo.toml -- delete --config ./http-connector.yaml || true
+	cargo run --bin connector-run --manifest-path ../../../Cargo.toml -- delete --config  ./slack-connector.yaml || true
+	cargo run --bin connector-run --manifest-path ../../../Cargo.toml -- delete --config ./http-connector.yaml || true
 	fluvio topic delete github-stars || true
 
 

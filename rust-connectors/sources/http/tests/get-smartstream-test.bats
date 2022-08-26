@@ -20,11 +20,11 @@ setup() {
 
     IP_ADDRESS=$(ip route get 8.8.8.8 | awk -F"src " 'NR==1{split($2,a," ");print a[1]}')
     sed -i.BAK "s/IP_ADDRESS/${IP_ADDRESS}/g" $FILE
-    cargo run --bin connector-deploy --manifest-path ../../../Cargo.toml -- apply  --config $FILE
+    cargo run --bin connector-run --manifest-path ../../../Cargo.toml -- apply  --config $FILE
 }
 
 teardown() {
-    cargo run --bin connector-deploy --manifest-path ../../../Cargo.toml -- delete  --config $FILE
+    cargo run --bin connector-run --manifest-path ../../../Cargo.toml -- delete  --config $FILE
     fluvio topic delete $TOPIC
     fluvio smart-module delete $MODULE
     kill $MOCK_PID

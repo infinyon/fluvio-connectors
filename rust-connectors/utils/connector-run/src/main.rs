@@ -24,12 +24,12 @@ const DEFAULT_CONNECTOR_NAME: &str = "fluvio-connector";
 
 #[tokio::main]
 async fn main() {
-    let config: DeployOpt = DeployOpt::from_args();
+    let config = RunOpt::from_args();
     config.execute().await.expect("failed to execute");
 }
 
 #[derive(Debug, Parser)]
-pub enum DeployOpt {
+pub enum RunOpt {
     /// Apply k8 deployment in current namespace
     Apply(ApplyOpt),
     /// Delete k8 deployment in current namespace
@@ -40,7 +40,7 @@ pub enum DeployOpt {
     Local(LocalOpt),
 }
 
-impl DeployOpt {
+impl RunOpt {
     pub async fn execute(self) -> anyhow::Result<()> {
         match self {
             Self::Apply(apply) => apply.execute().await?,
