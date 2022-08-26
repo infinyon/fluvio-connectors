@@ -8,11 +8,10 @@ setup() {
 
     sed -i.BAK "s/test-connector-name/${UUID}/g" $FILE
     fluvio topic create $TOPIC || true
-    cargo run --bin connector-run --manifest-path ../../../Cargo.toml -- apply  --config $FILE
+    cargo run --bin connector-run --manifest-path ../../../Cargo.toml -- local  --config $FILE
 }
 
 teardown() {
-    cargo run --bin connector-run --manifest-path ../../../Cargo.toml -- delete  --config $FILE
     fluvio topic delete $TOPIC
 }
 
