@@ -76,7 +76,7 @@ fn convert_to_k8_deployment(config: &ConnectorConfig) -> anyhow::Result<Deployme
         ..Default::default()
     };
 
-    let args = build_args(&config);
+    let args = build_args(config);
 
     let type_ = &config.type_;
     let image = format!("infinyon/fluvio-connect-{}:{}", type_, config.version);
