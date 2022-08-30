@@ -975,7 +975,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "connector-deploy"
+name = "connector-run"
 version = "0.1.0"
 dependencies = [
  "anyhow",

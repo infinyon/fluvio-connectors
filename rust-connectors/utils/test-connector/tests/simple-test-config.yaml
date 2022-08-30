@@ -5,5 +5,6 @@ topic: test-connector-name-topic
 create_topic: true
 parameters:
   timeout: "1ms"
+  count: 20
 producer:
   linger: 1ms
