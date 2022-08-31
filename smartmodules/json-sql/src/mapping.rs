@@ -21,7 +21,8 @@ pub struct Column {
 
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
 pub struct Value {
-    pub r#type: ValueType,
+    #[serde(rename = "type")]
+    pub type_: ValueType,
     #[serde(default, deserialize_with = "deserialize_to_string")]
     pub default: Option<String>,
     #[serde(default)]
@@ -218,7 +219,7 @@ mod tests {
                     Column {
                         json_key: "test-key".to_string(),
                         value: Value {
-                            r#type: ValueType::Integer,
+                            type_: ValueType::Integer,
                             default: Some("4".to_string()),
                             required: false
                         }
@@ -257,7 +258,7 @@ mod tests {
                     Column {
                         json_key: "test-key".to_string(),
                         value: Value {
-                            r#type: ValueType::Integer,
+                            type_: ValueType::Integer,
                             default: Some("4".to_string()),
                             required: false
                         }
@@ -296,7 +297,7 @@ mod tests {
                     Column {
                         json_key: "test-key".to_string(),
                         value: Value {
-                            r#type: ValueType::Integer,
+                            type_: ValueType::Integer,
                             default: Some("4.5".to_string()),
                             required: false
                         }
@@ -335,7 +336,7 @@ mod tests {
                     Column {
                         json_key: "test-key".to_string(),
                         value: Value {
-                            r#type: ValueType::Integer,
+                            type_: ValueType::Integer,
                             default: Some("-5".to_string()),
                             required: false
                         }
@@ -372,7 +373,7 @@ mod tests {
                     Column {
                         json_key: "test-key".to_string(),
                         value: Value {
-                            r#type: ValueType::Integer,
+                            type_: ValueType::Integer,
                             default: None,
                             required: false
                         }

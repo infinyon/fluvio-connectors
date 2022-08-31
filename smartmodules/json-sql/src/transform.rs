@@ -23,7 +23,7 @@ pub(crate) fn transform(record: serde_json::Value, mapping: &Mapping) -> Result<
         values.push(Value {
             column: name.clone(),
             raw_value,
-            r#type: Type::from(column.value.r#type),
+            type_: Type::from(column.value.type_),
         });
     }
     Ok(Operation::Insert {
@@ -68,7 +68,7 @@ mod tests {
                 values: vec![Value {
                     column: "body".to_string(),
                     raw_value: "{\"key\":\"value\"}".to_string(),
-                    r#type: Type::Json
+                    type_: Type::Json
                 }]
             }
         );
@@ -139,7 +139,7 @@ mod tests {
                 values: vec![Value {
                     column: "body".to_string(),
                     raw_value: "some_value".to_string(),
-                    r#type: Type::Text
+                    type_: Type::Text
                 }]
             }
         );

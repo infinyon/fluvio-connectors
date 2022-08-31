@@ -12,7 +12,8 @@ pub enum Operation {
 pub struct Value {
     pub column: String,
     pub raw_value: String,
-    pub r#type: Type,
+    #[serde(rename = "type")]
+    pub type_: Type,
 }
 
 /// Supported SQL data types.
