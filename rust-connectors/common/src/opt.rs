@@ -6,13 +6,14 @@ use schemars::{schema_for, JsonSchema};
 use std::{collections::BTreeMap, time::Duration};
 
 pub use fluvio::{
-    consumer,
-    consumer::{Record, SmartModuleInvocation, SmartModuleInvocationWasm, SmartModuleKind},
-    dataplane::ErrorCode,
-    metadata::smartmodule::SmartModuleSpec,
-    metadata::topic::TopicSpec,
+    consumer, consumer::Record, metadata::smartmodule::SmartModuleSpec, metadata::topic::TopicSpec,
     Compression, ConsumerConfig, Fluvio, FluvioError, PartitionConsumer, TopicProducer,
     TopicProducerConfigBuilder,
+};
+
+#[cfg(any(feature = "sink", feature = "source"))]
+use fluvio_smartengine::metadata::{
+    SmartModuleContextData, SmartModuleInvocation, SmartModuleInvocationWasm, SmartModuleKind,
 };
 
 use crate::error::CliError;
@@ -200,7 +201,6 @@ impl CommonConnectorOpt {
             &self.smartmodule_common.aggregate,
         ) {
             (Some(smartmodule_name), _, _, _, _, _) => {
-                use fluvio_spu_schema::server::stream_fetch::SmartModuleContextData;
                 let context = match &self.smartmodule_common.aggregate_initial_value {
                     Some(initial_value) => SmartModuleContextData::Aggregate {
                         accumulator: initial_value.as_bytes().to_vec(),
@@ -275,8 +275,10 @@ impl CommonConnectorOpt {
 
     pub async fn create_consumer_stream(
         &self,
-    ) -> anyhow::Result<impl tokio_stream::Stream<Item = Result<Record, ErrorCode>>> {
-        let fluvio = fluvio::Fluvio::connect().await?;
+    ) -> anyhow::Result<
+        impl tokio_stream::Stream<Item = Result<Record, fluvio_protocol::link::ErrorCode>>,
+    > {
+        let fluvio = Fluvio::connect().await?;
         let params = self.smartmodule_parameters().into();
         let wasm_invocation: Option<SmartModuleInvocation> = match (
             &self.smartmodule_common.smart_module,
@@ -287,7 +289,6 @@ impl CommonConnectorOpt {
             &self.smartmodule_common.aggregate,
         ) {
             (Some(smartmodule), _, _, _, _, _) => {
-                use fluvio_spu_schema::server::stream_fetch::SmartModuleContextData;
                 let context = match &self.smartmodule_common.aggregate_initial_value {
                     Some(initial_value) => SmartModuleContextData::Aggregate {
                         accumulator: initial_value.as_bytes().to_vec(),

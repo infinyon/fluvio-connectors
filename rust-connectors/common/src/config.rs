@@ -39,6 +39,9 @@ pub struct ConnectorConfig {
 
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub consumer: Option<ConsumerParameters>,
+
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub transform: Option<TransformParameters>,
 }
 
 #[allow(clippy::derive_partial_eq_without_eq)]
@@ -68,6 +71,19 @@ pub struct ProducerParameters {
     batch_size: Option<ByteSize>,
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+pub struct TransformParameters(pub Vec<TransformStep>);
+
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+pub struct TransformStep {
+    uses: String,
+    invoke: String,
+    #[serde(deserialize_with = "deserialize_to_json_string")]
+    with: String,
+}
+
 impl ConnectorConfig {
     pub fn from_file<P: Into<PathBuf>>(path: P) -> Result<Self, ConnectorLoadError> {
         let mut file = File::open(path.into())?;
@@ -87,79 +103,6 @@ impl ConnectorConfig {
         }
         Ok(connector_config)
     }
-}
-
-#[test]
-fn full_yaml_test() {
-    //use pretty_assertions::assert_eq;
-    let _connector_cfg = ConnectorConfig::from_file("test-data/connectors/full-config.yaml")
-        .expect("Failed to load test config");
-    /*
-     * TODO; Check that this matches.
-    let out: ManagedConnectorSpec = connector_cfg.into();
-    let expected_params = BTreeMap::from([
-        ("consumer-partition".to_string(), "10".to_string().into()),
-        ("producer-linger".to_string(), "1ms".to_string().into()),
-        (
-            "producer-batch-size".to_string(),
-            "44.0 MB".to_string().into(),
-        ),
-        (
-            "producer-compression".to_string(),
-            "gzip".to_string().into(),
-        ),
-        ("param_1".to_string(), "mqtt.hsl.fi".to_string().into()),
-        (
-            "param_2".to_string(),
-            vec!["foo:baz".to_string(), "bar".to_string()].into(),
-        ),
-        (
-            "param_3".to_string(),
-            BTreeMap::from([
-                ("bar".to_string(), "10.0".to_string()),
-                ("foo".to_string(), "bar".to_string()),
-                ("linger.ms".to_string(), "10".to_string()),
-            ])
-            .into(),
-        ),
-        ("param_4".to_string(), "true".to_string().into()),
-        ("param_5".to_string(), "10".to_string().into()),
-        (
-            "param_6".to_string(),
-            vec!["-10".to_string(), "-10.0".to_string()].into(),
-        ),
-    ]);
-    assert_eq!(out.parameters, expected_params);
-    */
-}
-#[test]
-fn simple_yaml_test() {
-    let _connector_cfg = ConnectorConfig::from_file("test-data/connectors/simple.yaml")
-        .expect("Failed to load test config");
-}
-
-#[test]
-fn error_yaml_tests() {
-    let connector_cfg = ConnectorConfig::from_file("test-data/connectors/error-linger.yaml")
-        .expect_err("This yaml should error");
-    #[cfg(unix)]
-    assert_eq!("Yaml(Message(\"invalid value: string \\\"1\\\", expected a duration\", Some(Pos { marker: Marker { index: 100, line: 7, col: 10 }, path: \"producer.linger\" })))", format!("{:?}", connector_cfg));
-    let connector_cfg = ConnectorConfig::from_file("test-data/connectors/error-compression.yaml")
-        .expect_err("This yaml should error");
-    #[cfg(unix)]
-    assert_eq!("Yaml(Message(\"unknown variant `gzipaoeu`, expected one of `none`, `gzip`, `snappy`, `lz4`\", Some(Pos { marker: Marker { index: 105, line: 7, col: 15 }, path: \"producer.compression\" })))", format!("{:?}", connector_cfg));
-
-    let connector_cfg = ConnectorConfig::from_file("test-data/connectors/error-batchsize.yaml")
-        .expect_err("This yaml should error");
-    #[cfg(unix)]
-    assert_eq!(
-        "ByteSizeParse(\"couldn't parse \\\"aoeu\\\" into a known SI unit, couldn't parse unit of \\\"aoeu\\\"\")",
-        format!("{:?}", connector_cfg)
-    );
-    let connector_cfg = ConnectorConfig::from_file("test-data/connectors/error-version.yaml")
-        .expect_err("This yaml should error");
-    #[cfg(unix)]
-    assert_eq!("Yaml(Message(\"missing field `version`\", Some(Pos { marker: Marker { index: 4, line: 1, col: 4 }, path: \".\" })))", format!("{:?}", connector_cfg));
 }
 
 #[allow(clippy::derive_partial_eq_without_eq)]
@@ -216,6 +159,31 @@ impl Default for ManagedConnectorParameterValue {
         Self::Vec(Vec::new())
     }
 }
+
+impl From<String> for ManagedConnectorParameterValue {
+    fn from(str: String) -> Self {
+        Self::String(str)
+    }
+}
+
+impl From<&str> for ManagedConnectorParameterValue {
+    fn from(str: &str) -> Self {
+        Self::String(str.to_string())
+    }
+}
+
+impl From<Vec<String>> for ManagedConnectorParameterValue {
+    fn from(vec: Vec<String>) -> Self {
+        Self::Vec(vec)
+    }
+}
+
+impl From<BTreeMap<String, String>> for ManagedConnectorParameterValue {
+    fn from(map: BTreeMap<String, String>) -> Self {
+        Self::Map(map)
+    }
+}
+
 use serde::de::{self, MapAccess, SeqAccess, Visitor};
 use serde::Deserializer;
 struct ParameterValueVisitor;
@@ -306,45 +274,299 @@ impl<'de> Visitor<'de> for ParameterValueVisitor {
     }
 }
 
-#[test]
-fn deserialize_test() {
-    let yaml = r#"
-name: kafka-out
-parameters:
-  param_1: "param_str"
-  param_2:
-   - item_1
-   - item_2
-   - 10
-   - 10.0
-   - true
-   - On
-   - Off
-   - null
-  param_3:
-    arg1: val1
-    arg2: 10
-    arg3: -10
-    arg4: false
-    arg5: 1.0
-    arg6: null
-    arg7: On
-    arg8: Off
-  param_4: 10
-  param_5: 10.0
-  param_6: -10
-  param_7: True
-  param_8: 0xf1
-  param_9: null
-  param_10: 12.3015e+05
-  param_11: [On, Off]
-  param_12: true
-secrets: {}
-topic: poc1
-type: kafka-sink
-version: latest
-"#;
-    let connector_spec: ConnectorConfig =
-        serde_yaml::from_str(yaml).expect("Failed to deserialize");
-    println!("{:?}", connector_spec);
+fn deserialize_to_json_string<'de, D>(deserializer: D) -> Result<String, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    struct MapAsJsonString;
+    impl<'de> Visitor<'de> for MapAsJsonString {
+        type Value = String;
+
+        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            formatter.write_str("str, string or map")
+        }
+
+        fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+        where
+            E: de::Error,
+        {
+            Ok(v.to_string())
+        }
+
+        fn visit_string<E>(self, v: String) -> Result<Self::Value, E>
+        where
+            E: de::Error,
+        {
+            Ok(v)
+        }
+
+        fn visit_map<M>(self, map: M) -> Result<Self::Value, M::Error>
+        where
+            M: MapAccess<'de>,
+        {
+            let json: serde_json::Value =
+                Deserialize::deserialize(de::value::MapAccessDeserializer::new(map))?;
+            serde_json::to_string(&json)
+                .map_err(|err| de::Error::custom(format!("unable to serialize to json: {}", err)))
+        }
+    }
+    deserializer.deserialize_any(MapAsJsonString)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use pretty_assertions::assert_eq;
+
+    #[test]
+    fn full_yaml_test() {
+        //given
+        let expected = ConnectorConfig {
+            name: "my-test-mqtt".to_string(),
+            type_: "mqtt".to_string(),
+            topic: "my-mqtt".to_string(),
+            version: "0.1.0".to_string(),
+            parameters: BTreeMap::from([
+                ("param_1".to_string(), "mqtt.hsl.fi".to_string().into()),
+                (
+                    "param_2".to_string(),
+                    vec!["foo:baz".to_string(), "bar".to_string()].into(),
+                ),
+                (
+                    "param_3".to_string(),
+                    BTreeMap::from([
+                        ("bar".to_string(), "10.0".to_string()),
+                        ("foo".to_string(), "bar".to_string()),
+                        ("linger.ms".to_string(), "10".to_string()),
+                    ])
+                    .into(),
+                ),
+                ("param_4".to_string(), "true".to_string().into()),
+                ("param_5".to_string(), "10".to_string().into()),
+                (
+                    "param_6".to_string(),
+                    vec!["-10".to_string(), "-10.0".to_string()].into(),
+                ),
+            ]),
+            secrets: BTreeMap::from([("foo".to_string(), SecretString("bar".to_string()))]),
+            producer: Some(ProducerParameters {
+                linger: Some(Duration::from_millis(1)),
+                compression: Some(Compression::Gzip),
+                batch_size_string: Some("44.0 MB".to_string()),
+                batch_size: Some(ByteSize::mb(44)),
+            }),
+            consumer: Some(ConsumerParameters {
+                partition: Some(10),
+            }),
+            transform: Some(TransformParameters(vec![TransformStep {
+                uses: "infinyon/json-sql".to_string(),
+                invoke: "insert".to_string(),
+                with: "{\"table\":\"topic_message\"}".to_string(),
+            }])),
+        };
+
+        //when
+        let connector_cfg = ConnectorConfig::from_file("test-data/connectors/full-config.yaml")
+            .expect("Failed to load test config");
+
+        //then
+        assert_eq!(connector_cfg, expected);
+    }
+    #[test]
+    fn simple_yaml_test() {
+        //given
+        let expected = ConnectorConfig {
+            name: "my-test-mqtt".to_string(),
+            type_: "mqtt".to_string(),
+            topic: "my-mqtt".to_string(),
+            version: "0.1.0".to_string(),
+            parameters: BTreeMap::new(),
+            secrets: BTreeMap::new(),
+            producer: None,
+            consumer: None,
+            transform: None,
+        };
+
+        //when
+        let connector_cfg = ConnectorConfig::from_file("test-data/connectors/simple.yaml")
+            .expect("Failed to load test config");
+
+        //then
+        assert_eq!(connector_cfg, expected);
+    }
+
+    #[test]
+    fn error_yaml_tests() {
+        let connector_cfg = ConnectorConfig::from_file("test-data/connectors/error-linger.yaml")
+            .expect_err("This yaml should error");
+        #[cfg(unix)]
+        assert_eq!("Yaml(Message(\"invalid value: string \\\"1\\\", expected a duration\", Some(Pos { marker: Marker { index: 100, line: 7, col: 10 }, path: \"producer.linger\" })))", format!("{:?}", connector_cfg));
+        let connector_cfg =
+            ConnectorConfig::from_file("test-data/connectors/error-compression.yaml")
+                .expect_err("This yaml should error");
+        #[cfg(unix)]
+        assert_eq!("Yaml(Message(\"unknown variant `gzipaoeu`, expected one of `none`, `gzip`, `snappy`, `lz4`\", Some(Pos { marker: Marker { index: 105, line: 7, col: 15 }, path: \"producer.compression\" })))", format!("{:?}", connector_cfg));
+
+        let connector_cfg = ConnectorConfig::from_file("test-data/connectors/error-batchsize.yaml")
+            .expect_err("This yaml should error");
+        #[cfg(unix)]
+        assert_eq!(
+            "ByteSizeParse(\"couldn't parse \\\"aoeu\\\" into a known SI unit, couldn't parse unit of \\\"aoeu\\\"\")",
+            format!("{:?}", connector_cfg)
+        );
+        let connector_cfg = ConnectorConfig::from_file("test-data/connectors/error-version.yaml")
+            .expect_err("This yaml should error");
+        #[cfg(unix)]
+        assert_eq!("Yaml(Message(\"missing field `version`\", Some(Pos { marker: Marker { index: 4, line: 1, col: 4 }, path: \".\" })))", format!("{:?}", connector_cfg));
+    }
+
+    #[test]
+    fn deserialize_test() {
+        //given
+        let yaml = r#"
+            name: kafka-out
+            parameters:
+              param_1: "param_str"
+              param_2:
+               - item_1
+               - item_2
+               - 10
+               - 10.0
+               - true
+               - On
+               - Off
+               - null
+              param_3:
+                arg1: val1
+                arg2: 10
+                arg3: -10
+                arg4: false
+                arg5: 1.0
+                arg6: null
+                arg7: On
+                arg8: Off
+              param_4: 10
+              param_5: 10.0
+              param_6: -10
+              param_7: True
+              param_8: 0xf1
+              param_9: null
+              param_10: 12.3015e+05
+              param_11: [On, Off]
+              param_12: true
+            secrets: {}
+            topic: poc1
+            type: kafka-sink
+            version: latest
+            "#;
+
+        let expected = ConnectorConfig {
+            name: "kafka-out".to_string(),
+            type_: "kafka-sink".to_string(),
+            topic: "poc1".to_string(),
+            version: "latest".to_string(),
+            parameters: BTreeMap::from([
+                ("param_1".to_string(), "param_str".into()),
+                ("param_10".to_string(), "1230150".into()),
+                (
+                    "param_11".to_string(),
+                    vec!["On".to_string(), "Off".to_string()].into(),
+                ),
+                ("param_12".to_string(), "true".into()),
+                (
+                    "param_2".to_string(),
+                    vec![
+                        "item_1".to_string(),
+                        "item_2".to_string(),
+                        "10".to_string(),
+                        "10.0".to_string(),
+                        "true".to_string(),
+                        "On".to_string(),
+                        "Off".to_string(),
+                        "null".to_string(),
+                    ]
+                    .into(),
+                ),
+                (
+                    "param_3".to_string(),
+                    BTreeMap::from([
+                        ("arg1".to_string(), "val1".to_string()),
+                        ("arg2".to_string(), "10".to_string()),
+                        ("arg3".to_string(), "-10".to_string()),
+                        ("arg4".to_string(), "false".to_string()),
+                        ("arg5".to_string(), "1.0".to_string()),
+                        ("arg6".to_string(), "null".to_string()),
+                        ("arg7".to_string(), "On".to_string()),
+                        ("arg8".to_string(), "Off".to_string()),
+                    ])
+                    .into(),
+                ),
+                ("param_4".to_string(), "10".into()),
+                ("param_5".to_string(), "10".into()),
+                ("param_6".to_string(), "-10".into()),
+                ("param_7".to_string(), "True".into()),
+                ("param_8".to_string(), "241".into()),
+                ("param_9".to_string(), "null".into()),
+            ]),
+            secrets: BTreeMap::new(),
+            producer: None,
+            consumer: None,
+            transform: None,
+        };
+
+        //when
+        let connector_spec: ConnectorConfig =
+            serde_yaml::from_str(yaml).expect("Failed to deserialize");
+
+        //then
+        assert_eq!(connector_spec, expected);
+    }
+
+    #[test]
+    fn test_deserialize_transform() {
+        //given
+
+        //when
+        let connector_spec: ConnectorConfig =
+            ConnectorConfig::from_file("test-data/connectors/with_transform.yaml")
+                .expect("Failed to deserialize");
+
+        //then
+        assert!(connector_spec.transform.is_some());
+        assert_eq!(
+            connector_spec.transform.as_ref().unwrap().0[0]
+                .uses
+                .as_str(),
+            "infinyon/sql"
+        );
+        assert_eq!(
+            connector_spec.transform.as_ref().unwrap().0[0]
+                .invoke
+                .as_str(),
+            "insert"
+        );
+        assert_eq!(&connector_spec.transform.as_ref().unwrap().0[0].with,
+                       "{\"map-columns\":{\"device_id\":{\"json-key\":\"device.device_id\",\"value\":{\"default\":0,\"required\":true,\"type\":\"int\"}},\"record\":{\"json-key\":\"$\",\"value\":{\"required\":true,\"type\":\"jsonb\"}}},\"table\":\"topic_message\"}");
+    }
+
+    #[test]
+    fn test_deserialize_transform_many() {
+        //given
+
+        //when
+        let connector_spec: ConnectorConfig =
+            ConnectorConfig::from_file("test-data/connectors/with_transform_many.yaml")
+                .expect("Failed to deserialize");
+
+        //then
+        assert!(connector_spec.transform.is_some());
+        let transform = connector_spec.transform.unwrap();
+        assert_eq!(transform.0.len(), 2);
+        assert_eq!(transform.0[0].uses.as_str(), "infinyon/json-sql");
+        assert_eq!(transform.0[0].invoke.as_str(), "insert");
+        assert_eq!(&transform.0[0].with, "{\"table\":\"topic_message\"}");
+        assert_eq!(transform.0[1].uses.as_str(), "infinyon/avro-sql");
+        assert_eq!(transform.0[1].invoke.as_str(), "insert");
+        assert_eq!(&transform.0[1].with, "{\"table\":\"topic_message\"}");
+    }
 }

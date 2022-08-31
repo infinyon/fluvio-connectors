@@ -3,6 +3,8 @@ mod delete;
 mod local;
 mod print;
 
+use anyhow::Context;
+use itertools::Itertools;
 use std::collections::HashMap;
 
 use apply::ApplyOpt;
@@ -76,7 +78,7 @@ fn convert_to_k8_deployment(config: &ConnectorConfig) -> anyhow::Result<Deployme
         ..Default::default()
     };
 
-    let args = build_args(config);
+    let args = build_args(config)?;
 
     let type_ = &config.type_;
     let image = format!("infinyon/fluvio-connect-{}:{}", type_, config.version);
@@ -132,7 +134,7 @@ fn convert_to_k8_deployment(config: &ConnectorConfig) -> anyhow::Result<Deployme
     })
 }
 
-fn build_args(config: &ConnectorConfig) -> Vec<String> {
+fn build_args(config: &ConnectorConfig) -> anyhow::Result<Vec<String>> {
     let parameters = &config.parameters;
 
     let parameters: Vec<String> = parameters
@@ -168,5 +170,15 @@ fn build_args(config: &ConnectorConfig) -> Vec<String> {
     let mut args = vec!["--".to_string(), format!("--fluvio-topic={}", config.topic)];
     args.extend(parameters);
 
-    args
+    if let Some(ref transform_params) = config.transform {
+        let transforms: Result<Vec<String>, serde_json::Error> = transform_params
+            .0
+            .iter()
+            .map(serde_json::to_string)
+            .map_ok(|transform| format!("--transform={}", transform))
+            .collect();
+        args.extend(transforms.context("unable serialize TransformParameters into arguments")?);
+    }
+
+    Ok(args)
 }
