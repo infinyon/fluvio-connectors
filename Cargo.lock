@@ -988,7 +988,7 @@ dependencies = [
 
 [[package]]
 name = "connector-run"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "clap 3.2.19",
@@ -1465,7 +1465,7 @@ checksum = "4f94fa09c2aeea5b8839e414b7b841bf429fd25b9c522116ac97ee87856d88b2"
 
 [[package]]
 name = "dynamodb-sink"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "anyhow",
  "aws-config",
@@ -1761,7 +1761,7 @@ dependencies = [
 
 [[package]]
 name = "fluvio-connectors-common"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "bytesize",
@@ -2611,7 +2611,7 @@ dependencies = [
 
 [[package]]
 name = "http-source"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
  "clap 3.2.19",
  "fluvio-connectors-common",
@@ -2985,7 +2985,7 @@ dependencies = [
 
 [[package]]
 name = "kafka-sink"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "anyhow",
  "clap 3.2.19",
@@ -3002,7 +3002,7 @@ dependencies = [
 
 [[package]]
 name = "kafka-source"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "anyhow",
  "clap 3.2.19",
@@ -3209,7 +3209,7 @@ dependencies = [
 
 [[package]]
 name = "mqtt-source"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
  "anyhow",
  "async-global-executor",
@@ -3667,7 +3667,7 @@ dependencies = [
 
 [[package]]
 name = "postgres-sink"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "bytes",
  "clap 3.2.19",
@@ -3696,7 +3696,7 @@ dependencies = [
 
 [[package]]
 name = "postgres-source"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "adaptive_backoff",
  "bytes",
@@ -4587,7 +4587,7 @@ dependencies = [
 
 [[package]]
 name = "slack-sink"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "anyhow",
  "clap 3.2.19",
@@ -4827,7 +4827,7 @@ dependencies = [
 
 [[package]]
 name = "test-connector"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "anyhow",
  "async-std",
