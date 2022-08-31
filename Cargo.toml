@@ -11,10 +11,12 @@ members = [
     "rust-connectors/sinks/dynamodb/",
     "rust-connectors/sinks/kafka",
     "rust-connectors/models/fluvio-model-postgres",
+    "rust-connectors/models/fluvio-model-sql",
     "rust-connectors/utils/mocks/http-json-mock/",
     "rust-connectors/utils/connector-run",
     "rust-connectors/utils/test-connector",
     "rust-connectors/utils/fluvio-smartstream-map/",
+    "smartmodules/json-sql",
     "examples/github-stars/github-stars-smartmodule-map/",
     "examples/github-stars/slack-display-smartmodule-map/",
 ]
