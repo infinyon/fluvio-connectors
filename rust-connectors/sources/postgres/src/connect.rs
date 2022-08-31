@@ -1,7 +1,6 @@
 use crate::convert::convert_replication_event;
 use crate::{Error, PgConnectorOpt};
-use fluvio::metadata::topic::TopicSpec;
-use fluvio::{Fluvio, Offset, TopicProducer};
+use fluvio_connectors_common::fluvio::{Fluvio, Offset, RecordKey, TopicProducer, TopicSpec};
 use fluvio_model_postgres::{Column, LogicalReplicationMessage, ReplicationEvent};
 use once_cell::sync::Lazy;
 use postgres_protocol::message::backend::{
@@ -197,7 +196,7 @@ impl PgConnector {
                 let event = convert_replication_event(&self.relations, &xlog_data)?;
                 let json = serde_json::to_string(&event)?;
 
-                self.producer.send(fluvio::RecordKey::NULL, json).await?;
+                self.producer.send(RecordKey::NULL, json).await?;
 
                 match event.message {
                     LogicalReplicationMessage::Relation(rel) => {

@@ -11,7 +11,6 @@ path = "src/bin/main.rs"
 tracing = { version = "0.1" }
 tokio = { version = "1", features = ["full"] }
 tokio-stream = { version = "0.1" }
-fluvio = { version = "0.13" }
 fluvio-future = { version = "0.4", features = ["subscriber", "timer"] }
 fluvio-connectors-common = { path = "../../common", features = ["source"]}
 fluvio-model-postgres = { path = "../../models/fluvio-model-postgres" }
@@ -43,4 +42,5 @@ adaptive_backoff = "0.2.1"
 
 [dev-dependencies]
 fluvio-future = { version = "0.4.1", features = ["fixture"] }
+fluvio = { version = "0.13", default-features = false }
 uuid = { version = "1.1", features = ["serde", "v4"] }
