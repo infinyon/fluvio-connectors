@@ -12,7 +12,7 @@ crate-type = ['cdylib', 'rlib']
 
 [dependencies]
 fluvio-model-sql = { path = "../../rust-connectors/models/fluvio-model-sql" }
-fluvio-smartmodule = { git = "https://github.com/infinyon/fluvio" }
+fluvio-smartmodule = { version = "0.4" }
 
 once_cell = { version = "1.13", default-features = false }
 serde = { version = "1", default-features = false, features = ["derive"] }
