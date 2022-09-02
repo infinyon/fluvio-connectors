@@ -1,0 +1,11 @@
+[package]
+name = "fluvio-model-sql"
+version = "0.0.1"
+authors = ["Fluvio Contributors <team@fluvio.io>"]
+edition = "2021"
+license = "Apache-2.0"
+publish = false
+description = "The data model intended for using inside SQL connector"
+
+[dependencies]
+serde = { version = "1", default-features = false, features = ["derive", "std"] }
