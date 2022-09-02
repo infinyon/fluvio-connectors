@@ -170,9 +170,8 @@ fn build_args(config: &ConnectorConfig) -> anyhow::Result<Vec<String>> {
     let mut args = vec!["--".to_string(), format!("--fluvio-topic={}", config.topic)];
     args.extend(parameters);
 
-    if let Some(ref transform_params) = config.transform {
+    if let Some(ref transform_params) = config.transforms {
         let transforms: Result<Vec<String>, serde_json::Error> = transform_params
-            .0
             .iter()
             .map(serde_json::to_string)
             .map_ok(|transform| format!("--transform={}", transform))
