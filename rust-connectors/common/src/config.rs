@@ -41,7 +41,7 @@ pub struct ConnectorConfig {
     pub consumer: Option<ConsumerParameters>,
 
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub transform: Option<TransformParameters>,
+    pub transforms: Option<Vec<TransformStep>>,
 }
 
 #[allow(clippy::derive_partial_eq_without_eq)]
@@ -70,10 +70,6 @@ pub struct ProducerParameters {
     #[serde(skip)]
     batch_size: Option<ByteSize>,
 }
-
-#[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
-pub struct TransformParameters(pub Vec<TransformStep>);
 
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
@@ -358,11 +354,11 @@ mod tests {
             consumer: Some(ConsumerParameters {
                 partition: Some(10),
             }),
-            transform: Some(TransformParameters(vec![TransformStep {
+            transforms: Some(vec![TransformStep {
                 uses: "infinyon/json-sql".to_string(),
                 invoke: "insert".to_string(),
                 with: "{\"table\":\"topic_message\"}".to_string(),
-            }])),
+            }]),
         };
 
         //when
@@ -384,7 +380,7 @@ mod tests {
             secrets: BTreeMap::new(),
             producer: None,
             consumer: None,
-            transform: None,
+            transforms: None,
         };
 
         //when
@@ -511,7 +507,7 @@ mod tests {
             secrets: BTreeMap::new(),
             producer: None,
             consumer: None,
-            transform: None,
+            transforms: None,
         };
 
         //when
@@ -532,20 +528,18 @@ mod tests {
                 .expect("Failed to deserialize");
 
         //then
-        assert!(connector_spec.transform.is_some());
+        assert!(connector_spec.transforms.is_some());
         assert_eq!(
-            connector_spec.transform.as_ref().unwrap().0[0]
-                .uses
-                .as_str(),
+            connector_spec.transforms.as_ref().unwrap()[0].uses.as_str(),
             "infinyon/sql"
         );
         assert_eq!(
-            connector_spec.transform.as_ref().unwrap().0[0]
+            connector_spec.transforms.as_ref().unwrap()[0]
                 .invoke
                 .as_str(),
             "insert"
         );
-        assert_eq!(&connector_spec.transform.as_ref().unwrap().0[0].with,
+        assert_eq!(&connector_spec.transforms.as_ref().unwrap()[0].with,
                        "{\"map-columns\":{\"device_id\":{\"json-key\":\"device.device_id\",\"value\":{\"default\":0,\"required\":true,\"type\":\"int\"}},\"record\":{\"json-key\":\"$\",\"value\":{\"required\":true,\"type\":\"jsonb\"}}},\"table\":\"topic_message\"}");
     }
 
@@ -559,14 +553,14 @@ mod tests {
                 .expect("Failed to deserialize");
 
         //then
-        assert!(connector_spec.transform.is_some());
-        let transform = connector_spec.transform.unwrap();
-        assert_eq!(transform.0.len(), 2);
-        assert_eq!(transform.0[0].uses.as_str(), "infinyon/json-sql");
-        assert_eq!(transform.0[0].invoke.as_str(), "insert");
-        assert_eq!(&transform.0[0].with, "{\"table\":\"topic_message\"}");
-        assert_eq!(transform.0[1].uses.as_str(), "infinyon/avro-sql");
-        assert_eq!(transform.0[1].invoke.as_str(), "insert");
-        assert_eq!(&transform.0[1].with, "{\"table\":\"topic_message\"}");
+        assert!(connector_spec.transforms.is_some());
+        let transform = connector_spec.transforms.unwrap();
+        assert_eq!(transform.len(), 2);
+        assert_eq!(transform[0].uses.as_str(), "infinyon/json-sql");
+        assert_eq!(transform[0].invoke.as_str(), "insert");
+        assert_eq!(&transform[0].with, "{\"table\":\"topic_message\"}");
+        assert_eq!(transform[1].uses.as_str(), "infinyon/avro-sql");
+        assert_eq!(transform[1].invoke.as_str(), "insert");
+        assert_eq!(&transform[1].with, "{\"table\":\"topic_message\"}");
     }
 }

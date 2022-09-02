@@ -26,7 +26,7 @@ producer:
   compression: gzip
 consumer:
   partition: 10
-transform:
+transforms:
   - uses: infinyon/json-sql
     invoke: insert
     with:
