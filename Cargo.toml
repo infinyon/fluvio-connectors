@@ -23,4 +23,4 @@ members = [
 resolver = "2"
 
 [patch.crates-io]
-fluvio-smartmodule = { git = "https://github.com/infinyon/fluvio" }
+fluvio-smartmodule = { git = "https://github.com/infinyon/fluvio", rev = "e80f3ff" }

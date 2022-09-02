@@ -1671,7 +1671,7 @@ dependencies = [
 [[package]]
 name = "fluvio-compression"
 version = "0.2.1"
-source = "git+https://github.com/infinyon/fluvio#e80f3ff7c1626899a7937f1abf55f0bcae76e316"
+source = "git+https://github.com/infinyon/fluvio?rev=e80f3ff#e80f3ff7c1626899a7937f1abf55f0bcae76e316"
 dependencies = [
  "bytes",
  "flate2",
@@ -1825,7 +1825,7 @@ dependencies = [
 [[package]]
 name = "fluvio-protocol"
 version = "0.8.0"
-source = "git+https://github.com/infinyon/fluvio#e80f3ff7c1626899a7937f1abf55f0bcae76e316"
+source = "git+https://github.com/infinyon/fluvio?rev=e80f3ff#e80f3ff7c1626899a7937f1abf55f0bcae76e316"
 dependencies = [
  "bytes",
  "content_inspector",
@@ -1856,7 +1856,7 @@ dependencies = [
 [[package]]
 name = "fluvio-protocol-derive"
 version = "0.4.3"
-source = "git+https://github.com/infinyon/fluvio#e80f3ff7c1626899a7937f1abf55f0bcae76e316"
+source = "git+https://github.com/infinyon/fluvio?rev=e80f3ff#e80f3ff7c1626899a7937f1abf55f0bcae76e316"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1912,11 +1912,11 @@ dependencies = [
 [[package]]
 name = "fluvio-smartmodule"
 version = "0.4.0"
-source = "git+https://github.com/infinyon/fluvio#e80f3ff7c1626899a7937f1abf55f0bcae76e316"
+source = "git+https://github.com/infinyon/fluvio?rev=e80f3ff#e80f3ff7c1626899a7937f1abf55f0bcae76e316"
 dependencies = [
  "eyre",
  "fluvio-protocol 0.8.0",
- "fluvio-smartmodule-derive 0.2.1 (git+https://github.com/infinyon/fluvio)",
+ "fluvio-smartmodule-derive 0.2.1 (git+https://github.com/infinyon/fluvio?rev=e80f3ff)",
  "thiserror",
  "tracing",
 ]
@@ -1935,7 +1935,7 @@ dependencies = [
 [[package]]
 name = "fluvio-smartmodule-derive"
 version = "0.2.1"
-source = "git+https://github.com/infinyon/fluvio#e80f3ff7c1626899a7937f1abf55f0bcae76e316"
+source = "git+https://github.com/infinyon/fluvio?rev=e80f3ff#e80f3ff7c1626899a7937f1abf55f0bcae76e316"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2034,7 +2034,7 @@ dependencies = [
 [[package]]
 name = "fluvio-types"
 version = "0.3.8"
-source = "git+https://github.com/infinyon/fluvio#e80f3ff7c1626899a7937f1abf55f0bcae76e316"
+source = "git+https://github.com/infinyon/fluvio?rev=e80f3ff#e80f3ff7c1626899a7937f1abf55f0bcae76e316"
 dependencies = [
  "thiserror",
  "tracing",
