@@ -5,14 +5,16 @@ use humantime::parse_duration;
 use schemars::{schema_for, JsonSchema};
 use std::{collections::BTreeMap, time::Duration};
 
-pub use fluvio::{
-    consumer,
-    consumer::{Record, SmartModuleInvocation, SmartModuleInvocationWasm, SmartModuleKind},
-    dataplane::ErrorCode,
-    metadata::smartmodule::SmartModuleSpec,
-    metadata::topic::TopicSpec,
-    Compression, ConsumerConfig, Fluvio, FluvioError, PartitionConsumer, TopicProducer,
-    TopicProducerConfigBuilder,
+use fluvio::{
+    metadata::smartmodule::SmartModuleSpec, metadata::topic::TopicSpec, Compression, Fluvio,
+};
+
+#[cfg(any(feature = "sink", feature = "source"))]
+use fluvio_smartengine::metadata::SmartModuleContextData;
+
+#[cfg(feature = "sink")]
+use fluvio_smartengine::metadata::{
+    SmartModuleInvocation, SmartModuleInvocationWasm, SmartModuleKind,
 };
 
 use crate::error::CliError;
@@ -159,10 +161,10 @@ pub struct CommonProducerOpt {
 
 #[cfg(feature = "source")]
 impl CommonConnectorOpt {
-    pub async fn create_producer(&self) -> anyhow::Result<TopicProducer> {
+    pub async fn create_producer(&self) -> anyhow::Result<fluvio::TopicProducer> {
         let fluvio = fluvio::Fluvio::connect().await?;
         self.ensure_topic_exists().await?;
-        let config_builder = TopicProducerConfigBuilder::default();
+        let config_builder = fluvio::TopicProducerConfigBuilder::default();
         let params = self.smartmodule_parameters();
 
         // Linger
@@ -200,7 +202,6 @@ impl CommonConnectorOpt {
             &self.smartmodule_common.aggregate,
         ) {
             (Some(smartmodule_name), _, _, _, _, _) => {
-                use fluvio_spu_schema::server::stream_fetch::SmartModuleContextData;
                 let context = match &self.smartmodule_common.aggregate_initial_value {
                     Some(initial_value) => SmartModuleContextData::Aggregate {
                         accumulator: initial_value.as_bytes().to_vec(),
@@ -237,46 +238,22 @@ impl CommonConnectorOpt {
 
         Ok(producer)
     }
-    async fn get_aggregate_initial_value(&self, fluvio: &Fluvio) -> anyhow::Result<Vec<u8>> {
-        use tokio_stream::StreamExt;
-        if let Some(initial_value) = &self.smartmodule_common.aggregate_initial_value {
-            if initial_value == "use-last" {
-                let consumer = fluvio
-                    .partition_consumer(self.fluvio_topic.clone(), 0)
-                    .await?;
-                let stream = consumer.stream(fluvio::Offset::from_end(1)).await?;
-                let timeout = stream.timeout(Duration::from_millis(3000));
-                tokio::pin!(timeout);
-                let last_record = StreamExt::try_next(&mut timeout)
-                    .await
-                    .ok()
-                    .flatten()
-                    .transpose();
-
-                if let Ok(Some(record)) = last_record {
-                    Ok(record.value().to_vec())
-                } else {
-                    Ok(Vec::new())
-                }
-            } else {
-                Ok(initial_value.as_bytes().to_vec())
-            }
-        } else {
-            Ok(Vec::new())
-        }
-    }
 }
 #[cfg(feature = "sink")]
 impl CommonConnectorOpt {
-    pub async fn create_consumer(&self) -> anyhow::Result<PartitionConsumer> {
+    pub async fn create_consumer(&self) -> anyhow::Result<fluvio::PartitionConsumer> {
         self.ensure_topic_exists().await?;
         Ok(fluvio::consumer(&self.fluvio_topic, self.consumer_common.consumer_partition).await?)
     }
 
     pub async fn create_consumer_stream(
         &self,
-    ) -> anyhow::Result<impl tokio_stream::Stream<Item = Result<Record, ErrorCode>>> {
-        let fluvio = fluvio::Fluvio::connect().await?;
+    ) -> anyhow::Result<
+        impl tokio_stream::Stream<
+            Item = Result<fluvio::consumer::Record, fluvio_protocol::link::ErrorCode>,
+        >,
+    > {
+        let fluvio = Fluvio::connect().await?;
         let params = self.smartmodule_parameters().into();
         let wasm_invocation: Option<SmartModuleInvocation> = match (
             &self.smartmodule_common.smart_module,
@@ -287,7 +264,6 @@ impl CommonConnectorOpt {
             &self.smartmodule_common.aggregate,
         ) {
             (Some(smartmodule), _, _, _, _, _) => {
-                use fluvio_spu_schema::server::stream_fetch::SmartModuleContextData;
                 let context = match &self.smartmodule_common.aggregate_initial_value {
                     Some(initial_value) => SmartModuleContextData::Aggregate {
                         accumulator: initial_value.as_bytes().to_vec(),
@@ -332,7 +308,7 @@ impl CommonConnectorOpt {
             }
             _ => None,
         };
-        let mut builder = ConsumerConfig::builder();
+        let mut builder = fluvio::ConsumerConfig::builder();
         builder.smartmodule(wasm_invocation);
         let config = builder.build()?;
         let consumer = self.create_consumer().await?;
@@ -397,6 +373,36 @@ impl CommonConnectorOpt {
                 decoder.read_to_end(&mut buffer)?;
                 Ok(buffer)
             }
+        }
+    }
+
+    #[cfg(any(feature = "sink", feature = "source"))]
+    async fn get_aggregate_initial_value(&self, fluvio: &Fluvio) -> anyhow::Result<Vec<u8>> {
+        use tokio_stream::StreamExt;
+        if let Some(initial_value) = &self.smartmodule_common.aggregate_initial_value {
+            if initial_value == "use-last" {
+                let consumer = fluvio
+                    .partition_consumer(self.fluvio_topic.clone(), 0)
+                    .await?;
+                let stream = consumer.stream(fluvio::Offset::from_end(1)).await?;
+                let timeout = stream.timeout(Duration::from_millis(3000));
+                tokio::pin!(timeout);
+                let last_record = StreamExt::try_next(&mut timeout)
+                    .await
+                    .ok()
+                    .flatten()
+                    .transpose();
+
+                if let Ok(Some(record)) = last_record {
+                    Ok(record.value().to_vec())
+                } else {
+                    Ok(Vec::new())
+                }
+            } else {
+                Ok(initial_value.as_bytes().to_vec())
+            }
+        } else {
+            Ok(Vec::new())
         }
     }
 }

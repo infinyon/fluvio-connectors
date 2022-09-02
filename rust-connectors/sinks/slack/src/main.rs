@@ -1,6 +1,7 @@
 use clap::Parser;
+use fluvio_connectors_common::fluvio::Record;
 use fluvio_connectors_common::git_hash_version;
-use fluvio_connectors_common::opt::{CommonConnectorOpt, Record};
+use fluvio_connectors_common::opt::CommonConnectorOpt;
 use fluvio_future::tracing::{debug, info};
 use schemars::schema_for;
 use schemars::JsonSchema;

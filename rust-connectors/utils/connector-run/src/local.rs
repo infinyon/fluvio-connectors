@@ -16,7 +16,7 @@ impl LocalOpt {
     pub fn execute(self) -> anyhow::Result<()> {
         let config = ConnectorConfig::from_file(self.config)?;
 
-        let args = build_args(&config);
+        let args = build_args(&config)?;
         let type_ = &config.type_;
         let image = format!("infinyon/fluvio-connect-{}:{}", type_, config.version);
 

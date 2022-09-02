@@ -26,3 +26,8 @@ producer:
   compression: gzip
 consumer:
   partition: 10
+transforms:
+  - uses: infinyon/json-sql
+    invoke: insert
+    with:
+      table: "topic_message"
