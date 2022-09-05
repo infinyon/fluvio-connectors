@@ -1,0 +1,26 @@
+name: json-sql-connector
+type: sql-sink
+version: latest
+topic: json-test
+create_topic: true
+parameters:
+  hub-url: 'http://10.96.19.189:8080'
+  database-url: 'postgresql://admin:test123@10.96.241.75:5432/postgresdb'
+  rust_log: 'sql_sink=INFO,sqlx=WARN'
+transforms:
+  - uses: infinyon/json-sql
+    invoke: insert
+    with:
+      table: "topic_message"
+      map-columns:
+        "device_id":
+          json-key: "device.device_id"
+          value:
+            type: "int"
+            default: "0"
+            required: true
+        "record":
+          json-key: "$"
+          value:
+            type: "jsonb"
+            required: true

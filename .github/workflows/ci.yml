@@ -84,6 +84,7 @@ jobs:
           - dynamodb-sink
           - kafka-source
           - kafka-sink
+          - sql-sink
         rust: [stable]
     env:
       RUST_BACKTRACE: full
@@ -148,6 +149,7 @@ jobs:
           - dynamodb-sink
           - kafka-source
           - kafka-sink
+          - sql-sink
     env:
       RUSTV: ${{ matrix.rust }}
       TARGET: ${{ matrix.rust-target }}
@@ -323,6 +325,7 @@ jobs:
           - dynamodb-sink
           - kafka-source
           - kafka-sink
+          - sql-sink
     steps:
       - name: Download ${{ matrix.connector-name }} x86_64-unknown-linux-musl Docker Image as Artifact
         uses: actions/download-artifact@v3

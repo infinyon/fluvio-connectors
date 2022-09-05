@@ -74,4 +74,22 @@ mod tests {
         assert_eq!(option2, Some(&value));
         assert_eq!(option3, Some(&value));
     }
+
+    #[test]
+    fn test_nested_array() {
+        //given
+        let input = json!({
+           "key1": {"key2": ["one", "two", "three"]}
+        });
+
+        //when
+        let option1 = pointer(&input, "key1.key2.0");
+        let option2 = pointer(&input, ".key1.key2.1");
+        let option3 = pointer(&input, "$.key1.key2.2");
+
+        //then
+        assert_eq!(option1, Some(&json!("one")));
+        assert_eq!(option2, Some(&json!("two")));
+        assert_eq!(option3, Some(&json!("three")));
+    }
 }
