@@ -26,7 +26,7 @@ sends new records to the SQL database (via `INSERT` statements).
 
 
 ## Transformations
-The SQL Sink connector expects the data in [Fluvio SQL Model](../../models/fluvio-model-sql) in JSON format.
+The SQL Sink connector expects the data in [Fluvio SQL Model](../../models/fluvio-model-sql/README.md) in JSON format.
 In order to work with different data formats or data structures, transformations can be applied.
 The transformation is a SmartModule pulled from the SmartModule Hub. Transformations are chained according to the order
 in the config. If a SmartModule requires configuration, it is passed via `with` section of `transforms` entry. 
@@ -46,9 +46,23 @@ in the config. If a SmartModule requires configuration, it is passed via `with` 
 | FLUVIO_DATABASE_URL | -       | String | The secret key for the sql database conection url |
 
 ### Example
-Let's look at the example of the connector with one transformation named `infinyon/json-sql`. The transformation takes
+Let's look at the example of the connector with one transformation named [infinyon/json-sql](../../../smartmodules/json-sql/README.md). The transformation takes
 records in JSON format and creates SQL insert operation to `topic_message` table. The value from `device.device_id`
 JSON field will be put to `device_id` column and the entire json body to `record` column.
+
+The JSON record:
+```json
+{
+  "device": {
+    "device_id": 1
+  }
+}
+```
+
+The SQL database (Postgres):
+```
+CREATE TABLE topic_message (device_id int, record json);
+```
 
 Connector configuration file:
 ```yaml
