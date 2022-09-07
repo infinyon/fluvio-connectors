@@ -205,7 +205,7 @@ mod tests {
     use uuid::Uuid;
 
     #[ignore]
-    #[tokio::test]
+    #[async_std::test]
     async fn test_data_types_postgres() -> anyhow::Result<()> {
         //given
         let mut db =
@@ -307,7 +307,7 @@ mod tests {
         Ok(())
     }
 
-    #[tokio::test]
+    #[async_std::test]
     async fn test_data_types_sqlite() -> anyhow::Result<()> {
         fluvio_future::subscriber::init_logger();
         //given

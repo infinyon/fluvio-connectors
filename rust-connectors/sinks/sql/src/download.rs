@@ -140,7 +140,7 @@ mod tests {
         assert!(into_version_parts("").is_err());
     }
 
-    #[tokio::test]
+    #[async_std::test]
     async fn test_non_ok_response() {
         //given
         let (server, downloader) = test_downloader();
@@ -161,7 +161,7 @@ mod tests {
             .contains("unsuccessful response from Hub"))
     }
 
-    #[tokio::test]
+    #[async_std::test]
     async fn test_download() {
         //given
         let (server, downloader) = test_downloader();

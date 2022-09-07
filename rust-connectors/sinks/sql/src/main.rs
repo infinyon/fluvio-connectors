@@ -11,7 +11,7 @@ use sql_sink::db::Db;
 use sql_sink::opt::SqlConnectorOpt;
 use sql_sink::transform::Transformations;
 
-#[tokio::main]
+#[async_std::main]
 async fn main() -> anyhow::Result<()> {
     if let Some("metadata") = std::env::args().nth(1).as_deref() {
         let schema = serde_json::json!({

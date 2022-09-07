@@ -5083,6 +5083,7 @@ name = "sql-sink"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-std",
  "async-trait",
  "chrono",
  "clap 3.2.19",
@@ -5103,7 +5104,6 @@ dependencies = [
  "serde_json",
  "sqlx",
  "tar",
- "tokio",
  "url",
  "uuid",
 ]
