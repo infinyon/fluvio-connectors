@@ -1,6 +1,6 @@
 # Fluvio SQL Sink connector
 The SQL Sink connector reads records from Fluvio topic, applies configured transformations, and 
-sends new records to the SQL database.
+sends new records to the SQL database (via `INSERT` statements). 
 ## Supported databases
 1. PostgreSQL
 2. SQLite
@@ -48,9 +48,9 @@ in the config. If a SmartModule requires configuration, it is passed via `with` 
 ### Example
 Let's look at the example of the connector with one transformation named `infinyon/json-sql`. The transformation takes
 records in JSON format and creates SQL insert operation to `topic_message` table. The value from `device.device_id`
-JSON field will be put to `device_id` column and the entire json body to`record` column.
+JSON field will be put to `device_id` column and the entire json body to `record` column.
 
-Create a connector configuration file:
+Connector configuration file:
 ```yaml
 # connector-config.yaml
 name: json-sql-connector
@@ -59,11 +59,11 @@ version: latest
 topic: json-test
 create_topic: true
 parameters:
-  hub-url: 'http://10.96.19.189:8080'
-  database-url: 'postgresql://admin:test123@10.96.241.75:5432/postgresdb'
+  hub-url: 'HUB_URL'
+  database-url: 'postgresql://USERNAME:PASSWORD@HOST:PORT/DB_NAME'
 secrets:
-  FLUVIO_HUB_URL: 'http://10.96.19.189:8080'
-  FLUVIO_DATABASE_URL: 'postgresql://admin:test123@10.96.241.75:5432/postgresdb'
+  FLUVIO_HUB_URL: 'HUB_URL'
+  FLUVIO_DATABASE_URL: 'postgresql://USERNAME:PASSWORD@HOST:PORT/DB_NAME'
 transforms:
   - uses: infinyon/json-sql
     invoke: insert
@@ -83,16 +83,16 @@ transforms:
             required: true
 ```
 
-Create locally managed connector (k8s):
+If you run Fluvio cluster in your own k8s cluster, you can create the connector inside that cluster using the following tool:
 ```bash
 cargo r --bin connector-run -- apply --config connector-config.yaml
 ```
-or for run it in the Docker:
+or if you want to create it in your Docker environment:
 ```bash
 cargo r --bin connector-run -- local --config connector-config.yaml
 ```
 
-To delete the connector run:
+To delete the connector from your k8s cluster run:
 ```bash
 cargo r --bin connector-run -- delete --config connector-config.yaml
 ```
