@@ -1,5 +1,4 @@
 use anyhow::anyhow;
-use async_trait::async_trait;
 use fluvio_future::tracing::{debug, error};
 use fluvio_model_sql::{Operation, Type, Value};
 use itertools::Itertools;
@@ -9,7 +8,9 @@ use sqlx::database::HasArguments;
 use sqlx::postgres::PgArguments;
 use sqlx::query::Query;
 use sqlx::sqlite::SqliteArguments;
-use sqlx::{Connection, Database, Executor, PgConnection, Postgres, Sqlite, SqliteConnection};
+use sqlx::{
+    Connection, Database, Executor, IntoArguments, PgConnection, Postgres, Sqlite, SqliteConnection,
+};
 use std::str::FromStr;
 
 const NAIVE_DATE_TIME_FORMAT: &str = "%Y-%m-%d %H:%M:%S%.f";
@@ -52,10 +53,10 @@ impl Db {
     async fn insert(&mut self, table: String, values: Vec<Value>) -> anyhow::Result<()> {
         match self {
             Db::Postgres(conn) => {
-                <Self as Insert<Postgres>>::insert(conn.as_mut(), table, values).await
+                do_insert::<Postgres, &mut PgConnection, Self>(conn.as_mut(), table, values).await
             }
             Db::Sqlite(conn) => {
-                <Self as Insert<Sqlite>>::insert(conn.as_mut(), table, values).await
+                do_insert::<Sqlite, &mut SqliteConnection, Self>(conn.as_mut(), table, values).await
             }
         }
     }
@@ -68,13 +69,31 @@ impl Db {
     }
 }
 
-#[async_trait]
+async fn do_insert<'c, DB, E, I>(conn: E, table: String, values: Vec<Value>) -> anyhow::Result<()>
+where
+    DB: Database,
+    for<'q> <DB as HasArguments<'q>>::Arguments: IntoArguments<'q, DB>,
+    E: Executor<'c, Database = DB>,
+    I: Insert<DB>,
+{
+    let sql = I::query(table.as_str(), values.as_slice());
+    debug!(sql, "sending");
+    let mut query = sqlx::query(&sql);
+    for value in values {
+        query = match I::bind_value(query, &value) {
+            Ok(q) => q,
+            Err(err) => {
+                error!("Unable to bind {:?}. Reason: {:?}", value, err);
+                return Err(err);
+            }
+        }
+    }
+    query.execute(conn).await?;
+    Ok(())
+}
+
 trait Insert<DB: Database> {
-    async fn insert<'c, E: Executor<'c, Database = DB>>(
-        conn: E,
-        table: String,
-        values: Vec<Value>,
-    ) -> anyhow::Result<()>;
+    fn query(table: &str, values: &[Value]) -> String;
 
     fn bind_value<'a, 'b>(
         query: Query<'a, DB, <DB as HasArguments<'a>>::Arguments>,
@@ -82,33 +101,14 @@ trait Insert<DB: Database> {
     ) -> anyhow::Result<Query<'a, DB, <DB as HasArguments<'a>>::Arguments>>;
 }
 
-#[async_trait]
 impl Insert<Postgres> for Db {
-    async fn insert<'c, E: Executor<'c, Database = Postgres>>(
-        conn: E,
-        table: String,
-        values: Vec<Value>,
-    ) -> anyhow::Result<()> {
+    fn query(table: &str, values: &[Value]) -> String {
         let columns = values.iter().map(|v| v.column.as_str()).join(",");
         let values_clause = (1..=values.len()).map(|i| format!("${}", i)).join(",");
-
-        let sql = format!(
+        format!(
             "INSERT INTO {} ({}) VALUES ({})",
             table, columns, values_clause
-        );
-        debug!("sending sql: {}", &sql);
-        let mut query = sqlx::query(&sql);
-        for value in values {
-            query = match Self::bind_value(query, &value) {
-                Ok(q) => q,
-                Err(err) => {
-                    error!("Unable to bind {:?}. Reason: {:?}", value, err);
-                    return Err(err);
-                }
-            }
-        }
-        query.execute(conn).await?;
-        Ok(())
+        )
     }
 
     fn bind_value<'a, 'b>(
@@ -139,33 +139,14 @@ impl Insert<Postgres> for Db {
     }
 }
 
-#[async_trait]
 impl Insert<Sqlite> for Db {
-    async fn insert<'c, E: Executor<'c, Database = Sqlite>>(
-        conn: E,
-        table: String,
-        values: Vec<Value>,
-    ) -> anyhow::Result<()> {
+    fn query(table: &str, values: &[Value]) -> String {
         let columns = values.iter().map(|v| v.column.as_str()).join(",");
         let values_clause = (1..=values.len()).map(|_| "?").join(",");
-
-        let sql = format!(
+        format!(
             "INSERT INTO {} ({}) VALUES ({})",
             table, columns, values_clause
-        );
-        debug!("sending sql: {}", &sql);
-        let mut query = sqlx::query(&sql);
-        for value in values {
-            query = match Self::bind_value(query, &value) {
-                Ok(q) => q,
-                Err(err) => {
-                    error!("Unable to bind {:?}. Reason: {:?}", value, err);
-                    return Err(err);
-                }
-            }
-        }
-        query.execute(conn).await?;
-        Ok(())
+        )
     }
 
     fn bind_value<'a, 'b>(
@@ -478,5 +459,53 @@ mod tests {
 
         //then
         assert_eq!(timestamp, parsed);
+    }
+
+    #[test]
+    fn test_insert_query_postgres() {
+        //given
+        let table = "test_table";
+        let values = [
+            Value {
+                column: "col1".to_string(),
+                raw_value: "1".to_string(),
+                type_: Type::Int,
+            },
+            Value {
+                column: "col2".to_string(),
+                raw_value: "text".to_string(),
+                type_: Type::Text,
+            },
+        ];
+
+        //when
+        let query = <Db as Insert<Postgres>>::query(table, &values);
+
+        //then
+        assert_eq!(query, "INSERT INTO test_table (col1,col2) VALUES ($1,$2)");
+    }
+
+    #[test]
+    fn test_insert_query_sqlite() {
+        //given
+        let table = "test_table";
+        let values = [
+            Value {
+                column: "col1".to_string(),
+                raw_value: "1".to_string(),
+                type_: Type::Int,
+            },
+            Value {
+                column: "col2".to_string(),
+                raw_value: "text".to_string(),
+                type_: Type::Text,
+            },
+        ];
+
+        //when
+        let query = <Db as Insert<Sqlite>>::query(table, &values);
+
+        //then
+        assert_eq!(query, "INSERT INTO test_table (col1,col2) VALUES (?,?)");
     }
 }

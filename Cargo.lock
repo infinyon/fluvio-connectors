@@ -5084,7 +5084,6 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-std",
- "async-trait",
  "chrono",
  "clap 3.2.19",
  "flate2",
