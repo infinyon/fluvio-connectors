@@ -16,7 +16,7 @@ pub struct SqlConnectorOpt {
     pub database_url: Url,
 
     #[clap(long, env = "FLUVIO_HUB_URL", hide_env_values = true)]
-    pub hub_url: Option<Url>,
+    pub hub_url: Url,
 
     #[clap(flatten)]
     #[schemars(flatten)]

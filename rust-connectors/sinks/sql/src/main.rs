@@ -10,9 +10,6 @@ use schemars::schema_for;
 use sql_sink::db::Db;
 use sql_sink::opt::SqlConnectorOpt;
 use sql_sink::transform::Transformations;
-use url::Url;
-
-const DEFAULT_HUB_URL: &str = "http://127.0.0.1:8080";
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -34,17 +31,14 @@ async fn main() -> anyhow::Result<()> {
         git_hash = git_hash_version(),
         "starting JSON SQL sink connector",
     );
-    let hub_url = raw_opts
-        .hub_url
-        .unwrap_or_else(|| Url::parse(DEFAULT_HUB_URL).expect("valid default Hub url"));
-    info!("hub_url={}", &hub_url);
-
     let mut db = Db::connect(raw_opts.database_url.as_str()).await?;
     info!("connected to database {}", db.kind());
 
     let mut stream = raw_opts.common.create_consumer_stream().await?;
     info!("connected to fluvio stream");
 
+    let hub_url = raw_opts.hub_url;
+    info!("hub_url={}", &hub_url);
     let mut transformations = Transformations::from_hub(hub_url, raw_opts.transform).await?;
     info!("{} transformations loaded", transformations.size());
 

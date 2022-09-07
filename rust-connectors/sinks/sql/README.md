@@ -33,17 +33,17 @@ in the config. If a SmartModule requires configuration, it is passed via `with` 
 ## Usage
 
 ### Configuration via parameters
-| Option       | default                     | type   | description                                           |
-|:-------------|:----------------------------| :---   |:------------------------------------------------------|
-| hub_url      | http://127.0.0.1:8080       | String | The paramaters key for the smartmodule hub url        |
-| database_url | -                           | String | The paramaters key for the sql database conection url |
+| Option       | default | type   | description                                           |
+|:-------------|:--------| :---   |:------------------------------------------------------|
+| hub_url      | -       | String | The parameters key for the smartmodule hub url        |
+| database_url | -       | String | The parameters key for the sql database conection url |
 
 
 ### Configuration via secrets
-| Option              | default                     | type   | description                                           |
-|:--------------------|:----------------------------| :---   |:------------------------------------------------------|
-| FLUVIO_HUB_URL      | http://127.0.0.1:8080       | String | The secret key for the smartmodule hub url        |
-| FLUVIO_DATABASE_URL | -                           | String | The secret key for the sql database conection url |
+| Option              | default | type   | description                                           |
+|:--------------------|:--------| :---   |:------------------------------------------------------|
+| FLUVIO_HUB_URL      | -       | String | The secret key for the smartmodule hub url        |
+| FLUVIO_DATABASE_URL | -       | String | The secret key for the sql database conection url |
 
 ### Example
 Let's look at the example of the connector with one transformation named `infinyon/json-sql`. The transformation takes
