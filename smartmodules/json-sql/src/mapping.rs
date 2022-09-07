@@ -42,6 +42,7 @@ pub enum ValueType {
 
     #[serde(alias = "bool")]
     Boolean,
+    #[serde(alias = "bytes")]
     Bytea,
     Text,
 

@@ -17,6 +17,7 @@ on:
           - dynamodb-sink
           - kafka-source
           - kafka-sink
+          - sql-sink
 
 env:
   CONNECTOR_NAME: ${{ github.event.inputs.connector_name }}
