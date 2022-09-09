@@ -10,6 +10,10 @@ pub struct LocalOpt {
     /// path to the connector config
     #[clap(short = 'c', long)]
     config: String,
+
+    #[clap(short = 'a', long)]
+    /// arguments passed to Docker container, example: --docker-arg=--rm --docker-arg=--network --docker-arg=bridge
+    docker_arg: Vec<String>,
 }
 
 impl LocalOpt {
@@ -32,6 +36,7 @@ impl LocalOpt {
 
         let mut child = Command::new("docker")
             .arg("run")
+            .args(self.docker_arg.as_slice())
             .arg("-i")
             .arg("--mount")
             .arg(fluvio_config_mount)
