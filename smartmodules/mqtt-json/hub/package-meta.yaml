@@ -1,0 +1,9 @@
+---
+package_format_version: "0.1"
+name: mqtt-json
+version: 0.0.1
+group: infinyon
+description: MQTT to JSON transformation Smartmodule
+license: Apache2
+manifest:
+  - ../../target/wasm32-unknown-unknown/release/mqtt_json.wasm

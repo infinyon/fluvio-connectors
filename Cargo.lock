@@ -3582,6 +3582,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "mqtt-json"
+version = "0.0.0"
+dependencies = [
+ "fluvio-smartmodule 0.4.0",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "mqtt-source"
 version = "0.3.2"
 dependencies = [

@@ -18,6 +18,7 @@ members = [
     "rust-connectors/utils/test-connector",
     "rust-connectors/utils/fluvio-smartstream-map/",
     "smartmodules/json-sql",
+    "smartmodules/mqtt-json",
     "examples/github-stars/github-stars-smartmodule-map/",
     "examples/github-stars/slack-display-smartmodule-map/",
 ]
