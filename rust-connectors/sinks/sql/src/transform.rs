@@ -27,7 +27,9 @@ impl Transformations {
         let downloader = Downloader::from_url(hub_url)?;
         for step in value {
             let mut param: BTreeMap<String, String> = BTreeMap::new();
-            param.insert(PARAM_WITH.to_string(), step.with.clone());
+            if let Some(with) = step.with {
+                param.insert(PARAM_WITH.to_string(), with);
+            }
             let raw = downloader.download_binary(step.uses.as_str()).await?;
             let payload = LegacySmartModulePayload {
                 wasm: SmartModuleWasmCompressed::Raw(raw),

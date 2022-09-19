@@ -9,6 +9,4 @@ transforms:
     with:
       table: "topic_message"
   - uses: infinyon/avro-sql
-    invoke: insert
-    with:
-      table: "topic_message"
+    invoke: map

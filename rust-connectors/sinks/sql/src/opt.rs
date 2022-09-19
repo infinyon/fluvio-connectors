@@ -31,7 +31,7 @@ pub struct SqlConnectorOpt {
 pub struct TransformOpt {
     pub(crate) uses: String,
     pub(crate) invoke: String,
-    pub(crate) with: String,
+    pub(crate) with: Option<String>,
 }
 
 impl FromStr for TransformOpt {

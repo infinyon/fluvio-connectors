@@ -76,8 +76,12 @@ pub struct ProducerParameters {
 pub struct TransformStep {
     uses: String,
     invoke: String,
-    #[serde(deserialize_with = "deserialize_to_json_string")]
-    with: String,
+    #[serde(
+        default,
+        deserialize_with = "deserialize_to_json_string",
+        skip_serializing_if = "Option::is_none"
+    )]
+    with: Option<String>,
 }
 
 impl ConnectorConfig {
@@ -270,30 +274,37 @@ impl<'de> Visitor<'de> for ParameterValueVisitor {
     }
 }
 
-fn deserialize_to_json_string<'de, D>(deserializer: D) -> Result<String, D::Error>
+fn deserialize_to_json_string<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>
 where
     D: Deserializer<'de>,
 {
     struct MapAsJsonString;
     impl<'de> Visitor<'de> for MapAsJsonString {
-        type Value = String;
+        type Value = Option<String>;
 
         fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-            formatter.write_str("str, string or map")
+            formatter.write_str("str, string, map or none")
         }
 
         fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
         where
             E: de::Error,
         {
-            Ok(v.to_string())
+            Ok(Some(v.to_string()))
         }
 
         fn visit_string<E>(self, v: String) -> Result<Self::Value, E>
         where
             E: de::Error,
         {
-            Ok(v)
+            Ok(Some(v))
+        }
+
+        fn visit_none<E>(self) -> Result<Self::Value, E>
+        where
+            E: de::Error,
+        {
+            Ok(None)
         }
 
         fn visit_map<M>(self, map: M) -> Result<Self::Value, M::Error>
@@ -303,6 +314,7 @@ where
             let json: serde_json::Value =
                 Deserialize::deserialize(de::value::MapAccessDeserializer::new(map))?;
             serde_json::to_string(&json)
+                .map(Some)
                 .map_err(|err| de::Error::custom(format!("unable to serialize to json: {}", err)))
         }
     }
@@ -357,7 +369,7 @@ mod tests {
             transforms: Some(vec![TransformStep {
                 uses: "infinyon/json-sql".to_string(),
                 invoke: "insert".to_string(),
-                with: "{\"table\":\"topic_message\"}".to_string(),
+                with: Some("{\"table\":\"topic_message\"}".to_string()),
             }]),
         };
 
@@ -539,8 +551,8 @@ mod tests {
                 .as_str(),
             "insert"
         );
-        assert_eq!(&connector_spec.transforms.as_ref().unwrap()[0].with,
-                       "{\"map-columns\":{\"device_id\":{\"json-key\":\"device.device_id\",\"value\":{\"default\":0,\"required\":true,\"type\":\"int\"}},\"record\":{\"json-key\":\"$\",\"value\":{\"required\":true,\"type\":\"jsonb\"}}},\"table\":\"topic_message\"}");
+        assert_eq!(connector_spec.transforms.as_ref().unwrap()[0].with,
+                       Some("{\"map-columns\":{\"device_id\":{\"json-key\":\"device.device_id\",\"value\":{\"default\":0,\"required\":true,\"type\":\"int\"}},\"record\":{\"json-key\":\"$\",\"value\":{\"required\":true,\"type\":\"jsonb\"}}},\"table\":\"topic_message\"}".to_string()));
     }
 
     #[test]
@@ -558,9 +570,12 @@ mod tests {
         assert_eq!(transform.len(), 2);
         assert_eq!(transform[0].uses.as_str(), "infinyon/json-sql");
         assert_eq!(transform[0].invoke.as_str(), "insert");
-        assert_eq!(&transform[0].with, "{\"table\":\"topic_message\"}");
+        assert_eq!(
+            transform[0].with,
+            Some("{\"table\":\"topic_message\"}".to_string())
+        );
         assert_eq!(transform[1].uses.as_str(), "infinyon/avro-sql");
-        assert_eq!(transform[1].invoke.as_str(), "insert");
-        assert_eq!(&transform[1].with, "{\"table\":\"topic_message\"}");
+        assert_eq!(transform[1].invoke.as_str(), "map");
+        assert_eq!(transform[1].with, None);
     }
 }
