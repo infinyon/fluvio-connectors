@@ -102,12 +102,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ambient-authority"
-version = "0.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ec8ad6edb4840b78c5c3d88de606b22252d552b55f3a4699fbb10fc070ec3049"
-
-[[package]]
 name = "android_system_properties"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -452,7 +446,7 @@ version = "0.2.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d9b39be18770d11421cdb1b9947a45dd3f37e93092cbf377614828a319d5fee8"
 dependencies = [
- "hermit-abi 0.1.19",
+ "hermit-abi",
  "libc",
  "winapi",
 ]
@@ -897,72 +891,6 @@ name = "cache-padded"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c1db59621ec70f09c5e9b597b220c7a2b43611f4710dc03ceb8748637775692c"
-
-[[package]]
-name = "cap-fs-ext"
-version = "0.25.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "04e142bbbe9d5d6a2dd0387f887a000b41f4c82fb1226316dfb4cc8dbc3b1a29"
-dependencies = [
- "cap-primitives",
- "cap-std",
- "io-lifetimes",
- "windows-sys",
-]
-
-[[package]]
-name = "cap-primitives"
-version = "0.25.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f22f4975282dd4f2330ee004f001c4e22f420da9fb474ea600e9af330f1e548"
-dependencies = [
- "ambient-authority",
- "errno",
- "fs-set-times",
- "io-extras",
- "io-lifetimes",
- "ipnet",
- "maybe-owned",
- "rustix",
- "winapi-util",
- "windows-sys",
- "winx",
-]
-
-[[package]]
-name = "cap-rand"
-version = "0.25.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ef643f8defef7061c395bb3721b6a80d39c1baaa8ee2e42edf2917fa05584e7f"
-dependencies = [
- "ambient-authority",
- "rand 0.8.5",
-]
-
-[[package]]
-name = "cap-std"
-version = "0.25.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "95624bb0abba6b6ff6fad2e02a7d3945d093d064ac5a3477a308c29fbe3bfd49"
-dependencies = [
- "cap-primitives",
- "io-extras",
- "io-lifetimes",
- "ipnet",
- "rustix",
-]
-
-[[package]]
-name = "cap-time-ext"
-version = "0.25.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "46a2d284862edf6e431e9ad4e109c02855157904cebaceae6f042b124a1a21e2"
-dependencies = [
- "cap-primitives",
- "once_cell",
- "rustix",
- "winx",
-]
 
 [[package]]
 name = "cargo-lock"
@@ -2180,7 +2108,6 @@ dependencies = [
  "thiserror",
  "tracing",
  "wasmtime",
- "wasmtime-wasi",
 ]
 
 [[package]]
@@ -2437,17 +2364,6 @@ checksum = "5fc25a87fa4fd2094bffb06925852034d90a17f0d1e05197d4956d3555752191"
 dependencies = [
  "matches",
  "percent-encoding",
-]
-
-[[package]]
-name = "fs-set-times"
-version = "0.17.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a267b6a9304912e018610d53fe07115d8b530b160e85db4d2d3a59f3ddde1aec"
-dependencies = [
- "io-lifetimes",
- "rustix",
- "windows-sys",
 ]
 
 [[package]]
@@ -2733,15 +2649,6 @@ name = "hermit-abi"
 version = "0.1.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "62b467343b94ba476dcb2500d242dadbb39557df889310ac77c5d99100aaac33"
-dependencies = [
- "libc",
-]
-
-[[package]]
-name = "hermit-abi"
-version = "0.2.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "897cd85af6387be149f55acf168e41be176a02de7872403aaab184afc2f327e6"
 dependencies = [
  "libc",
 ]
@@ -3088,24 +2995,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "io-extras"
-version = "0.15.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4a5d8c2ab5becd8720e30fd25f8fa5500d8dc3fceadd8378f05859bd7b46fc49"
-dependencies = [
- "io-lifetimes",
- "windows-sys",
-]
-
-[[package]]
 name = "io-lifetimes"
 version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1ea37f355c05dde75b84bba2d767906ad522e97cd9e2eef2be7a4ab7fb442c06"
-dependencies = [
- "libc",
- "windows-sys",
-]
 
 [[package]]
 name = "iovec"
@@ -3121,18 +3014,6 @@ name = "ipnet"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "879d54834c8c76457ef4293a689b2a8c59b076067ad77b15efafbb05f92a592b"
-
-[[package]]
-name = "is-terminal"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0d508111813f9af3afd2f92758f77e4ed2cc9371b642112c6a48d22eb73105c5"
-dependencies = [
- "hermit-abi 0.2.5",
- "io-lifetimes",
- "rustix",
- "windows-sys",
-]
 
 [[package]]
 name = "isahc"
@@ -3510,12 +3391,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a3e378b66a060d48947b590737b30a1be76706c8dd7b8ba0f2fe3989c68a853f"
 
 [[package]]
-name = "maybe-owned"
-version = "0.3.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4facc753ae494aeb6e3c22f839b158aebd4f9270f55cd3c79906c45476c47ab4"
-
-[[package]]
 name = "md-5"
 version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3707,7 +3582,7 @@ version = "1.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "19e64526ebdee182341572e50e9ad03965aa510cd94427a4549448f285e957a1"
 dependencies = [
- "hermit-abi 0.1.19",
+ "hermit-abi",
  "libc",
 ]
 
@@ -4559,10 +4434,8 @@ dependencies = [
  "bitflags",
  "errno",
  "io-lifetimes",
- "itoa",
  "libc",
  "linux-raw-sys",
- "once_cell",
  "windows-sys",
 ]
 
@@ -4942,15 +4815,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "shellexpand"
-version = "2.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ccc8076840c4da029af4f87e4e8daeb0fca6b87bbb02e10cb60b791450e11e4"
-dependencies = [
- "dirs",
-]
-
-[[package]]
 name = "signal-hook"
 version = "0.3.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5080,7 +4944,7 @@ dependencies = [
 
 [[package]]
 name = "sql-sink"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "async-std",
@@ -5364,22 +5228,6 @@ checksum = "1c4eae4d024d7912b5bea75e54319445d0ffe7f423bb4b68a46129cdcebecaef"
 dependencies = [
  "chrono",
  "nom",
-]
-
-[[package]]
-name = "system-interface"
-version = "0.21.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2e3e98c4cf2f43a7e3b3a943b63fd192559b8a98ddcbef260580f29f0f4b9d1b"
-dependencies = [
- "atty",
- "bitflags",
- "cap-fs-ext",
- "cap-std",
- "io-lifetimes",
- "rustix",
- "windows-sys",
- "winx",
 ]
 
 [[package]]
@@ -6042,48 +5890,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423"
 
 [[package]]
-name = "wasi-cap-std-sync"
-version = "0.40.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4562fc9f4949e660f09f417db7dcb6c231811c081c154c41c55f486975725346"
-dependencies = [
- "anyhow",
- "async-trait",
- "cap-fs-ext",
- "cap-rand",
- "cap-std",
- "cap-time-ext",
- "fs-set-times",
- "io-extras",
- "io-lifetimes",
- "is-terminal",
- "once_cell",
- "rustix",
- "system-interface",
- "tracing",
- "wasi-common",
- "windows-sys",
-]
-
-[[package]]
-name = "wasi-common"
-version = "0.40.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d75a8f0b536139c35905d61c60d0b007195db012d0148df708a432e75492797e"
-dependencies = [
- "anyhow",
- "bitflags",
- "cap-rand",
- "cap-std",
- "io-extras",
- "rustix",
- "thiserror",
- "tracing",
- "wiggle",
- "windows-sys",
-]
-
-[[package]]
 name = "wasm-bindgen"
 version = "0.2.82"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6358,28 +6164,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "wasmtime-wasi"
-version = "0.40.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d56b38f5dfcd32a5088d17a4fb2d13ede1ffb0cb383b26cc4784bc5c34eba8df"
-dependencies = [
- "anyhow",
- "wasi-cap-std-sync",
- "wasi-common",
- "wasmtime",
- "wiggle",
-]
-
-[[package]]
-name = "wast"
-version = "35.0.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2ef140f1b49946586078353a453a1d28ba90adfc54dde75710bc1931de204d68"
-dependencies = [
- "leb128",
-]
-
-[[package]]
 name = "wast"
 version = "46.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6397,7 +6181,7 @@ version = "1.0.48"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8f775282def4d5bffd94d60d6ecd57bfe6faa46171cdbf8d32bd5458842b1e3e"
 dependencies = [
- "wast 46.0.0",
+ "wast",
 ]
 
 [[package]]
@@ -6447,48 +6231,6 @@ checksum = "524b58fa5a20a2fb3014dd6358b70e6579692a56ef6fce928834e488f42f65e8"
 dependencies = [
  "wasm-bindgen",
  "web-sys",
-]
-
-[[package]]
-name = "wiggle"
-version = "0.40.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e266fab4ce7f98cadf060650a081ac8f475c1392b841d05a6bb0c89e0e3e2d71"
-dependencies = [
- "anyhow",
- "async-trait",
- "bitflags",
- "thiserror",
- "tracing",
- "wasmtime",
- "wiggle-macro",
-]
-
-[[package]]
-name = "wiggle-generate"
-version = "0.40.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3019da9c8d6e3ce0ce5ffec87b1872ec1af66383f7abb4c679655046322c4a06"
-dependencies = [
- "anyhow",
- "heck 0.4.0",
- "proc-macro2",
- "quote",
- "shellexpand",
- "syn",
- "witx",
-]
-
-[[package]]
-name = "wiggle-macro"
-version = "0.40.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a4d32593742668375ab5badb889e92b6316036ca66a2b0ee09a0860e9c796d0c"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
- "wiggle-generate",
 ]
 
 [[package]]
@@ -6572,29 +6314,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "80d0f4e272c85def139476380b12f9ac60926689dd2e01d4923222f40580869d"
 dependencies = [
  "winapi",
-]
-
-[[package]]
-name = "winx"
-version = "0.33.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b7b01e010390eb263a4518c8cebf86cb67469d1511c00b749a47b64c39e8054d"
-dependencies = [
- "bitflags",
- "io-lifetimes",
- "windows-sys",
-]
-
-[[package]]
-name = "witx"
-version = "0.9.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e366f27a5cabcddb2706a78296a40b8fcc451e1a6aba2fc1d94b4a01bdaaef4b"
-dependencies = [
- "anyhow",
- "log",
- "thiserror",
- "wast 35.0.2",
 ]
 
 [[package]]

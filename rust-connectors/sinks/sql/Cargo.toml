@@ -1,13 +1,13 @@
 [package]
 name = "sql-sink"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 
 [dependencies]
 fluvio-model-sql = {path= "../../models/fluvio-model-sql" }
 fluvio-connectors-common = { path = "../../common", features = ["sink"]}
 fluvio-future = { version = "0.4.1" , features = ["subscriber"]}
-fluvio-smartengine = { version = "0.4", features=["unstable", "wasi"] }
+fluvio-smartengine = { version = "0.4", features=["unstable"] }
 fluvio-smartmodule = "0.4"
 fluvio = { version = "0.14" }
 
