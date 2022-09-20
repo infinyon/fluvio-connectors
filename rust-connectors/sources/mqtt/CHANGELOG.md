@@ -1,5 +1,8 @@
 # Connector Change Log
 
+## mqtt Version 0.4.0 - UNRELEASED
+* feat(mqtt): added `json` payload output type. ([PR #342](https://github.com/infinyon/fluvio-connectors/pull/342)
+
 ## mqtt Version 0.3.1 - UNRELEASED
 * Added support to smartmodule-parameters and smartmodule without explicit type. ([PR #287](https://github.com/infinyon/fluvio-connectors/pull/287)
 

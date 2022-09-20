@@ -44,7 +44,7 @@ fn main() -> Result<(), MqttConnectorError> {
         "Starting MQTT source connector",
     );
 
-    debug!("opts={:?}", opts);
+    debug!(opts = ?opts);
 
     async_global_executor::block_on(async move {
         let mqtt_timeout_seconds = Duration::from_secs(opts.timeout.unwrap_or(60));
