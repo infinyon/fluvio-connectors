@@ -1761,44 +1761,6 @@ dependencies = [
 
 [[package]]
 name = "fluvio"
-version = "0.13.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ef9777bb3fcc752a0edebcdac91a285ad40ed0aeced5f5992e4efb16a5eb7555"
-dependencies = [
- "async-channel",
- "async-lock",
- "async-rwlock",
- "async-trait",
- "base64 0.13.0",
- "built",
- "bytes 1.2.1",
- "cfg-if 1.0.0",
- "derive_builder",
- "dirs",
- "event-listener",
- "fluvio-compression 0.2.0",
- "fluvio-dataplane-protocol",
- "fluvio-future 0.4.2",
- "fluvio-protocol 0.7.9",
- "fluvio-sc-schema 0.14.0",
- "fluvio-socket 0.12.1",
- "fluvio-spu-schema",
- "fluvio-types 0.3.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "futures-util",
- "once_cell",
- "pin-project-lite 0.2.9",
- "semver 1.0.14",
- "serde",
- "serde_json",
- "siphasher",
- "thiserror",
- "tokio",
- "toml",
- "tracing",
-]
-
-[[package]]
-name = "fluvio"
 version = "0.14.0"
 source = "git+https://github.com/infinyon/fluvio?branch=master#c540c3a6ca488261edd20cdfdb95fdf50a050483"
 dependencies = [
@@ -1817,10 +1779,10 @@ dependencies = [
  "fluvio-compression 0.2.1",
  "fluvio-future 0.4.2",
  "fluvio-protocol 0.8.0",
- "fluvio-sc-schema 0.15.0",
+ "fluvio-sc-schema",
  "fluvio-smartengine",
  "fluvio-smartmodule",
- "fluvio-socket 0.13.0",
+ "fluvio-socket",
  "fluvio-spu-schema",
  "fluvio-types 0.3.8 (git+https://github.com/infinyon/fluvio?branch=master)",
  "futures-util",
@@ -1871,7 +1833,7 @@ dependencies = [
  "bytesize",
  "clap 3.2.22",
  "flate2",
- "fluvio 0.14.0",
+ "fluvio",
  "fluvio-future 0.4.2",
  "fluvio-protocol 0.8.0",
  "fluvio-smartengine",
@@ -1891,24 +1853,6 @@ dependencies = [
 
 [[package]]
 name = "fluvio-controlplane-metadata"
-version = "0.15.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8d876315d312d61a7822df10f60363a5ef396b40ea29b8ad4ab7ecfded7122e1"
-dependencies = [
- "async-trait",
- "base64 0.13.0",
- "fluvio-dataplane-protocol",
- "fluvio-future 0.3.18",
- "fluvio-protocol 0.7.9",
- "fluvio-stream-model 0.6.1",
- "fluvio-types 0.3.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "flv-util",
- "thiserror",
- "tracing",
-]
-
-[[package]]
-name = "fluvio-controlplane-metadata"
 version = "0.19.0"
 source = "git+https://github.com/infinyon/fluvio?branch=master#c540c3a6ca488261edd20cdfdb95fdf50a050483"
 dependencies = [
@@ -1917,7 +1861,7 @@ dependencies = [
  "bytes 1.2.1",
  "fluvio-future 0.4.2",
  "fluvio-protocol 0.8.0",
- "fluvio-stream-model 0.8.2",
+ "fluvio-stream-model",
  "fluvio-types 0.3.8 (git+https://github.com/infinyon/fluvio?branch=master)",
  "flv-util",
  "lenient_semver",
@@ -1934,7 +1878,6 @@ checksum = "a691755125a8211290191dc46f6a2c07898d891c00c4e09ebbad735908afa35a"
 dependencies = [
  "bytes 1.2.1",
  "cfg-if 1.0.0",
- "chrono",
  "content_inspector",
  "crc32c",
  "eyre",
@@ -2020,7 +1963,6 @@ checksum = "6a5fa561c1628d40bdde2fbde33cb1ce4597386a3f943b45b09703bc3534cf2d"
 dependencies = [
  "bytes 1.2.1",
  "fluvio-protocol-derive 0.4.2",
- "tokio-util 0.7.4",
  "tracing",
 ]
 
@@ -2070,27 +2012,10 @@ dependencies = [
 
 [[package]]
 name = "fluvio-sc-schema"
-version = "0.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bdc8c0790b81d350c5bd787b9357da7d4021ab23b106526e31b76e9245af974b"
-dependencies = [
- "fluvio-controlplane-metadata 0.15.4",
- "fluvio-dataplane-protocol",
- "fluvio-protocol 0.7.9",
- "fluvio-types 0.3.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "log",
- "paste",
- "static_assertions",
- "thiserror",
- "tracing",
-]
-
-[[package]]
-name = "fluvio-sc-schema"
 version = "0.15.0"
 source = "git+https://github.com/infinyon/fluvio?branch=master#c540c3a6ca488261edd20cdfdb95fdf50a050483"
 dependencies = [
- "fluvio-controlplane-metadata 0.19.0",
+ "fluvio-controlplane-metadata",
  "fluvio-protocol 0.8.0",
  "fluvio-types 0.3.8 (git+https://github.com/infinyon/fluvio?branch=master)",
  "log",
@@ -2140,29 +2065,6 @@ dependencies = [
 
 [[package]]
 name = "fluvio-socket"
-version = "0.12.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5f29b8d7f99f3ac4d87579e13dfdf960ae2dc1523ca41313816e342da86be9f0"
-dependencies = [
- "async-channel",
- "async-lock",
- "async-trait",
- "bytes 1.2.1",
- "cfg-if 1.0.0",
- "event-listener",
- "fluvio-future 0.4.2",
- "fluvio-protocol 0.7.9",
- "futures-util",
- "once_cell",
- "pin-project",
- "thiserror",
- "tokio",
- "tokio-util 0.7.4",
- "tracing",
-]
-
-[[package]]
-name = "fluvio-socket"
 version = "0.13.0"
 source = "git+https://github.com/infinyon/fluvio?branch=master#c540c3a6ca488261edd20cdfdb95fdf50a050483"
 dependencies = [
@@ -2202,18 +2104,6 @@ dependencies = [
 
 [[package]]
 name = "fluvio-stream-model"
-version = "0.6.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4e421ff1be3b83020a3a97cb7ef8b6f045bca3b1eea2c95f0cea791eeeaaf988"
-dependencies = [
- "async-rwlock",
- "event-listener",
- "once_cell",
- "tracing",
-]
-
-[[package]]
-name = "fluvio-stream-model"
 version = "0.8.2"
 source = "git+https://github.com/infinyon/fluvio?branch=master#c540c3a6ca488261edd20cdfdb95fdf50a050483"
 dependencies = [
@@ -2228,7 +2118,7 @@ name = "fluvio-syslog"
 version = "0.2.0"
 dependencies = [
  "cfg-if 1.0.0",
- "fluvio 0.14.0",
+ "fluvio",
  "futures-util",
  "notify",
  "serde",
@@ -2256,7 +2146,6 @@ version = "0.3.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9a675cf4a60aa0bff6f5d9d2c3c5201fc5a214cbb9e9d7f0127c7792314714bf"
 dependencies = [
- "event-listener",
  "thiserror",
  "tracing",
 ]
@@ -3897,7 +3786,7 @@ dependencies = [
  "color-backtrace",
  "dotenv",
  "eyre",
- "fluvio 0.14.0",
+ "fluvio",
  "fluvio-connectors-common",
  "fluvio-future 0.4.2",
  "fluvio-model-postgres",
@@ -3927,7 +3816,7 @@ dependencies = [
  "color-backtrace",
  "dotenv",
  "eyre",
- "fluvio 0.13.1",
+ "fluvio",
  "fluvio-connectors-common",
  "fluvio-future 0.4.2",
  "fluvio-model-postgres",
@@ -4927,7 +4816,7 @@ dependencies = [
  "chrono",
  "clap 3.2.22",
  "flate2",
- "fluvio 0.14.0",
+ "fluvio",
  "fluvio-connectors-common",
  "fluvio-future 0.4.2",
  "fluvio-model-sql",

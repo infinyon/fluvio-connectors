@@ -1,7 +1,9 @@
 use crate::download::Downloader;
 use crate::opt::TransformOpt;
 use fluvio::dataplane::record::Record;
-use fluvio_smartengine::{SmartEngine, SmartModuleChainBuilder, SmartModuleChainInstance, SmartModuleConfig};
+use fluvio_smartengine::{
+    SmartEngine, SmartModuleChainBuilder, SmartModuleChainInstance, SmartModuleConfig,
+};
 //use fluvio_smartengine::metadata::{ };
 use fluvio_spu_schema::server::smartmodule::{
     LegacySmartModulePayload, SmartModuleKind, SmartModuleWasmCompressed,
@@ -24,7 +26,9 @@ impl Transformations {
     ) -> anyhow::Result<Transformations> {
         let builder = SmartEngine::new().builder();
         if value.is_empty() {
-            return Ok(Self { smart_module_chain: builder.initialize()? });
+            return Ok(Self {
+                smart_module_chain: builder.initialize()?,
+            });
         }
         let downloader = Downloader::from_url(hub_url)?;
         /*
@@ -45,7 +49,9 @@ impl Transformations {
             smart_modules.push(smart_module);
         }
         */
-        Ok(Self { smart_module_chain: builder.initialize()? })
+        Ok(Self {
+            smart_module_chain: builder.initialize()?,
+        })
     }
 
     pub fn transform(&mut self, input: Record) -> anyhow::Result<Vec<Record>> {
