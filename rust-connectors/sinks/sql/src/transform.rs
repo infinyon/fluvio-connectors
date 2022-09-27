@@ -1,10 +1,7 @@
 use crate::download::Downloader;
 use crate::opt::TransformOpt;
 use fluvio::dataplane::record::Record;
-use fluvio_smartengine::{
-    SmartEngine, SmartModuleChainInstance, SmartModuleConfig,
-};
-
+use fluvio_smartengine::{SmartEngine, SmartModuleChainInstance, SmartModuleConfig};
 
 use fluvio_smartmodule::dataplane::smartmodule::SmartModuleInput;
 use std::collections::BTreeMap;
@@ -53,5 +50,4 @@ impl Transformations {
         let result = output.successes;
         Ok(result)
     }
-
 }
