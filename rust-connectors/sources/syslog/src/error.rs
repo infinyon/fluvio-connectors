@@ -7,7 +7,7 @@ pub enum ConnectorError {
     Fluvio(#[from] fluvio::FluvioError),
 
     #[error("Dataplane error: {0}")]
-    DataPlaneError(#[from] fluvio::dataplane::ErrorCode),
+    DataPlaneError(#[from] fluvio::dataplane::link::ErrorCode),
 
     #[error("Io Error {0}")]
     Io(#[from] std::io::Error),

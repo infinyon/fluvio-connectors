@@ -7,7 +7,7 @@ use once_cell::sync::OnceCell;
 use crate::mapping::Mapping;
 use eyre::ContextCompat;
 use fluvio_smartmodule::{
-    dataplane::smartmodule::{SmartModuleExtraParams, SmartModuleInternalError},
+    dataplane::smartmodule::{SmartModuleExtraParams, SmartModuleTransformErrorStatus},
     smartmodule, Record, RecordData, Result,
 };
 
@@ -25,11 +25,11 @@ fn init(params: SmartModuleExtraParams) -> i32 {
             }
             Err(err) => {
                 eprintln!("unable to parse init params: {:?}", err);
-                SmartModuleInternalError::InitParamsParse as i32
+                SmartModuleTransformErrorStatus::ParsingExtraParams as i32
             }
         }
     } else {
-        SmartModuleInternalError::InitParamsNotFound as i32
+        SmartModuleTransformErrorStatus::ParsingExtraParams as i32
     }
 }
 

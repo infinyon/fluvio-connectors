@@ -8,13 +8,19 @@ use std::{collections::BTreeMap, time::Duration};
 use fluvio::{
     metadata::smartmodule::SmartModuleSpec, metadata::topic::TopicSpec, Compression, Fluvio,
 };
+/*
 
 #[cfg(any(feature = "sink", feature = "source"))]
 use fluvio_smartengine::metadata::SmartModuleContextData;
 
+
 #[cfg(feature = "sink")]
 use fluvio_smartengine::metadata::{
     SmartModuleInvocation, SmartModuleInvocationWasm, SmartModuleKind,
+};
+*/
+use fluvio_spu_schema::server::smartmodule::{
+    SmartModuleContextData, SmartModuleKind, SmartModuleInvocation, SmartModuleInvocationWasm,
 };
 
 use crate::error::CliError;

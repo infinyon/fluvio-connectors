@@ -24,7 +24,8 @@ members = [
 resolver = "2"
 
 [patch.crates-io]
-fluvio-smartmodule = { git = "https://github.com/infinyon/fluvio", rev = "e80f3ff" }
-fluvio = { git = "https://github.com/infinyon/fluvio", rev = "e80f3ff" }
-fluvio-smartengine = { git = "https://github.com/infinyon/fluvio", rev = "e80f3ff" }
-fluvio-protocol = { git = "https://github.com/infinyon/fluvio", rev = "e80f3ff"  }
+fluvio-smartmodule = { git = "https://github.com/infinyon/fluvio", branch = "master" }
+fluvio             = { git = "https://github.com/infinyon/fluvio", branch = "master" }
+fluvio-smartengine = { git = "https://github.com/infinyon/fluvio", branch = "master" }
+fluvio-protocol    = { git = "https://github.com/infinyon/fluvio", branch = "master" }
+fluvio-spu-schema  = { git = "https://github.com/infinyon/fluvio", branch = "master" }

@@ -1,10 +1,12 @@
 use crate::download::Downloader;
 use crate::opt::TransformOpt;
 use fluvio::dataplane::record::Record;
-use fluvio_smartengine::engine::{SmartEngine, SmartModuleInstance};
-use fluvio_smartengine::metadata::{
+use fluvio_smartengine::{SmartEngine, SmartModuleChainBuilder, SmartModuleChainInstance, SmartModuleConfig};
+//use fluvio_smartengine::metadata::{ };
+use fluvio_spu_schema::server::smartmodule::{
     LegacySmartModulePayload, SmartModuleKind, SmartModuleWasmCompressed,
 };
+
 use fluvio_smartmodule::dataplane::smartmodule::SmartModuleInput;
 use std::collections::BTreeMap;
 use url::Url;
@@ -12,7 +14,7 @@ use url::Url;
 const PARAM_WITH: &str = "with";
 
 pub struct Transformations {
-    smart_modules: Vec<Box<dyn SmartModuleInstance>>,
+    smart_module_chain: SmartModuleChainInstance,
 }
 
 impl Transformations {
@@ -20,11 +22,12 @@ impl Transformations {
         hub_url: Url,
         value: Vec<TransformOpt>,
     ) -> anyhow::Result<Transformations> {
-        let mut smart_modules = Vec::with_capacity(value.len());
+        let builder = SmartEngine::new().builder();
         if value.is_empty() {
-            return Ok(Self { smart_modules });
+            return Ok(Self { smart_module_chain: builder.initialize()? });
         }
         let downloader = Downloader::from_url(hub_url)?;
+        /*
         for step in value {
             let mut param: BTreeMap<String, String> = BTreeMap::new();
             if let Some(with) = step.with {
@@ -41,24 +44,30 @@ impl Transformations {
             smart_module.invoke_constructor()?;
             smart_modules.push(smart_module);
         }
-        Ok(Self { smart_modules })
+        */
+        Ok(Self { smart_module_chain: builder.initialize()? })
     }
 
     pub fn transform(&mut self, input: Record) -> anyhow::Result<Vec<Record>> {
         let mut result = vec![input];
-        for smart_module in self.smart_modules.iter_mut() {
-            let input = SmartModuleInput::try_from(result)?;
+        let input = SmartModuleInput::try_from(result)?;
+        let output = self.smart_module_chain.process(input)?;
+        let result = output.successes;
+        /*
+        for smart_module in self.smart_module_chain.iter_mut() {
             let output = smart_module.process(input)?;
             if let Some(err) = output.error {
                 return Err(err.into());
             }
             result = output.successes;
         }
+        */
         Ok(result)
     }
 
     pub fn size(&self) -> usize {
-        self.smart_modules.len()
+        0
+        //self.smart_module_chain.len()
     }
 }
 
@@ -94,7 +103,7 @@ mod tests {
     fn test_transform_no_modules() {
         // given
         let mut transformations = Transformations {
-            smart_modules: vec![],
+            smart_module_chain: vec![],
         };
         let input = Record::from(("key", "value"));
 
@@ -116,7 +125,7 @@ mod tests {
             error: None,
         };
         let mut transformations = Transformations {
-            smart_modules: vec![Box::new(TestSmartModule(Ok(output)))],
+            smart_module_chain: vec![Box::new(TestSmartModule(Ok(output)))],
         };
         let input = Record::default();
 
@@ -142,7 +151,7 @@ mod tests {
             error: None,
         };
         let mut transformations = Transformations {
-            smart_modules: vec![
+            smart_module_chain: vec![
                 Box::new(TestSmartModule(Ok(output1))),
                 Box::new(TestSmartModule(Ok(output2))),
             ],
