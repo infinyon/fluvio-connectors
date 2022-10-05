@@ -40,7 +40,7 @@ async fn main() -> anyhow::Result<()> {
     let hub_url = raw_opts.hub_url;
     info!("hub_url={}", &hub_url);
     let mut transformations = Transformations::from_hub(hub_url, raw_opts.transform).await?;
-    info!("{:?} transformations loaded", transformations);
+    debug!("{:?} transformations loaded", transformations);
 
     while let Some(Ok(consumer_record)) = stream.next().await {
         let record: Record = consumer_record.into_inner();
