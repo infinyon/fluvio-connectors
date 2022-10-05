@@ -409,7 +409,7 @@ dependencies = [
  "pin-project-lite 0.2.9",
  "rustls-native-certs 0.6.2",
  "tokio",
- "tokio-rustls 0.23.3",
+ "tokio-rustls 0.23.4",
  "tungstenite",
 ]
 
@@ -1567,7 +1567,7 @@ checksum = "4f94fa09c2aeea5b8839e414b7b841bf429fd25b9c522116ac97ee87856d88b2"
 
 [[package]]
 name = "dynamodb-sink"
-version = "0.2.2"
+version = "0.2.3"
 dependencies = [
  "anyhow",
  "aws-config",
@@ -4365,20 +4365,22 @@ dependencies = [
 
 [[package]]
 name = "rumqttc"
-version = "0.14.0"
+version = "0.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "59d0bc9f169b15197e527c6784e7e7687683f503bfd0040d180422c9b2551eb8"
+checksum = "499b7ab08ffa5a722958b6ce1b7c0270bea30909f589d12c5ec3a051afe423fc"
 dependencies = [
  "async-tungstenite",
  "bytes 1.2.1",
  "flume",
+ "futures 0.3.24",
  "http",
  "log",
  "pollster",
+ "rustls-native-certs 0.6.2",
  "rustls-pemfile 0.3.0",
  "thiserror",
  "tokio",
- "tokio-rustls 0.23.3",
+ "tokio-rustls 0.23.4",
  "url",
  "ws_stream_tungstenite",
 ]
@@ -5505,9 +5507,9 @@ dependencies = [
 
 [[package]]
 name = "tokio-rustls"
-version = "0.23.3"
+version = "0.23.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4151fda0cf2798550ad0b34bcfc9b9dcc2a9d2471c895c68f3a8818e54f2389e"
+checksum = "c43ee83903113e03984cb9e5cebe6c04a5116269e900e3ddba8f068a62adda59"
 dependencies = [
  "rustls 0.20.6",
  "tokio",
