@@ -23,4 +23,4 @@ url = "2.2"
 rustls = "0.20.4"
 rustls-native-certs = "0.6.1"
 
-rumqttc = { version = "0.14.0", features = ["url", "websocket"] }
+rumqttc = { version = "0.17", features = ["url", "websocket"] }
