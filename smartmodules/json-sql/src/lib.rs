@@ -7,8 +7,7 @@ use once_cell::sync::OnceCell;
 use crate::mapping::Mapping;
 use eyre::ContextCompat;
 use fluvio_smartmodule::{
-    dataplane::smartmodule::{SmartModuleExtraParams},
-    smartmodule, Record, RecordData, Result,
+    dataplane::smartmodule::SmartModuleExtraParams, smartmodule, Record, RecordData, Result,
 };
 
 static MAPPING: OnceCell<Mapping> = OnceCell::new();
