@@ -37,15 +37,23 @@ async fn main() -> anyhow::Result<()> {
     let mut stream = raw_opts.common.create_consumer_stream().await?;
     info!("connected to fluvio stream");
 
-    let mut transformations = if let Ok(t) = Transformations::from_fluvio(raw_opts.transform.clone()).await {
-        t
-    } else {
-        let hub_url = raw_opts.hub_url;
-        info!("transform smartmodule not found locally, trying hub {}", hub_url); Transformations::from_hub(hub_url, raw_opts.transform).await?
-    };
+    let mut transformations =
+        if let Ok(t) = Transformations::from_fluvio(raw_opts.transform.clone()).await {
+            t
+        } else {
+            let hub_url = raw_opts.hub_url;
+            info!(
+                "transform smartmodule not found locally, trying hub {}",
+                hub_url
+            );
+            Transformations::from_hub(hub_url, raw_opts.transform).await?
+        };
     debug!("{:?} transformations loaded", transformations);
 
-    info!("starting stream processing from {}", raw_opts.common.fluvio_topic);
+    info!(
+        "starting stream processing from {}",
+        raw_opts.common.fluvio_topic
+    );
     while let Some(Ok(consumer_record)) = stream.next().await {
         let record: Record = consumer_record.into_inner();
         let output = transformations.transform(record)?;

@@ -3,11 +3,11 @@ use crate::opt::TransformOpt;
 use fluvio::dataplane::record::Record;
 use fluvio_smartengine::{SmartEngine, SmartModuleChainInstance, SmartModuleConfig};
 
+use fluvio::Fluvio;
+use fluvio_connectors_common::opt::CommonConnectorOpt;
 use fluvio_smartmodule::dataplane::smartmodule::SmartModuleInput;
 use std::collections::BTreeMap;
-use fluvio::Fluvio;
 use url::Url;
-use fluvio_connectors_common::opt::CommonConnectorOpt;
 
 const PARAM_WITH: &str = "with";
 
@@ -48,9 +48,7 @@ impl Transformations {
     }
 
     // TODO: move up to common crate
-    pub async fn from_fluvio(
-        value: Vec<TransformOpt>,
-    ) -> anyhow::Result<Transformations> {
+    pub async fn from_fluvio(value: Vec<TransformOpt>) -> anyhow::Result<Transformations> {
         let mut builder = SmartEngine::new().builder();
         if value.is_empty() {
             return Ok(Self {
@@ -65,7 +63,9 @@ impl Transformations {
             if let Some(with) = step.with {
                 param.insert(PARAM_WITH.to_string(), with);
             }
-            let raw = CommonConnectorOpt::default().get_smartmodule(&step.uses, &fluvio).await?;
+            let raw = CommonConnectorOpt::default()
+                .get_smartmodule(&step.uses, &fluvio)
+                .await?;
 
             let mut sm_builder = SmartModuleConfig::builder();
             let sm_builder = sm_builder.params(param.into());
