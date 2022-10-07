@@ -19,7 +19,7 @@ clap = { version = "3.1", features = ["std", "derive", "env"], default-features 
 schemars = { version = "0.8", features = ["url"], default-features = false  }
 itertools = { version = "0.10", default-features = false }
 url = { version = "2.2", default-features = false }
-sqlx = { version = "0.6", features = [ "runtime-tokio-native-tls" , "postgres", "sqlite", "any", "decimal", "chrono", "uuid" ], default-features = false }
+sqlx = { version = "0.6", features = [ "runtime-async-std-native-tls" , "postgres", "sqlite", "any", "decimal", "chrono", "uuid" ], default-features = false }
 async-std = { version = "1.12",  default-features = false, features = ["attributes"]}
 rust_decimal = { version = "1.26", default-features = false }
 chrono = { version = "0.4", default-features = false }

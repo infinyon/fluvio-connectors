@@ -269,6 +269,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "async-native-tls"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d57d4cec3c647232e1094dc013546c0b33ce785d8aeb251e1f20dfaf8a9a13fe"
+dependencies = [
+ "futures-util",
+ "native-tls",
+ "thiserror",
+ "url",
+]
+
+[[package]]
 name = "async-net"
 version = "1.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4908,7 +4920,6 @@ dependencies = [
  "sqlx-rt",
  "stringprep",
  "thiserror",
- "tokio-stream",
  "url",
  "uuid",
  "whoami",
@@ -4938,10 +4949,9 @@ version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "24c5b2d25fa654cc5f841750b8e1cdedbe21189bf9a9382ee90bfa9dd3562396"
 dependencies = [
+ "async-native-tls",
+ "async-std",
  "native-tls",
- "once_cell",
- "tokio",
- "tokio-native-tls",
 ]
 
 [[package]]
