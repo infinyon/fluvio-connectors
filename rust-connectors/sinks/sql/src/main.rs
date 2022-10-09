@@ -1,5 +1,5 @@
 use fluvio::dataplane::record::Record;
-use fluvio_future::tracing::{debug, info, error};
+use fluvio_future::tracing::{debug, error, info};
 
 use fluvio_model_sql::Operation;
 use futures::StreamExt;
@@ -50,21 +50,22 @@ async fn main() -> anyhow::Result<()> {
             Ok(output) => output,
             Err(e) => {
                 debug!("{e:?}");
-                continue
-            },
+                continue;
+            }
         };
         for output_record in output {
-            let operation = match serde_json::from_slice::<Operation>(output_record.value.as_ref()) {
+            let operation = match serde_json::from_slice::<Operation>(output_record.value.as_ref())
+            {
                 Ok(operation) => operation,
                 Err(e) => {
                     error!("{e:?}");
-                    continue
-                },
+                    continue;
+                }
             };
             debug!("{:?}", operation);
             if let Err(e) = db.execute(operation).await {
                 error!("{e:?}");
-                continue
+                continue;
             }
         }
     }
