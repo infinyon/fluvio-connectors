@@ -23,7 +23,7 @@ sqlx = { version = "0.6", features = [ "runtime-async-std-native-tls" , "postgre
 async-std = { version = "1.12",  default-features = false, features = ["attributes"]}
 rust_decimal = { version = "1.26", default-features = false }
 chrono = { version = "0.4", default-features = false }
-uuid = { version = "1.1", default-features = false }
+uuid = { version = "1.2", default-features = false }
 futures = { version = "0.3", default-features = false, features = ["std", "io-compat"] }
 anyhow = { version = "1.0", default-features = false }
 isahc = { version = "1.7", default-features = false }
