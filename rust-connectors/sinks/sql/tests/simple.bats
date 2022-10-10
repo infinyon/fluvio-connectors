@@ -5,11 +5,11 @@ load '../../../utils/bats-helpers/bats-assert/load'
 
 setup() {
     make postgres
-    sleep 1
-    make postgres-tables
     cargo build --target wasm32-unknown-unknown -p json-sql --profile release-lto
     fluvio sm create --wasm-file ../../../target/wasm32-unknown-unknown/release-lto/json_sql.wasm json-sql-bats-simple-test
     cargo build -p sql-sink
+
+    make postgres-tables
     RUST_BACKTRACE=full RUST_LOG=info ../../../target/debug/sql-sink --database-url postgres://fluvio:fluviopassword@127.0.0.1:5433 --fluvio-topic fluvio-sql-sink --transform '{"uses":"json-sql-bats-simple-test","invoke":"insert","with":"{\"table\":\"messages\",\"map-columns\":{\"message\":{\"json-key\":\"payload.message.text\",\"value\":{\"type\":\"text\"}},\"id\":{\"json-key\":\"payload.message.id\",\"value\":{\"type\":\"int4\"}}}}"}' & disown
     SQL_PID=$!
     sleep 1
@@ -18,8 +18,8 @@ setup() {
 teardown() {
     make postgres-stop
     fluvio sm delete json-sql-bats-simple-test
-    kill $SQL_PID
     fluvio topic delete fluvio-sql-sink
+    kill $SQL_PID
 }
 
 @test "produce connector" {
