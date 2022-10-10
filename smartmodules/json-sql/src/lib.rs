@@ -14,7 +14,7 @@ static MAPPING: OnceCell<Mapping> = OnceCell::new();
 
 #[smartmodule(init)]
 fn init(params: SmartModuleExtraParams) -> Result<()> {
-    if let Some(raw_mapping) = params.get("with") {
+    if let Some(raw_mapping) = params.get("mapping") {
         match serde_json::from_str(raw_mapping) {
             Ok(mapping) => {
                 MAPPING

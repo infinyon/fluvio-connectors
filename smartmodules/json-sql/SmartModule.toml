@@ -9,4 +9,4 @@ repository = "https://github.com/infinyon/fluvio"
 
 
 [params]
-with = { description = "Transformation mapping" }
+mapping = { description = "Transformation mapping" }
