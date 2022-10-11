@@ -14,3 +14,6 @@
 /container-build/test-connector
 /container-build/mqtt
 /container-build/syslog
+
+# Hub packages
+**/*.ipkg

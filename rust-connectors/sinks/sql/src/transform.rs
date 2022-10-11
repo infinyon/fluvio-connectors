@@ -7,7 +7,7 @@ use fluvio_connectors_common::opt::CommonConnectorOpt;
 use fluvio_smartmodule::dataplane::smartmodule::SmartModuleInput;
 use std::collections::BTreeMap;
 
-const PARAM_WITH: &str = "with";
+const PARAM_WITH: &str = "mapping";
 
 #[derive(Debug)]
 pub struct Transformations {
