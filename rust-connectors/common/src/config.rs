@@ -76,12 +76,8 @@ pub struct ProducerParameters {
 pub struct TransformStep {
     uses: String,
     invoke: String,
-    #[serde(
-        default,
-        deserialize_with = "deserialize_to_json_string",
-        skip_serializing_if = "Option::is_none"
-    )]
-    with: Option<String>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    with: BTreeMap<String, JsonString>,
 }
 
 impl ConnectorConfig {
@@ -184,6 +180,9 @@ impl From<BTreeMap<String, String>> for ManagedConnectorParameterValue {
     }
 }
 
+#[derive(Default, Clone, Debug, PartialEq, Eq, Serialize)]
+pub struct JsonString(String);
+
 use serde::de::{self, MapAccess, SeqAccess, Visitor};
 use serde::Deserializer;
 struct ParameterValueVisitor;
@@ -274,51 +273,46 @@ impl<'de> Visitor<'de> for ParameterValueVisitor {
     }
 }
 
-fn deserialize_to_json_string<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    struct MapAsJsonString;
-    impl<'de> Visitor<'de> for MapAsJsonString {
-        type Value = Option<String>;
+impl<'de> Deserialize<'de> for JsonString {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct MapAsJsonString;
+        impl<'de> Visitor<'de> for MapAsJsonString {
+            type Value = JsonString;
 
-        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-            formatter.write_str("str, string, map or none")
-        }
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                formatter.write_str("str, string, or map")
+            }
 
-        fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-        where
-            E: de::Error,
-        {
-            Ok(Some(v.to_string()))
-        }
+            fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                Ok(JsonString(v.to_string()))
+            }
 
-        fn visit_string<E>(self, v: String) -> Result<Self::Value, E>
-        where
-            E: de::Error,
-        {
-            Ok(Some(v))
-        }
+            fn visit_string<E>(self, v: String) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                Ok(JsonString(v))
+            }
 
-        fn visit_none<E>(self) -> Result<Self::Value, E>
-        where
-            E: de::Error,
-        {
-            Ok(None)
+            fn visit_map<M>(self, map: M) -> Result<Self::Value, M::Error>
+            where
+                M: MapAccess<'de>,
+            {
+                let json: serde_json::Value =
+                    Deserialize::deserialize(de::value::MapAccessDeserializer::new(map))?;
+                serde_json::to_string(&json).map(JsonString).map_err(|err| {
+                    de::Error::custom(format!("unable to serialize to json: {}", err))
+                })
+            }
         }
-
-        fn visit_map<M>(self, map: M) -> Result<Self::Value, M::Error>
-        where
-            M: MapAccess<'de>,
-        {
-            let json: serde_json::Value =
-                Deserialize::deserialize(de::value::MapAccessDeserializer::new(map))?;
-            serde_json::to_string(&json)
-                .map(Some)
-                .map_err(|err| de::Error::custom(format!("unable to serialize to json: {}", err)))
-        }
+        deserializer.deserialize_any(MapAsJsonString)
     }
-    deserializer.deserialize_any(MapAsJsonString)
 }
 
 #[cfg(test)]
@@ -369,7 +363,13 @@ mod tests {
             transforms: Some(vec![TransformStep {
                 uses: "infinyon/json-sql".to_string(),
                 invoke: "insert".to_string(),
-                with: Some("{\"table\":\"topic_message\"}".to_string()),
+                with: BTreeMap::from([
+                    (
+                        "mapping".to_string(),
+                        JsonString("{\"table\":\"topic_message\"}".to_string()),
+                    ),
+                    ("param".to_string(), JsonString("param_value".to_string())),
+                ]),
             }]),
         };
 
@@ -552,7 +552,7 @@ mod tests {
             "insert"
         );
         assert_eq!(connector_spec.transforms.as_ref().unwrap()[0].with,
-                       Some("{\"map-columns\":{\"device_id\":{\"json-key\":\"device.device_id\",\"value\":{\"default\":0,\"required\":true,\"type\":\"int\"}},\"record\":{\"json-key\":\"$\",\"value\":{\"required\":true,\"type\":\"jsonb\"}}},\"table\":\"topic_message\"}".to_string()));
+                       BTreeMap::from([("mapping".to_string(), JsonString("{\"map-columns\":{\"device_id\":{\"json-key\":\"device.device_id\",\"value\":{\"default\":0,\"required\":true,\"type\":\"int\"}},\"record\":{\"json-key\":\"$\",\"value\":{\"required\":true,\"type\":\"jsonb\"}}},\"table\":\"topic_message\"}".to_string()))]));
     }
 
     #[test]
@@ -567,15 +567,24 @@ mod tests {
         //then
         assert!(connector_spec.transforms.is_some());
         let transform = connector_spec.transforms.unwrap();
-        assert_eq!(transform.len(), 2);
+        assert_eq!(transform.len(), 3);
         assert_eq!(transform[0].uses.as_str(), "infinyon/json-sql");
         assert_eq!(transform[0].invoke.as_str(), "insert");
         assert_eq!(
             transform[0].with,
-            Some("{\"table\":\"topic_message\"}".to_string())
+            BTreeMap::from([(
+                "mapping".to_string(),
+                JsonString("{\"table\":\"topic_message\"}".to_string())
+            )])
         );
         assert_eq!(transform[1].uses.as_str(), "infinyon/avro-sql");
         assert_eq!(transform[1].invoke.as_str(), "map");
-        assert_eq!(transform[1].with, None);
+        assert_eq!(transform[1].with, BTreeMap::default());
+        assert_eq!(transform[2].uses.as_str(), "infinyon/regex-filter");
+        assert_eq!(transform[2].invoke.as_str(), "insert");
+        assert_eq!(
+            transform[2].with,
+            BTreeMap::from([("regex".to_string(), JsonString("\\w".to_string()))])
+        );
     }
 }

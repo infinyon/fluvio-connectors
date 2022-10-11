@@ -7,6 +7,11 @@ transforms:
   - uses: infinyon/json-sql
     invoke: insert
     with:
-      table: "topic_message"
+      mapping:
+        table: "topic_message"
   - uses: infinyon/avro-sql
     invoke: map
+  - uses: infinyon/regex-filter
+    invoke: insert
+    with:
+      regex: "\\w"
