@@ -7,6 +7,6 @@ description = "JSON to SQL transformation Smartmodule"
 license = "Apache-2.0"
 repository = "https://github.com/infinyon/fluvio"
 
-
-[params]
-mapping = { description = "Transformation mapping" }
+[[params]]
+name = "mapping"
+description = "Transformation mapping"
