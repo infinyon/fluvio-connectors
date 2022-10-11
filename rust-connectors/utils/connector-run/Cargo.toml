@@ -8,7 +8,7 @@ description = "Deploy or run locally a connector"
 
 [dependencies]
 anyhow = "1.0.56"
-clap = { version = "3.1", features = ["std", "derive"], default-features = false }
+clap = { version = "4.0", features = ["std", "derive"], default-features = false }
 fluvio-connectors-common = { path = "../../common" }
 k8-types = { version = "0.6.0", default-features = false, features = ["app"] }
 k8-client = "7.0.0"
