@@ -5,9 +5,6 @@ use fluvio_smartengine::{SmartEngine, SmartModuleChainInstance, SmartModuleConfi
 use fluvio::Fluvio;
 use fluvio_connectors_common::opt::CommonConnectorOpt;
 use fluvio_smartmodule::dataplane::smartmodule::SmartModuleInput;
-use std::collections::BTreeMap;
-
-const PARAM_WITH: &str = "mapping";
 
 #[derive(Debug)]
 pub struct Transformations {
@@ -27,18 +24,14 @@ impl Transformations {
         let fluvio = Fluvio::connect().await?;
 
         for step in value {
-            let mut param: BTreeMap<String, String> = BTreeMap::new();
-            if let Some(with) = step.with {
-                param.insert(PARAM_WITH.to_string(), with);
-            }
             let raw = CommonConnectorOpt::default()
                 .get_smartmodule(&step.uses, &fluvio)
                 .await?;
 
-            let mut sm_builder = SmartModuleConfig::builder();
-            let sm_builder = sm_builder.params(param.into());
-
-            builder.add_smart_module(sm_builder.build()?, raw)?;
+            let config = SmartModuleConfig::builder()
+                .params(step.with.into())
+                .build()?;
+            builder.add_smart_module(config, raw)?;
         }
 
         Ok(Self {

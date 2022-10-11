@@ -2,6 +2,7 @@ use clap::Parser;
 use fluvio_connectors_common::opt::CommonConnectorOpt;
 use schemars::JsonSchema;
 use serde::Deserialize;
+use std::collections::BTreeMap;
 use std::str::FromStr;
 use url::Url;
 
@@ -24,11 +25,12 @@ pub struct SqlConnectorOpt {
 }
 
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Parser, Debug, JsonSchema, Clone, Deserialize)]
+#[allow(dead_code)]
+#[derive(Debug, JsonSchema, Clone, Deserialize)]
 pub struct TransformOpt {
     pub(crate) uses: String,
     pub(crate) invoke: String,
-    pub(crate) with: Option<String>,
+    pub(crate) with: BTreeMap<String, String>,
 }
 
 impl FromStr for TransformOpt {
