@@ -1839,7 +1839,7 @@ dependencies = [
 
 [[package]]
 name = "fluvio-connectors-common"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "anyhow",
  "bytesize",
@@ -1950,6 +1950,16 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "ws_stream_wasm",
+]
+
+[[package]]
+name = "fluvio-jolt"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "93b7a1aadc6f015e97317edc0973e84c4e4e790e9cb7fb22e046872dd72da3ef"
+dependencies = [
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -2949,6 +2959,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "068b1ee6743e4d11fb9c6a1e6064b3693a1b600e7f5f5988047d98b3dc9fb90b"
 dependencies = [
  "libc",
+]
+
+[[package]]
+name = "jolt"
+version = "0.0.0"
+dependencies = [
+ "eyre",
+ "fluvio-jolt",
+ "fluvio-smartmodule",
+ "once_cell",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

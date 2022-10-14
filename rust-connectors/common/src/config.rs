@@ -278,12 +278,12 @@ impl<'de> Deserialize<'de> for JsonString {
     where
         D: Deserializer<'de>,
     {
-        struct MapAsJsonString;
-        impl<'de> Visitor<'de> for MapAsJsonString {
+        struct AsJsonString;
+        impl<'de> Visitor<'de> for AsJsonString {
             type Value = JsonString;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                formatter.write_str("str, string, or map")
+                formatter.write_str("str, string, sequence or map")
             }
 
             fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
@@ -307,11 +307,22 @@ impl<'de> Deserialize<'de> for JsonString {
                 let json: serde_json::Value =
                     Deserialize::deserialize(de::value::MapAccessDeserializer::new(map))?;
                 serde_json::to_string(&json).map(JsonString).map_err(|err| {
-                    de::Error::custom(format!("unable to serialize to json: {}", err))
+                    de::Error::custom(format!("unable to serialize map to json: {}", err))
+                })
+            }
+
+            fn visit_seq<M>(self, seq: M) -> Result<Self::Value, M::Error>
+            where
+                M: SeqAccess<'de>,
+            {
+                let json: serde_json::Value =
+                    Deserialize::deserialize(de::value::SeqAccessDeserializer::new(seq))?;
+                serde_json::to_string(&json).map(JsonString).map_err(|err| {
+                    de::Error::custom(format!("unable to serialize seq to json: {}", err))
                 })
             }
         }
-        deserializer.deserialize_any(MapAsJsonString)
+        deserializer.deserialize_any(AsJsonString)
     }
 }
 
