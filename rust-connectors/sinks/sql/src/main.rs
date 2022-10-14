@@ -1,5 +1,5 @@
 use fluvio::dataplane::record::Record;
-use fluvio_future::tracing::{debug, info};
+use fluvio_future::tracing::{debug, error, info};
 
 use fluvio_model_sql::Operation;
 use futures::StreamExt;
@@ -46,11 +46,27 @@ async fn main() -> anyhow::Result<()> {
     );
     while let Some(Ok(consumer_record)) = stream.next().await {
         let record: Record = consumer_record.into_inner();
-        let output = transformations.transform(record)?;
+        let output = match transformations.transform(record) {
+            Ok(output) => output,
+            Err(e) => {
+                debug!("{e:?}");
+                continue;
+            }
+        };
         for output_record in output {
-            let operation: Operation = serde_json::from_slice(output_record.value.as_ref())?;
+            let operation = match serde_json::from_slice::<Operation>(output_record.value.as_ref())
+            {
+                Ok(operation) => operation,
+                Err(e) => {
+                    error!("{e:?}");
+                    continue;
+                }
+            };
             debug!("{:?}", operation);
-            db.execute(operation).await?;
+            if let Err(e) = db.execute(operation).await {
+                error!("{e:?}");
+                continue;
+            }
         }
     }
 

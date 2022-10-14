@@ -232,6 +232,7 @@ jobs:
           - test-connector
           - mqtt-source
           - http-source
+          - sql-sink
     env:
       RUST_BACKTRACE: full
     steps:
@@ -263,9 +264,6 @@ jobs:
           version: latest
       - name: Check Fluvio Installation
         run: |
-          # TODO: When we're not using fluvio on the master branch, revert this.
-          fluvio cluster delete
-          fluvio cluster start --image-version latest
           sleep 10
           fluvio version
           fluvio topic list
@@ -285,9 +283,6 @@ jobs:
         with:
           toolchain: ${{ matrix.rust }}
           target: wasm32-unknown-unknown
-      - name: Add wasm
-
-        run: rustup target add wasm32-unknown-unknown
       - name: Setup BATS
         uses: mig4/setup-bats@v1
       - name: Test
