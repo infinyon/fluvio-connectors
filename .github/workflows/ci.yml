@@ -286,7 +286,6 @@ jobs:
           toolchain: ${{ matrix.rust }}
           target: wasm32-unknown-unknown
       - name: Add wasm
-
         run: rustup target add wasm32-unknown-unknown
       - name: Setup BATS
         uses: mig4/setup-bats@v1
