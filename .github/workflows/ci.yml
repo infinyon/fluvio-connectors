@@ -504,8 +504,8 @@ jobs:
     needs:
       - check
       - docker_push
-      - postgres_sink_and_source_integration_tests
-      - postgres_source_integration_tests
+ #     - postgres_sink_and_source_integration_tests
+ #     - postgres_source_integration_tests
     runs-on: ubuntu-latest
     steps:
       - name: Done
