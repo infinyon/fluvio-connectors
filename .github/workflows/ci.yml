@@ -1,9 +1,15 @@
 name: CI
 
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+
 on:
   workflow_dispatch:
   push:
-    branches: [ main, staging, trying ]
+    branches: [staging, trying ]
     paths:
     - '**'
     - '!/*.md'
@@ -15,15 +21,9 @@ on:
     - '!/*.md'
     - '!/**.md'
 
-jobs:
-  cancel_previous_runs:
-    name: Cancel Previous Runs
-    runs-on: ubuntu-latest
-    steps:
-      - uses: styfle/cancel-workflow-action@0.10.0
-        with:
-          access_token: ${{ secrets.GITHUB_TOKEN }}
 
+
+jobs:
   check:
     name: Rust Check - ${{ matrix.check }}
     runs-on: ${{ matrix.os }}
@@ -43,9 +43,10 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-          override: true
           components: clippy
-
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.rust-target }}-${{ matrix.check }}
       - name: Cargo test
         if: ${{ matrix.check == 'test' }}
         run: |
@@ -68,7 +69,7 @@ jobs:
     name:  Build binary ${{ matrix.connector-name }} for ${{ matrix.rust-target }} on (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         os: [ubuntu-latest]
         rust-target:
@@ -107,7 +108,6 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ matrix.rust }}
-          override: true
           target: ${{ matrix.rust-target }}
       - name: Install zig
         run: ./actions/zig-install.sh ${{ matrix.os }}
@@ -132,7 +132,7 @@ jobs:
     needs: [check, build_connector_bins]
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         os: [ubuntu-latest]
         rust: [stable]
@@ -224,7 +224,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     needs: [build_containers]
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         os: [ubuntu-latest]
         rust: [stable]
@@ -257,6 +257,7 @@ jobs:
           k3d image import -k -c fluvio /tmp/infinyon-fluvio-connector-${{ matrix.connector-name }}-x86_64-unknown-linux-musl.tar
           docker exec k3d-fluvio-server-0 sh -c "ctr image list -q"
       - name: Install Fluvio Local Cluster
+        timeout-minutes: 10
         uses: infinyon/fluvio@master
         with:
           cluster-type: k3d
@@ -279,18 +280,20 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-          override: true
       - name: Install Rust ${{ matrix.rust }}
         uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ matrix.rust }}
           target: wasm32-unknown-unknown
       - name: Add wasm
-
         run: rustup target add wasm32-unknown-unknown
       - name: Setup BATS
         uses: mig4/setup-bats@v1
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.rust-target }}-${{ matrix.connector-name }}
       - name: Test
+        timeout-minutes: 20
         run: make test
         env:
           CONNECTOR_NAME: ${{ matrix.connector-name }}
@@ -312,7 +315,7 @@ jobs:
     needs: [build_containers, integration_tests]
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         os: [ubuntu-latest]
         connector-name:
@@ -373,6 +376,7 @@ jobs:
 
   postgres_source_integration_tests:
     runs-on: ubuntu-latest
+    if: false
     steps:
       - uses: actions/checkout@v3
       - name: "Start postgres instance"
@@ -388,11 +392,13 @@ jobs:
           sleep 5
           ./actions/kd3-check.sh
       - name: Install Fluvio Local Cluster
+        timeout-minutes: 10
         uses: infinyon/fluvio@master
         with:
           cluster-type: k3d
           version: latest
       - name: Check Fluvio Installation
+        timeout-minutes: 10
         run: |
           fluvio version
           fluvio topic list
@@ -404,14 +410,15 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-          override: true
 
       - name: cargo test on postgres crate
+        timeout-minutes: 10
         run: |
           make -C ./rust-connectors/sources/postgres test-dev
 
   postgres_sink_and_source_integration_tests:
     runs-on: ubuntu-latest
+    if: false
     steps:
       - uses: actions/checkout@v3
       - name: "Start postgres instance"
@@ -430,6 +437,7 @@ jobs:
           cluster-type: k3d
           version: latest
       - name: Check Fluvio Installation
+        timeout-minutes: 10
         run: |
           fluvio version
           fluvio topic list
@@ -441,9 +449,8 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-          override: true
-
       - name: cargo test on postgres crate
+        timeout-minutes: 10
         run: |
           make -C ./rust-connectors/sinks/postgres test-dev
 
@@ -458,6 +465,7 @@ jobs:
       - name: Sleep 20 to ensure k3d cluster is ready
         run: sleep 20
       - name: Install Fluvio Local Cluster
+        timeout-minutes: 10
         uses: infinyon/fluvio@master
         with:
           cluster-type: k3d
@@ -467,9 +475,9 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-          override: true
           target: wasm32-unknown-unknown
       - name: "Start postgres instance"
+        timeout-minutes: 10
         run: |
           make -C ./examples/github-stars test
 
@@ -481,10 +489,10 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-          override: true
           components: clippy
           target: x86_64-pc-windows-msvc
       - name: Cargo windows with no-default-features
+        timeout-minutes: 10
         run: |
           cargo check -p fluvio-connectors-common --no-default-features
 
@@ -498,8 +506,8 @@ jobs:
     needs:
       - check
       - docker_push
-      - postgres_sink_and_source_integration_tests
-      - postgres_source_integration_tests
+ #     - postgres_sink_and_source_integration_tests
+ #     - postgres_source_integration_tests
     runs-on: ubuntu-latest
     steps:
       - name: Done
