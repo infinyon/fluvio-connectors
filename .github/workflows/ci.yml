@@ -9,7 +9,7 @@ concurrency:
 on:
   workflow_dispatch:
   push:
-    branches: [ main, staging, trying ]
+    branches: [staging, trying ]
     paths:
     - '**'
     - '!/*.md'
