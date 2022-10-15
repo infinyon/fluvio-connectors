@@ -290,8 +290,11 @@ jobs:
         run: rustup target add wasm32-unknown-unknown
       - name: Setup BATS
         uses: mig4/setup-bats@v1
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.rust-target }}-${{ matrix.connector-name }}
       - name: Test
-        timeout-minutes: 10
+        timeout-minutes: 20
         run: make test
         env:
           CONNECTOR_NAME: ${{ matrix.connector-name }}
