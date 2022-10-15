@@ -372,6 +372,7 @@ jobs:
 
   postgres_source_integration_tests:
     runs-on: ubuntu-latest
+    if: false
     steps:
       - uses: actions/checkout@v3
       - name: "Start postgres instance"
@@ -413,6 +414,7 @@ jobs:
 
   postgres_sink_and_source_integration_tests:
     runs-on: ubuntu-latest
+    if: false
     steps:
       - uses: actions/checkout@v3
       - name: "Start postgres instance"
