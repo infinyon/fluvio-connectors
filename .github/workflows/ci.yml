@@ -44,7 +44,9 @@ jobs:
         with:
           toolchain: stable
           components: clippy
-
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.rust-target }}-${{ matrix.check }}
       - name: Cargo test
         if: ${{ matrix.check == 'test' }}
         run: |
