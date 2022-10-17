@@ -69,16 +69,20 @@
 | Model                   | Language(s) | Description         |
 |:------------------------|:------------|:--------------------|
 | [fluvio-model-postgres] | Rust        | Postgres Data Model |
+| [fluvio-model-sql]      | Rust        | Common SQL Model    |
 
 [fluvio-model-postgres]: https://github.com/infinyon/fluvio-connectors/tree/main/rust-connectors/models/fluvio-model-postgres
+[fluvio-model-sql]: https://github.com/infinyon/fluvio-connectors/tree/main/rust-connectors/models/fluvio-model-sql
 
 ## SmartModules (smartmodules/)
 
 | Model                   | Language(s) | Description                    |
 |:------------------------|:------------|:-------------------------------|
 | [smartmodules/json-sql] | Rust        | Map JSON values to SQL inserts |
+| [smartmodules/jolt]     | Rust        | JSON to JSON transformation    |
 
 [smartmodules/json-sql]: https://github.com/infinyon/fluvio-connectors/tree/main/smartmodules/json-sql
+[smartmodules/jolt]: https://github.com/infinyon/fluvio-connectors/tree/main/smartmodules/jolt
 
 ## Examples (examples/)
 

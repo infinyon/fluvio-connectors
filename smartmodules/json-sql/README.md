@@ -1,7 +1,7 @@
 # JSON to SQL transformation SmartModule
 This is a `map` type SmartModule that converts records in arbitrary JSON into
 records in [SQL model](../../rust-connectors/models/fluvio-model-sql). The transformation specification is defined in 
-JSON format and passed to the SmartModule via constructor call (`with` parameter in `SmartModuleExtraParams`).
+JSON format and passed to the SmartModule via constructor call (`mapping` parameter in `SmartModuleExtraParams`).
 
 ## The specification
 The specification consists of mapping that defines the JSON path of the input record - where to read an entry

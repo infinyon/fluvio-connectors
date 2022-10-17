@@ -80,6 +80,7 @@ esac
 
 # install everything
 wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
+echo 'Acquire::Retries "10";' > /etc/apt/apt.conf.d/80-retries
 add-apt-repository "${REPO_NAME}"
 apt-get update
 apt-get install -y clang-$LLVM_VERSION lldb-$LLVM_VERSION lld-$LLVM_VERSION clangd-$LLVM_VERSION
