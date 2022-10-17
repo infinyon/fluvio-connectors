@@ -1,13 +1,13 @@
 #!/bin/bash
 # set up sccache
-set -e
+set -euxo pipefail
 MATRIX_OS=${1}
 echo "installing zig matrix.os=$MATRIX_OS"
 
 if [[ "$MATRIX_OS" == "ubuntu-latest" ]]; then
     echo "installing zig on ubuntu"
     sudo snap install --beta --classic zig && \
-    sudo ${0%/*}/llvm.sh 13 && \
+    sudo ${0%/*}/llvm.sh 13 || { echo 'llvm installation failed' ; exit 1; } && \
     echo "FLUVIO_BUILD_LLD=lld-13" | tee -a $GITHUB_ENV
 fi
 
