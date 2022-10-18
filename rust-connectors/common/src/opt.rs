@@ -336,7 +336,7 @@ impl CommonConnectorOpt {
     }
     pub async fn ensure_topic_exists(&self) -> anyhow::Result<()> {
         let admin = fluvio::FluvioAdmin::connect().await?;
-        let topics = admin.list::<TopicSpec, _>(vec![]).await?;
+        let topics = admin.list::<TopicSpec, String>(vec![]).await?;
         let topic_exists = topics.iter().any(|t| t.name == self.fluvio_topic);
         if !topic_exists {
             let _ = admin
@@ -359,8 +359,9 @@ impl CommonConnectorOpt {
             Err(_) => {
                 let admin = fluvio.admin().await;
 
-                let smartmodule_spec_list =
-                    &admin.list::<SmartModuleSpec, _>(vec![name.into()]).await?;
+                let smartmodule_spec_list = &admin
+                    .list::<SmartModuleSpec, String>(vec![name.into()])
+                    .await?;
 
                 let smartmodule_spec = &smartmodule_spec_list
                     .first()
