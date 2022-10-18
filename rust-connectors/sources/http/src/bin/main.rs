@@ -1,7 +1,7 @@
 // Techdebt: Granular errors
 #![allow(clippy::redundant_closure)]
 
-use fluvio_connectors_common::{fluvio::RecordKey, git_hash_version};
+use fluvio_connectors_common::{fluvio::init_open_telemetry, fluvio::RecordKey, git_hash_version};
 use tokio_stream::StreamExt;
 
 type Result<T, E = Box<dyn std::error::Error + Send + Sync + 'static>> = core::result::Result<T, E>;
@@ -13,6 +13,7 @@ use fluvio_connectors_common::opt::GetOpts;
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    init_open_telemetry();
     let opts = if let Some(opts) = HttpOpt::get_opt() {
         opts
     } else {

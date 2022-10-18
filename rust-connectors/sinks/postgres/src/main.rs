@@ -1,4 +1,4 @@
-use fluvio_connectors_common::git_hash_version;
+use fluvio_connectors_common::{fluvio::init_open_telemetry, git_hash_version};
 use postgres_sink::{PgConnector, PgConnectorOpt};
 
 use clap::Parser;
@@ -7,6 +7,7 @@ use tracing::info;
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
+    init_open_telemetry();
     color_backtrace::install();
     let _ = dotenv::dotenv();
     std::env::set_var("RUST_BACKTRACE", "full");

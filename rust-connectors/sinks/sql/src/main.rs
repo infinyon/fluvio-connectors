@@ -5,7 +5,7 @@ use fluvio_model_sql::Operation;
 use futures::StreamExt;
 
 use clap::Parser;
-use fluvio_connectors_common::git_hash_version;
+use fluvio_connectors_common::{fluvio::init_open_telemetry, git_hash_version};
 use schemars::schema_for;
 use sql_sink::db::Db;
 use sql_sink::opt::SqlConnectorOpt;
@@ -13,6 +13,7 @@ use sql_sink::transform::Transformations;
 
 #[async_std::main]
 async fn main() -> anyhow::Result<()> {
+    init_open_telemetry();
     if let Some("metadata") = std::env::args().nth(1).as_deref() {
         let schema = serde_json::json!({
             "name": env!("CARGO_PKG_NAME"),

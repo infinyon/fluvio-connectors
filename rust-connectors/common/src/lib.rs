@@ -1,7 +1,7 @@
 pub mod fluvio {
     pub use fluvio::{
-        consumer::Record, metadata::topic::TopicSpec, Fluvio, FluvioError, Offset,
-        PartitionConsumer, RecordKey, TopicProducer,
+        consumer::Record, init_open_telemetry, metadata::topic::TopicSpec, Fluvio, FluvioError,
+        Offset, PartitionConsumer, RecordKey, TopicProducer,
     };
 }
 

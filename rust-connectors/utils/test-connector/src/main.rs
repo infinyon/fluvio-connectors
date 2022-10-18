@@ -1,4 +1,5 @@
 use clap::Parser;
+use fluvio_connectors_common::fluvio::init_open_telemetry;
 use schemars::schema_for;
 use serde::Serialize;
 use std::env;
@@ -27,6 +28,7 @@ enum ConnectorDirection {
 
 #[async_std::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    init_open_telemetry();
     // Handle the subcommand
     if let Ok(TestConnectorSubCmd::Metadata) = TestConnectorSubCmd::from_args_safe() {
         let schema = schema_for!(TestConnectorOpts);
