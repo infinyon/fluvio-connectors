@@ -31,7 +31,7 @@ impl ProducerOpts {
         let fluvio = Fluvio::connect().await?;
         let admin = fluvio.admin().await;
         let topics = admin
-            .list::<TopicSpec, _>(vec![])
+            .list::<TopicSpec, String>(vec![])
             .await?
             .iter()
             .map(|topic| topic.name.clone())

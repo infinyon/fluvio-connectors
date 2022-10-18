@@ -44,7 +44,7 @@ impl PgConnector {
 
         let admin = fluvio.admin().await;
 
-        let topics = admin.list::<TopicSpec, _>(vec![]).await?;
+        let topics = admin.list::<TopicSpec, String>(vec![]).await?;
         let topic_exists = topics.iter().any(|t| t.name == config.common.fluvio_topic);
         if !topic_exists {
             return Err(Error::TopicNotFound(config.common.fluvio_topic.to_string()).into());
