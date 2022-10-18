@@ -1,6 +1,6 @@
 [package]
 name = "connector-run"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "Deploy or run locally a connector"
 
