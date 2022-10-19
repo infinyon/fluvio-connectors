@@ -39,6 +39,7 @@ jobs:
       TARGET: ${{ matrix.rust-target }}
     steps:
       - uses: actions/checkout@v3
+      - uses: arduino/setup-protoc@v1
       - name: Install Rust stable
         uses: actions-rs/toolchain@v1
         with:
@@ -51,7 +52,6 @@ jobs:
         if: ${{ matrix.check == 'test' }}
         run: |
           cargo test -- --skip postgres_
-
       - name: Cargo check
         if: ${{ matrix.check == 'check' }}
         run: |
@@ -104,6 +104,7 @@ jobs:
       - name: Print env
         run: |
           echo "RUST_BIN_DIR = ${{ env.RUST_BIN_DIR }} "
+      - uses: arduino/setup-protoc@v1
       - name: Install Rust ${{ matrix.rust }}
         uses: actions-rs/toolchain@v1
         with:
@@ -410,6 +411,7 @@ jobs:
           sleep 3
           echo foo | fluvio produce foobar
           fluvio consume foobar -o 0 -d
+      - uses: arduino/setup-protoc@v1
       - name: Install Rust stable
         uses: actions-rs/toolchain@v1
         with:
@@ -449,6 +451,7 @@ jobs:
           sleep 3
           echo foo | fluvio produce foobar
           fluvio consume foobar -o 0 -d
+      - uses: arduino/setup-protoc@v1
       - name: Install Rust stable
         uses: actions-rs/toolchain@v1
         with:
@@ -475,6 +478,7 @@ jobs:
           cluster-type: k3d
           version: latest
       - uses: actions/checkout@v3
+      - uses: arduino/setup-protoc@v1
       - name: Install Rust stable
         uses: actions-rs/toolchain@v1
         with:
