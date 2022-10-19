@@ -1910,7 +1910,7 @@ dependencies = [
 [[package]]
 name = "fluvio"
 version = "0.14.0"
-source = "git+https://github.com/nacardin/fluvio?branch=otel#ccda74e9c0a87e36a604c41117e09c7fa08b3e10"
+source = "git+https://github.com/infinyon/fluvio?branch=master#e3195c8ba3b4833df10e794bce406e10919bb543"
 dependencies = [
  "async-channel",
  "async-lock",
@@ -1932,7 +1932,7 @@ dependencies = [
  "fluvio-smartmodule",
  "fluvio-socket",
  "fluvio-spu-schema",
- "fluvio-types 0.3.8 (git+https://github.com/nacardin/fluvio?branch=otel)",
+ "fluvio-types 0.3.8 (git+https://github.com/infinyon/fluvio?branch=master)",
  "futures-util",
  "once_cell",
  "opentelemetry",
@@ -1964,7 +1964,7 @@ dependencies = [
 [[package]]
 name = "fluvio-compression"
 version = "0.2.1"
-source = "git+https://github.com/nacardin/fluvio?branch=otel#ccda74e9c0a87e36a604c41117e09c7fa08b3e10"
+source = "git+https://github.com/infinyon/fluvio?branch=master#e3195c8ba3b4833df10e794bce406e10919bb543"
 dependencies = [
  "bytes 1.2.1",
  "flate2",
@@ -2004,7 +2004,7 @@ dependencies = [
 [[package]]
 name = "fluvio-controlplane-metadata"
 version = "0.19.0"
-source = "git+https://github.com/nacardin/fluvio?branch=otel#ccda74e9c0a87e36a604c41117e09c7fa08b3e10"
+source = "git+https://github.com/infinyon/fluvio?branch=master#e3195c8ba3b4833df10e794bce406e10919bb543"
 dependencies = [
  "async-trait",
  "base64 0.13.0",
@@ -2012,7 +2012,7 @@ dependencies = [
  "fluvio-future 0.4.2",
  "fluvio-protocol 0.8.0",
  "fluvio-stream-model",
- "fluvio-types 0.3.8 (git+https://github.com/nacardin/fluvio?branch=otel)",
+ "fluvio-types 0.3.8 (git+https://github.com/infinyon/fluvio?branch=master)",
  "flv-util",
  "lenient_semver",
  "semver 1.0.14",
@@ -2129,7 +2129,7 @@ dependencies = [
 [[package]]
 name = "fluvio-protocol"
 version = "0.8.0"
-source = "git+https://github.com/nacardin/fluvio?branch=otel#ccda74e9c0a87e36a604c41117e09c7fa08b3e10"
+source = "git+https://github.com/infinyon/fluvio?branch=master#e3195c8ba3b4833df10e794bce406e10919bb543"
 dependencies = [
  "bytes 1.2.1",
  "content_inspector",
@@ -2138,7 +2138,7 @@ dependencies = [
  "fluvio-compression 0.2.1",
  "fluvio-future 0.4.2",
  "fluvio-protocol-derive 0.4.3",
- "fluvio-types 0.3.8 (git+https://github.com/nacardin/fluvio?branch=otel)",
+ "fluvio-types 0.3.8 (git+https://github.com/infinyon/fluvio?branch=master)",
  "flv-util",
  "once_cell",
  "semver 1.0.14",
@@ -2162,7 +2162,7 @@ dependencies = [
 [[package]]
 name = "fluvio-protocol-derive"
 version = "0.4.3"
-source = "git+https://github.com/nacardin/fluvio?branch=otel#ccda74e9c0a87e36a604c41117e09c7fa08b3e10"
+source = "git+https://github.com/infinyon/fluvio?branch=master#e3195c8ba3b4833df10e794bce406e10919bb543"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2173,11 +2173,11 @@ dependencies = [
 [[package]]
 name = "fluvio-sc-schema"
 version = "0.15.0"
-source = "git+https://github.com/nacardin/fluvio?branch=otel#ccda74e9c0a87e36a604c41117e09c7fa08b3e10"
+source = "git+https://github.com/infinyon/fluvio?branch=master#e3195c8ba3b4833df10e794bce406e10919bb543"
 dependencies = [
  "fluvio-controlplane-metadata",
  "fluvio-protocol 0.8.0",
- "fluvio-types 0.3.8 (git+https://github.com/nacardin/fluvio?branch=otel)",
+ "fluvio-types 0.3.8 (git+https://github.com/infinyon/fluvio?branch=master)",
  "log",
  "paste",
  "static_assertions",
@@ -2188,7 +2188,7 @@ dependencies = [
 [[package]]
 name = "fluvio-smartengine"
 version = "0.4.0"
-source = "git+https://github.com/nacardin/fluvio?branch=otel#ccda74e9c0a87e36a604c41117e09c7fa08b3e10"
+source = "git+https://github.com/infinyon/fluvio?branch=master#e3195c8ba3b4833df10e794bce406e10919bb543"
 dependencies = [
  "anyhow",
  "cfg-if 1.0.0",
@@ -2204,7 +2204,7 @@ dependencies = [
 [[package]]
 name = "fluvio-smartmodule"
 version = "0.3.0"
-source = "git+https://github.com/nacardin/fluvio?branch=otel#ccda74e9c0a87e36a604c41117e09c7fa08b3e10"
+source = "git+https://github.com/infinyon/fluvio?branch=master#e3195c8ba3b4833df10e794bce406e10919bb543"
 dependencies = [
  "eyre",
  "fluvio-protocol 0.8.0",
@@ -2216,7 +2216,7 @@ dependencies = [
 [[package]]
 name = "fluvio-smartmodule-derive"
 version = "0.3.0"
-source = "git+https://github.com/nacardin/fluvio?branch=otel#ccda74e9c0a87e36a604c41117e09c7fa08b3e10"
+source = "git+https://github.com/infinyon/fluvio?branch=master#e3195c8ba3b4833df10e794bce406e10919bb543"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2226,7 +2226,7 @@ dependencies = [
 [[package]]
 name = "fluvio-socket"
 version = "0.13.0"
-source = "git+https://github.com/nacardin/fluvio?branch=otel#ccda74e9c0a87e36a604c41117e09c7fa08b3e10"
+source = "git+https://github.com/infinyon/fluvio?branch=master#e3195c8ba3b4833df10e794bce406e10919bb543"
 dependencies = [
  "async-channel",
  "async-lock",
@@ -2248,7 +2248,7 @@ dependencies = [
 [[package]]
 name = "fluvio-spu-schema"
 version = "0.10.1"
-source = "git+https://github.com/nacardin/fluvio?branch=otel#ccda74e9c0a87e36a604c41117e09c7fa08b3e10"
+source = "git+https://github.com/infinyon/fluvio?branch=master#e3195c8ba3b4833df10e794bce406e10919bb543"
 dependencies = [
  "bytes 1.2.1",
  "educe",
@@ -2265,7 +2265,7 @@ dependencies = [
 [[package]]
 name = "fluvio-stream-model"
 version = "0.8.2"
-source = "git+https://github.com/nacardin/fluvio?branch=otel#ccda74e9c0a87e36a604c41117e09c7fa08b3e10"
+source = "git+https://github.com/infinyon/fluvio?branch=master#e3195c8ba3b4833df10e794bce406e10919bb543"
 dependencies = [
  "async-rwlock",
  "event-listener",
@@ -2313,7 +2313,7 @@ dependencies = [
 [[package]]
 name = "fluvio-types"
 version = "0.3.8"
-source = "git+https://github.com/nacardin/fluvio?branch=otel#ccda74e9c0a87e36a604c41117e09c7fa08b3e10"
+source = "git+https://github.com/infinyon/fluvio?branch=master#e3195c8ba3b4833df10e794bce406e10919bb543"
 dependencies = [
  "event-listener",
  "thiserror",
@@ -4938,9 +4938,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.86"
+version = "1.0.87"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "41feea4228a6f1cd09ec7a3593a682276702cd67b5273544757dae23c096f074"
+checksum = "6ce777b7b150d76b9cf60d28b55f5847135a003f7d7350c6be7a773508ce7d45"
 dependencies = [
  "itoa",
  "ryu",
