@@ -1,6 +1,6 @@
 use clap::Parser;
 use fluvio_connectors_common::opt::CommonConnectorOpt;
-use fluvio_connectors_common::{fluvio::init_open_telemetry, git_hash_version};
+use fluvio_connectors_common::{common_initialize, git_hash_version};
 use fluvio_future::tracing::info;
 use kafka::consumer::{Consumer, FetchOffset, GroupOffsetStorage};
 use schemars::schema_for;
@@ -8,7 +8,7 @@ use schemars::JsonSchema;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    init_open_telemetry();
+    common_initialize!();
     if let Some("metadata") = std::env::args().nth(1).as_deref() {
         let schema = serde_json::json!({
             "name": env!("CARGO_PKG_NAME"),

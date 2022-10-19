@@ -6,9 +6,9 @@ use aws_sdk_dynamodb::{
     Client, Endpoint,
 };
 use clap::Parser;
-use fluvio_connectors_common::git_hash_version;
+use fluvio_connectors_common::fluvio::Record;
 use fluvio_connectors_common::opt::CommonConnectorOpt;
-use fluvio_connectors_common::{fluvio::init_open_telemetry, fluvio::Record};
+use fluvio_connectors_common::{common_initialize, git_hash_version};
 use fluvio_future::tracing::{error, info};
 use schemars::{schema_for, JsonSchema};
 use serde_json::value::Value;
@@ -16,7 +16,7 @@ use tokio_stream::StreamExt;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    init_open_telemetry();
+    common_initialize!();
     if let Some("metadata") = std::env::args().nth(1).as_deref() {
         let schema = serde_json::json!({
             "name": env!("CARGO_PKG_NAME"),

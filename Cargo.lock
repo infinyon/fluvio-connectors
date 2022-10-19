@@ -421,9 +421,9 @@ checksum = "7a40729d2133846d9ed0ea60a8b9541bccddab49cd30f0715a1da672fe9a2524"
 
 [[package]]
 name = "async-trait"
-version = "0.1.57"
+version = "0.1.58"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "76464446b8bc32758d7e88ee1a804d9914cd9b1cb264c029899680b0be29826f"
+checksum = "1e805d94e6b5001b651426cf4cd446b1ab5f319d27bab5c644f61de0a804360c"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -926,9 +926,9 @@ dependencies = [
 
 [[package]]
 name = "bumpalo"
-version = "3.11.0"
+version = "3.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c1ad822118d20d2c234f427000d5acc36eabe1e29a348c89b63dd60b13f28e5d"
+checksum = "572f695136211188308f16ad2ca5c851a712c464060ae6974944458eb83880ba"
 
 [[package]]
 name = "byteorder"
@@ -1447,9 +1447,9 @@ dependencies = [
 
 [[package]]
 name = "ctor"
-version = "0.1.23"
+version = "0.1.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cdffe87e1d521a10f9696f833fe502293ea446d7f256c06128293a4119bdf4cb"
+checksum = "6d2301688392eb071b0bf1a37be05c469d3cc4dbbd95df672fe28ab021e6a096"
 dependencies = [
  "quote",
  "syn",
@@ -1909,8 +1909,8 @@ dependencies = [
 
 [[package]]
 name = "fluvio"
-version = "0.14.2"
-source = "git+https://github.com/nacardin/fluvio?branch=otel#3eebd734ae363b2a43a812aded6b52f7affa582f"
+version = "0.14.0"
+source = "git+https://github.com/nacardin/fluvio?branch=otel#ccda74e9c0a87e36a604c41117e09c7fa08b3e10"
 dependencies = [
  "async-channel",
  "async-lock",
@@ -1936,7 +1936,6 @@ dependencies = [
  "futures-util",
  "once_cell",
  "opentelemetry",
- "opentelemetry-otlp",
  "pin-project-lite 0.2.9",
  "semver 1.0.14",
  "serde",
@@ -1965,7 +1964,7 @@ dependencies = [
 [[package]]
 name = "fluvio-compression"
 version = "0.2.1"
-source = "git+https://github.com/nacardin/fluvio?branch=otel#3eebd734ae363b2a43a812aded6b52f7affa582f"
+source = "git+https://github.com/nacardin/fluvio?branch=otel#ccda74e9c0a87e36a604c41117e09c7fa08b3e10"
 dependencies = [
  "bytes 1.2.1",
  "flate2",
@@ -1990,6 +1989,8 @@ dependencies = [
  "fluvio-spu-schema",
  "humantime",
  "humantime-serde",
+ "opentelemetry",
+ "opentelemetry-otlp",
  "pretty_assertions",
  "schemars",
  "serde",
@@ -2003,7 +2004,7 @@ dependencies = [
 [[package]]
 name = "fluvio-controlplane-metadata"
 version = "0.19.0"
-source = "git+https://github.com/nacardin/fluvio?branch=otel#3eebd734ae363b2a43a812aded6b52f7affa582f"
+source = "git+https://github.com/nacardin/fluvio?branch=otel#ccda74e9c0a87e36a604c41117e09c7fa08b3e10"
 dependencies = [
  "async-trait",
  "base64 0.13.0",
@@ -2128,7 +2129,7 @@ dependencies = [
 [[package]]
 name = "fluvio-protocol"
 version = "0.8.0"
-source = "git+https://github.com/nacardin/fluvio?branch=otel#3eebd734ae363b2a43a812aded6b52f7affa582f"
+source = "git+https://github.com/nacardin/fluvio?branch=otel#ccda74e9c0a87e36a604c41117e09c7fa08b3e10"
 dependencies = [
  "bytes 1.2.1",
  "content_inspector",
@@ -2161,7 +2162,7 @@ dependencies = [
 [[package]]
 name = "fluvio-protocol-derive"
 version = "0.4.3"
-source = "git+https://github.com/nacardin/fluvio?branch=otel#3eebd734ae363b2a43a812aded6b52f7affa582f"
+source = "git+https://github.com/nacardin/fluvio?branch=otel#ccda74e9c0a87e36a604c41117e09c7fa08b3e10"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2172,7 +2173,7 @@ dependencies = [
 [[package]]
 name = "fluvio-sc-schema"
 version = "0.15.0"
-source = "git+https://github.com/nacardin/fluvio?branch=otel#3eebd734ae363b2a43a812aded6b52f7affa582f"
+source = "git+https://github.com/nacardin/fluvio?branch=otel#ccda74e9c0a87e36a604c41117e09c7fa08b3e10"
 dependencies = [
  "fluvio-controlplane-metadata",
  "fluvio-protocol 0.8.0",
@@ -2187,7 +2188,7 @@ dependencies = [
 [[package]]
 name = "fluvio-smartengine"
 version = "0.4.0"
-source = "git+https://github.com/nacardin/fluvio?branch=otel#3eebd734ae363b2a43a812aded6b52f7affa582f"
+source = "git+https://github.com/nacardin/fluvio?branch=otel#ccda74e9c0a87e36a604c41117e09c7fa08b3e10"
 dependencies = [
  "anyhow",
  "cfg-if 1.0.0",
@@ -2203,7 +2204,7 @@ dependencies = [
 [[package]]
 name = "fluvio-smartmodule"
 version = "0.3.0"
-source = "git+https://github.com/nacardin/fluvio?branch=otel#3eebd734ae363b2a43a812aded6b52f7affa582f"
+source = "git+https://github.com/nacardin/fluvio?branch=otel#ccda74e9c0a87e36a604c41117e09c7fa08b3e10"
 dependencies = [
  "eyre",
  "fluvio-protocol 0.8.0",
@@ -2215,7 +2216,7 @@ dependencies = [
 [[package]]
 name = "fluvio-smartmodule-derive"
 version = "0.3.0"
-source = "git+https://github.com/nacardin/fluvio?branch=otel#3eebd734ae363b2a43a812aded6b52f7affa582f"
+source = "git+https://github.com/nacardin/fluvio?branch=otel#ccda74e9c0a87e36a604c41117e09c7fa08b3e10"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2225,7 +2226,7 @@ dependencies = [
 [[package]]
 name = "fluvio-socket"
 version = "0.13.0"
-source = "git+https://github.com/nacardin/fluvio?branch=otel#3eebd734ae363b2a43a812aded6b52f7affa582f"
+source = "git+https://github.com/nacardin/fluvio?branch=otel#ccda74e9c0a87e36a604c41117e09c7fa08b3e10"
 dependencies = [
  "async-channel",
  "async-lock",
@@ -2247,7 +2248,7 @@ dependencies = [
 [[package]]
 name = "fluvio-spu-schema"
 version = "0.10.1"
-source = "git+https://github.com/nacardin/fluvio?branch=otel#3eebd734ae363b2a43a812aded6b52f7affa582f"
+source = "git+https://github.com/nacardin/fluvio?branch=otel#ccda74e9c0a87e36a604c41117e09c7fa08b3e10"
 dependencies = [
  "bytes 1.2.1",
  "educe",
@@ -2264,7 +2265,7 @@ dependencies = [
 [[package]]
 name = "fluvio-stream-model"
 version = "0.8.2"
-source = "git+https://github.com/nacardin/fluvio?branch=otel#3eebd734ae363b2a43a812aded6b52f7affa582f"
+source = "git+https://github.com/nacardin/fluvio?branch=otel#ccda74e9c0a87e36a604c41117e09c7fa08b3e10"
 dependencies = [
  "async-rwlock",
  "event-listener",
@@ -2312,7 +2313,7 @@ dependencies = [
 [[package]]
 name = "fluvio-types"
 version = "0.3.8"
-source = "git+https://github.com/nacardin/fluvio?branch=otel#3eebd734ae363b2a43a812aded6b52f7affa582f"
+source = "git+https://github.com/nacardin/fluvio?branch=otel#ccda74e9c0a87e36a604c41117e09c7fa08b3e10"
 dependencies = [
  "event-listener",
  "thiserror",
