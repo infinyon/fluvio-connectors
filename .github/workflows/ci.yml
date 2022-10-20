@@ -493,6 +493,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
+      - uses: arduino/setup-protoc@v1
       - name: Install Rust stable
         uses: actions-rs/toolchain@v1
         with:
