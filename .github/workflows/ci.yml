@@ -458,7 +458,7 @@ jobs:
         with:
           toolchain: stable
       - name: cargo test on postgres crate
-        timeout-minutes: 10
+        timeout-minutes: 20
         run: |
           make -C ./rust-connectors/sinks/postgres test-dev
 
