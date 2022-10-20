@@ -33,7 +33,7 @@ humantime = "2.1.0"
 bytesize = "1.1.0"
 thiserror = "1.0.31"
 fluvio-spu-schema = { version = "0.10.0", optional = true, default-features = false }
-serde_yaml = "0.8.18"
+serde_yaml = "0.9.13"
 humantime-serde = "1.1.1"
 opentelemetry = { version = "0.18.0", features = ["metrics", "rt-async-std"] }
 opentelemetry-otlp = { version = "0.11.0", default-features = false, features = ["grpc-tonic", "metrics"] }
