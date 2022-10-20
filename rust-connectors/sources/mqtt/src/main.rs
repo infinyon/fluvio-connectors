@@ -1,5 +1,5 @@
 use fluvio_connectors_common::fluvio::RecordKey;
-use fluvio_connectors_common::git_hash_version;
+use fluvio_connectors_common::{common_initialize, git_hash_version};
 
 mod error;
 mod formatter;
@@ -20,6 +20,7 @@ use std::time::Duration;
 use url::Url;
 
 fn main() -> Result<(), MqttConnectorError> {
+    common_initialize!();
     let arguments: Vec<String> = std::env::args().collect();
     let opts: MqttOpts = match arguments.get(1) {
         Some(schema) if schema == "metadata" => {

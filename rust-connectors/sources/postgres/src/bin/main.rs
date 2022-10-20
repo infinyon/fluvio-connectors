@@ -1,13 +1,14 @@
 use adaptive_backoff::prelude::*;
 use clap::Parser;
 use eyre::eyre;
-use fluvio_connectors_common::git_hash_version;
+use fluvio_connectors_common::{common_initialize, git_hash_version};
 use postgres_source::{PgConnector, PgConnectorOpt};
 use schemars::schema_for;
 use tracing::{error, info};
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
+    common_initialize!();
     color_backtrace::install();
     let _ = dotenv::dotenv();
     std::env::set_var("RUST_BACKTRACE", "full");
