@@ -1,5 +1,7 @@
 # Fluvio mqtt Connector
 
+Latest release version = "0.3.0"
+
 ## mqtt Source Connector
 
 Sources mqtt events given input mqtt consumer configuration options.
@@ -53,3 +55,31 @@ Controls how the output of `payload` field is produced
 |:-------|:-----------------------------|
 | binary | Array of bytes               |
 | json   | UTF-8 JSON Serialized String |
+
+
+## Testing
+
+Use following configuration:
+
+```
+version: latest
+name: my-mqtt-new
+type: mqtt-source
+topic: mqtt-topic
+direction: source
+create-topic: true
+parameters:
+  mqtt_topic: "ag-mqtt-topic"
+  payload_output_type: json  
+secrets:
+  MQTT_URL: mqtt://test.mosquitto.org/
+```
+
+
+Install MQTT Client such as
+```
+# for mac , this takes while....
+brew install mosquitto
+
+mosquitto_pub -h test.mosquitto.org -t ag-mqtt-topic -m '{"device": {"device_id":17, "name":"device17"}}'
+```
