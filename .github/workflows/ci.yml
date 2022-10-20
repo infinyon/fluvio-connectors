@@ -281,6 +281,7 @@ jobs:
           fluvio consume foobar -o 0 -d
 
       - uses: actions/checkout@v3
+      - uses: arduino/setup-protoc@v1
       - name: Install Rust stable
         uses: actions-rs/toolchain@v1
         with:
@@ -485,7 +486,7 @@ jobs:
           toolchain: stable
           target: wasm32-unknown-unknown
       - name: "Start postgres instance"
-        timeout-minutes: 10
+        timeout-minutes: 20
         run: |
           make -C ./examples/github-stars test
 
