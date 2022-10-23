@@ -1,11 +1,15 @@
+use std::sync::Arc;
+
 use fluvio::dataplane::record::Record;
+use fluvio_connectors_common::metrics::ConnectorMetrics;
+use fluvio_connectors_common::monitoring::init_monitoring;
 use fluvio_future::tracing::{debug, info};
 
 use fluvio_model_sql::Operation;
 use futures::StreamExt;
 
 use clap::Parser;
-use fluvio_connectors_common::{common_initialize, git_hash_version};
+use fluvio_connectors_common::{git_hash_version};
 use schemars::schema_for;
 use sql_sink::db::Db;
 use sql_sink::opt::SqlConnectorOpt;
@@ -13,7 +17,9 @@ use sql_sink::transform::Transformations;
 
 #[async_std::main]
 async fn main() -> anyhow::Result<()> {
-    common_initialize!();
+    
+    let metrics = Arc::new(ConnectorMetrics::new());
+    init_monitoring(metrics.clone());
     if let Some("metadata") = std::env::args().nth(1).as_deref() {
         let schema = serde_json::json!({
             "name": env!("CARGO_PKG_NAME"),
