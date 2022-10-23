@@ -69,7 +69,7 @@ jobs:
     name:  Build binary ${{ matrix.connector-name }} for ${{ matrix.rust-target }} on (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: true
+  #    fail-fast: true
       matrix:
         os: [ubuntu-latest]
         rust-target:
