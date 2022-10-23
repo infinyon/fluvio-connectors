@@ -1,6 +1,8 @@
 use crate::opt::TransformOpt;
 use fluvio::dataplane::record::Record;
-use fluvio_smartengine::{SmartEngine, SmartModuleChainInstance, SmartModuleConfig};
+use fluvio_smartengine::{
+    metrics::SmartModuleChainMetrics, SmartEngine, SmartModuleChainInstance, SmartModuleConfig,
+};
 
 use fluvio::Fluvio;
 use fluvio_connectors_common::opt::CommonConnectorOpt;
@@ -9,6 +11,7 @@ use fluvio_smartmodule::dataplane::smartmodule::SmartModuleInput;
 #[derive(Debug)]
 pub struct Transformations {
     smart_module_chain: SmartModuleChainInstance,
+    metrics: SmartModuleChainMetrics,
 }
 
 impl Transformations {
@@ -18,6 +21,7 @@ impl Transformations {
         if value.is_empty() {
             return Ok(Self {
                 smart_module_chain: builder.initialize()?,
+                metrics: SmartModuleChainMetrics::default(),
             });
         }
 
@@ -36,13 +40,14 @@ impl Transformations {
 
         Ok(Self {
             smart_module_chain: builder.initialize()?,
+            metrics: SmartModuleChainMetrics::default(),
         })
     }
 
     pub fn transform(&mut self, input: Record) -> anyhow::Result<Vec<Record>> {
         let result = vec![input];
         let input = SmartModuleInput::try_from(result)?;
-        let output = self.smart_module_chain.process(input)?;
+        let output = self.smart_module_chain.process(input, &self.metrics)?;
         let result = output.successes;
         Ok(result)
     }
