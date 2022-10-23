@@ -9,7 +9,7 @@ use fluvio_model_sql::Operation;
 use futures::StreamExt;
 
 use clap::Parser;
-use fluvio_connectors_common::{git_hash_version};
+use fluvio_connectors_common::git_hash_version;
 use schemars::schema_for;
 use sql_sink::db::Db;
 use sql_sink::opt::SqlConnectorOpt;
@@ -17,7 +17,6 @@ use sql_sink::transform::Transformations;
 
 #[async_std::main]
 async fn main() -> anyhow::Result<()> {
-    
     let metrics = Arc::new(ConnectorMetrics::new());
     init_monitoring(metrics.clone());
     if let Some("metadata") = std::env::args().nth(1).as_deref() {

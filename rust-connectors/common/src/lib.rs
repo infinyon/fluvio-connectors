@@ -8,9 +8,9 @@ pub mod fluvio {
 }
 
 pub mod config;
-pub mod monitoring;
-pub mod metrics;
 pub(crate) mod error;
+pub mod metrics;
+pub mod monitoring;
 #[cfg(any(feature = "source", feature = "sink"))]
 pub mod opt;
 
@@ -18,12 +18,7 @@ pub fn git_hash_version() -> &'static str {
     env!("GIT_HASH")
 }
 
-
 #[macro_export]
 macro_rules! common_initialize {
-    () => {
-        
-    };
+    () => {};
 }
-
-

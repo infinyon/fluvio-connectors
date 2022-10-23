@@ -1,8 +1,12 @@
 // Techdebt: Granular errors
 #![allow(clippy::redundant_closure)]
 
+use std::sync::Arc;
+
 use fluvio_connectors_common::fluvio::RecordKey;
-use fluvio_connectors_common::{common_initialize, git_hash_version};
+use fluvio_connectors_common::git_hash_version;
+use fluvio_connectors_common::metrics::ConnectorMetrics;
+use fluvio_connectors_common::monitoring::init_monitoring;
 use tokio_stream::StreamExt;
 
 type Result<T, E = Box<dyn std::error::Error + Send + Sync + 'static>> = core::result::Result<T, E>;
@@ -14,7 +18,9 @@ use fluvio_connectors_common::opt::GetOpts;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    common_initialize!();
+    let metrics = Arc::new(ConnectorMetrics::new());
+    init_monitoring(metrics.clone());
+
     let opts = if let Some(opts) = HttpOpt::get_opt() {
         opts
     } else {
@@ -86,7 +92,9 @@ async fn main() -> Result<()> {
 
         tracing::debug!(%record_out, "Producing");
 
+        let bytes_in = record_out.len() as u64;
         producer.send(RecordKey::NULL, record_out).await?;
+        metrics.add_inbound_bytes(bytes_in as u64);
     }
 
     Ok(())

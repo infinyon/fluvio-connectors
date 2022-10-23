@@ -1,12 +1,11 @@
 use std::{io::Error as IoError, sync::Arc};
 
 use async_net::unix::UnixListener;
-use futures_util::{StreamExt, AsyncWriteExt};
+use futures_util::{AsyncWriteExt, StreamExt};
 
 use fluvio_future::task::spawn;
 
 use crate::metrics::ConnectorMetrics;
-
 
 const SOCKET_PATH: &str = "/tmp/fluvio-connector.sock";
 
