@@ -487,6 +487,7 @@ jobs:
 
   check-windows:
     runs-on: windows-latest
+    if: false
     steps:
       - uses: actions/checkout@v3
       - name: Install Rust stable
