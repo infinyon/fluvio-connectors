@@ -69,7 +69,7 @@ jobs:
     name:  Build binary ${{ matrix.connector-name }} for ${{ matrix.rust-target }} on (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: true
+  #    fail-fast: true
       matrix:
         os: [ubuntu-latest]
         rust-target:
@@ -104,7 +104,6 @@ jobs:
       - name: Print env
         run: |
           echo "RUST_BIN_DIR = ${{ env.RUST_BIN_DIR }} "
-      - uses: arduino/setup-protoc@v1
       - name: Install Rust ${{ matrix.rust }}
         uses: actions-rs/toolchain@v1
         with:
@@ -229,7 +228,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     needs: [build_containers]
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         os: [ubuntu-latest]
         rust: [stable]
@@ -281,7 +280,6 @@ jobs:
           fluvio consume foobar -o 0 -d
 
       - uses: actions/checkout@v3
-      - uses: arduino/setup-protoc@v1
       - name: Install Rust stable
         uses: actions-rs/toolchain@v1
         with:
@@ -412,7 +410,6 @@ jobs:
           sleep 3
           echo foo | fluvio produce foobar
           fluvio consume foobar -o 0 -d
-      - uses: arduino/setup-protoc@v1
       - name: Install Rust stable
         uses: actions-rs/toolchain@v1
         with:
@@ -452,7 +449,6 @@ jobs:
           sleep 3
           echo foo | fluvio produce foobar
           fluvio consume foobar -o 0 -d
-      - uses: arduino/setup-protoc@v1
       - name: Install Rust stable
         uses: actions-rs/toolchain@v1
         with:
@@ -479,7 +475,6 @@ jobs:
           cluster-type: k3d
           version: latest
       - uses: actions/checkout@v3
-      - uses: arduino/setup-protoc@v1
       - name: Install Rust stable
         uses: actions-rs/toolchain@v1
         with:
@@ -492,9 +487,9 @@ jobs:
 
   check-windows:
     runs-on: windows-latest
+    if: false
     steps:
       - uses: actions/checkout@v3
-      - uses: arduino/setup-protoc@v1
       - name: Install Rust stable
         uses: actions-rs/toolchain@v1
         with:
