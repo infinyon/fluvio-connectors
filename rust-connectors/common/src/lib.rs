@@ -1,5 +1,3 @@
-use fluvio_future::tracing::{error, info};
-
 pub mod fluvio {
     pub use fluvio::{
         consumer::Record, metadata::topic::TopicSpec, Fluvio, FluvioError, Offset,
