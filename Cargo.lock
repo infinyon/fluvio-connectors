@@ -490,7 +490,7 @@ dependencies = [
  "http",
  "hyper",
  "ring",
- "time 0.3.15",
+ "time 0.3.16",
  "tokio",
  "tower",
  "tracing",
@@ -623,7 +623,7 @@ dependencies = [
  "percent-encoding",
  "regex",
  "ring",
- "time 0.3.15",
+ "time 0.3.16",
  "tracing",
 ]
 
@@ -726,7 +726,7 @@ dependencies = [
  "itoa",
  "num-integer",
  "ryu",
- "time 0.3.15",
+ "time 0.3.16",
 ]
 
 [[package]]
@@ -1828,7 +1828,7 @@ dependencies = [
 [[package]]
 name = "fluvio"
 version = "0.14.0"
-source = "git+https://github.com/infinyon/fluvio?branch=master#738c9d9a13b2b8f4ccf8d53a138141cca441d8be"
+source = "git+https://github.com/infinyon/fluvio?branch=master#aae28340d833252fe467de801b436ecd5b8af1c8"
 dependencies = [
  "async-channel",
  "async-lock",
@@ -1881,7 +1881,7 @@ dependencies = [
 [[package]]
 name = "fluvio-compression"
 version = "0.2.1"
-source = "git+https://github.com/infinyon/fluvio?branch=master#738c9d9a13b2b8f4ccf8d53a138141cca441d8be"
+source = "git+https://github.com/infinyon/fluvio?branch=master#aae28340d833252fe467de801b436ecd5b8af1c8"
 dependencies = [
  "bytes 1.2.1",
  "flate2",
@@ -1921,7 +1921,7 @@ dependencies = [
 [[package]]
 name = "fluvio-controlplane-metadata"
 version = "0.19.0"
-source = "git+https://github.com/infinyon/fluvio?branch=master#738c9d9a13b2b8f4ccf8d53a138141cca441d8be"
+source = "git+https://github.com/infinyon/fluvio?branch=master#aae28340d833252fe467de801b436ecd5b8af1c8"
 dependencies = [
  "async-trait",
  "base64 0.13.1",
@@ -2046,7 +2046,7 @@ dependencies = [
 [[package]]
 name = "fluvio-protocol"
 version = "0.8.0"
-source = "git+https://github.com/infinyon/fluvio?branch=master#738c9d9a13b2b8f4ccf8d53a138141cca441d8be"
+source = "git+https://github.com/infinyon/fluvio?branch=master#aae28340d833252fe467de801b436ecd5b8af1c8"
 dependencies = [
  "bytes 1.2.1",
  "content_inspector",
@@ -2079,7 +2079,7 @@ dependencies = [
 [[package]]
 name = "fluvio-protocol-derive"
 version = "0.4.3"
-source = "git+https://github.com/infinyon/fluvio?branch=master#738c9d9a13b2b8f4ccf8d53a138141cca441d8be"
+source = "git+https://github.com/infinyon/fluvio?branch=master#aae28340d833252fe467de801b436ecd5b8af1c8"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2090,7 +2090,7 @@ dependencies = [
 [[package]]
 name = "fluvio-sc-schema"
 version = "0.15.0"
-source = "git+https://github.com/infinyon/fluvio?branch=master#738c9d9a13b2b8f4ccf8d53a138141cca441d8be"
+source = "git+https://github.com/infinyon/fluvio?branch=master#aae28340d833252fe467de801b436ecd5b8af1c8"
 dependencies = [
  "fluvio-controlplane-metadata",
  "fluvio-protocol 0.8.0",
@@ -2105,7 +2105,7 @@ dependencies = [
 [[package]]
 name = "fluvio-smartengine"
 version = "0.4.0"
-source = "git+https://github.com/infinyon/fluvio?branch=master#738c9d9a13b2b8f4ccf8d53a138141cca441d8be"
+source = "git+https://github.com/infinyon/fluvio?branch=master#aae28340d833252fe467de801b436ecd5b8af1c8"
 dependencies = [
  "anyhow",
  "cfg-if 1.0.0",
@@ -2122,7 +2122,7 @@ dependencies = [
 [[package]]
 name = "fluvio-smartmodule"
 version = "0.3.0"
-source = "git+https://github.com/infinyon/fluvio?branch=master#738c9d9a13b2b8f4ccf8d53a138141cca441d8be"
+source = "git+https://github.com/infinyon/fluvio?branch=master#aae28340d833252fe467de801b436ecd5b8af1c8"
 dependencies = [
  "eyre",
  "fluvio-protocol 0.8.0",
@@ -2134,7 +2134,7 @@ dependencies = [
 [[package]]
 name = "fluvio-smartmodule-derive"
 version = "0.3.0"
-source = "git+https://github.com/infinyon/fluvio?branch=master#738c9d9a13b2b8f4ccf8d53a138141cca441d8be"
+source = "git+https://github.com/infinyon/fluvio?branch=master#aae28340d833252fe467de801b436ecd5b8af1c8"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2144,7 +2144,7 @@ dependencies = [
 [[package]]
 name = "fluvio-socket"
 version = "0.13.0"
-source = "git+https://github.com/infinyon/fluvio?branch=master#738c9d9a13b2b8f4ccf8d53a138141cca441d8be"
+source = "git+https://github.com/infinyon/fluvio?branch=master#aae28340d833252fe467de801b436ecd5b8af1c8"
 dependencies = [
  "async-channel",
  "async-lock",
@@ -2166,7 +2166,7 @@ dependencies = [
 [[package]]
 name = "fluvio-spu-schema"
 version = "0.10.1"
-source = "git+https://github.com/infinyon/fluvio?branch=master#738c9d9a13b2b8f4ccf8d53a138141cca441d8be"
+source = "git+https://github.com/infinyon/fluvio?branch=master#aae28340d833252fe467de801b436ecd5b8af1c8"
 dependencies = [
  "bytes 1.2.1",
  "educe",
@@ -2183,7 +2183,7 @@ dependencies = [
 [[package]]
 name = "fluvio-stream-model"
 version = "0.8.2"
-source = "git+https://github.com/infinyon/fluvio?branch=master#738c9d9a13b2b8f4ccf8d53a138141cca441d8be"
+source = "git+https://github.com/infinyon/fluvio?branch=master#aae28340d833252fe467de801b436ecd5b8af1c8"
 dependencies = [
  "async-rwlock",
  "event-listener",
@@ -2231,7 +2231,7 @@ dependencies = [
 [[package]]
 name = "fluvio-types"
 version = "0.3.9"
-source = "git+https://github.com/infinyon/fluvio?branch=master#738c9d9a13b2b8f4ccf8d53a138141cca441d8be"
+source = "git+https://github.com/infinyon/fluvio?branch=master#aae28340d833252fe467de801b436ecd5b8af1c8"
 dependencies = [
  "event-listener",
  "thiserror",
@@ -5368,20 +5368,29 @@ dependencies = [
  "libc",
  "standback",
  "stdweb",
- "time-macros",
+ "time-macros 0.1.1",
  "version_check",
  "winapi",
 ]
 
 [[package]]
 name = "time"
-version = "0.3.15"
+version = "0.3.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d634a985c4d4238ec39cacaed2e7ae552fbd3c476b552c1deac3021b7d7eaf0c"
+checksum = "0fab5c8b9980850e06d92ddbe3ab839c062c801f3927c0fb8abd6fc8e918fbca"
 dependencies = [
  "libc",
  "num_threads",
+ "serde",
+ "time-core",
+ "time-macros 0.2.5",
 ]
+
+[[package]]
+name = "time-core"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2e153e1f1acaef8acc537e68b44906d2db6436e2b35ac2c6b42640fff91f00fd"
 
 [[package]]
 name = "time-macros"
@@ -5391,6 +5400,15 @@ checksum = "957e9c6e26f12cb6d0dd7fc776bb67a706312e7299aed74c8dd5b17ebb27e2f1"
 dependencies = [
  "proc-macro-hack",
  "time-macros-impl",
+]
+
+[[package]]
+name = "time-macros"
+version = "0.2.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "65bb801831d812c562ae7d2bfb531f26e66e4e1f6b17307ba4149c5064710e5b"
+dependencies = [
+ "time-core",
 ]
 
 [[package]]

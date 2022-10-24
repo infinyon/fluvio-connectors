@@ -6,8 +6,8 @@ use schemars::{schema_for, JsonSchema};
 use std::{collections::BTreeMap, time::Duration};
 
 use fluvio::{
-    config::ConfigFile, metadata::smartmodule::SmartModuleSpec, metadata::topic::TopicSpec,
-    Compression, Fluvio,
+    metadata::smartmodule::SmartModuleSpec, metadata::topic::TopicSpec, Compression, Fluvio,
+    FluvioConfig,
 };
 #[cfg(any(feature = "sink", feature = "source"))]
 use fluvio_spu_schema::server::smartmodule::SmartModuleContextData;
@@ -165,9 +165,7 @@ impl CommonConnectorOpt {
         &self,
         connector_name: &str,
     ) -> anyhow::Result<fluvio::TopicProducer> {
-        // TODO: kind of ugly here, need to simplify
-        let config_file = ConfigFile::load_default_or_new()?;
-        let mut cluster_config = config_file.config().current_cluster()?.to_owned();
+        let mut cluster_config = FluvioConfig::load()?;
         cluster_config.client_id = Some(format!("fluvio_connector_{}", connector_name));
 
         let fluvio = fluvio::Fluvio::connect_with_config(&cluster_config).await?;
@@ -262,8 +260,7 @@ impl CommonConnectorOpt {
             Item = Result<fluvio::consumer::Record, fluvio_protocol::link::ErrorCode>,
         >,
     > {
-        let config_file = ConfigFile::load_default_or_new()?;
-        let mut cluster_config = config_file.config().current_cluster()?.to_owned();
+        let mut cluster_config = FluvioConfig::load()?;
         cluster_config.client_id = Some(format!("fluvio_connector_{}", connector_name));
         let fluvio = Fluvio::connect_with_config(&cluster_config).await?;
         let params = self.smartmodule_parameters().into();
