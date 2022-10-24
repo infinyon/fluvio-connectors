@@ -165,12 +165,12 @@ impl CommonConnectorOpt {
         &self,
         connector_name: &str,
     ) -> anyhow::Result<fluvio::TopicProducer> {
-        // TODO: simplify this
+        // TODO: kind of ugly here, need to simplify
         let config_file = ConfigFile::load_default_or_new()?;
         let mut cluster_config = config_file.config().current_cluster()?.to_owned();
         cluster_config.client_id = Some(format!("fluvio_connector_{}", connector_name));
 
-        let fluvio = fluvio::Fluvio::connect().await?;
+        let fluvio = fluvio::Fluvio::connect_with_config(&cluster_config).await?;
         self.ensure_topic_exists().await?;
         let config_builder = fluvio::TopicProducerConfigBuilder::default();
         let params = self.smartmodule_parameters();
@@ -256,12 +256,16 @@ impl CommonConnectorOpt {
 
     pub async fn create_consumer_stream(
         &self,
+        connector_name: &str,
     ) -> anyhow::Result<
         impl tokio_stream::Stream<
             Item = Result<fluvio::consumer::Record, fluvio_protocol::link::ErrorCode>,
         >,
     > {
-        let fluvio = Fluvio::connect().await?;
+        let config_file = ConfigFile::load_default_or_new()?;
+        let mut cluster_config = config_file.config().current_cluster()?.to_owned();
+        cluster_config.client_id = Some(format!("fluvio_connector_{}", connector_name));
+        let fluvio = Fluvio::connect_with_config(&cluster_config).await?;
         let params = self.smartmodule_parameters().into();
         let wasm_invocation: Option<SmartModuleInvocation> = match (
             &self.smartmodule_common.smart_module,
