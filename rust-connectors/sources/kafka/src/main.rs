@@ -54,7 +54,7 @@ pub struct KafkaOpt {
 
 impl KafkaOpt {
     pub async fn execute(&self) -> anyhow::Result<()> {
-        let producer = self.common.create_producer().await?;
+        let producer = self.common.create_producer("kafka").await?;
         info!("Connected to fluvio!");
         let kafka_topic = self
             .kafka_topic

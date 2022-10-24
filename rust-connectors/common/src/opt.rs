@@ -6,7 +6,8 @@ use schemars::{schema_for, JsonSchema};
 use std::{collections::BTreeMap, time::Duration};
 
 use fluvio::{
-    metadata::smartmodule::SmartModuleSpec, metadata::topic::TopicSpec, Compression, Fluvio,
+    config::ConfigFile, metadata::smartmodule::SmartModuleSpec, metadata::topic::TopicSpec,
+    Compression, Fluvio,
 };
 #[cfg(any(feature = "sink", feature = "source"))]
 use fluvio_spu_schema::server::smartmodule::SmartModuleContextData;
@@ -160,7 +161,15 @@ pub struct CommonProducerOpt {
 
 #[cfg(feature = "source")]
 impl CommonConnectorOpt {
-    pub async fn create_producer(&self) -> anyhow::Result<fluvio::TopicProducer> {
+    pub async fn create_producer(
+        &self,
+        connector_name: &str,
+    ) -> anyhow::Result<fluvio::TopicProducer> {
+        // TODO: simplify this
+        let config_file = ConfigFile::load_default_or_new()?;
+        let mut cluster_config = config_file.config().current_cluster()?.to_owned();
+        cluster_config.client_id = Some(format!("fluvio_connector_{}", connector_name));
+
         let fluvio = fluvio::Fluvio::connect().await?;
         self.ensure_topic_exists().await?;
         let config_builder = fluvio::TopicProducerConfigBuilder::default();

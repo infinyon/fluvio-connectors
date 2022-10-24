@@ -57,7 +57,7 @@ async fn main() -> Result<()> {
     let mut timer_stream = tokio_stream::wrappers::IntervalStream::new(timer);
     let producer = opts
         .common
-        .create_producer()
+        .create_producer("http")
         .await
         .expect("Failed to create producer");
     tracing::info!("Connected to Fluvio");
