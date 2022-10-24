@@ -3,19 +3,22 @@ use bytesize::ByteSize;
 use clap::{AppSettings, Parser};
 use humantime::parse_duration;
 use schemars::{schema_for, JsonSchema};
+use std::str::FromStr;
 use std::{collections::BTreeMap, time::Duration};
 
 use fluvio::{
-    metadata::smartmodule::SmartModuleSpec, metadata::topic::TopicSpec, Compression, Fluvio,
+    metadata::smartmodule::SmartModuleSpec, metadata::topic::TopicSpec, Compression, FluvioAdmin,
     FluvioConfig,
 };
-#[cfg(any(feature = "sink", feature = "source"))]
+
+#[cfg(feature = "sink")]
 use fluvio_spu_schema::server::smartmodule::SmartModuleContextData;
 
 #[cfg(feature = "sink")]
 use fluvio_spu_schema::server::smartmodule::{
     SmartModuleInvocation, SmartModuleInvocationWasm, SmartModuleKind,
 };
+use serde::Deserialize;
 
 use crate::error::CliError;
 
@@ -46,6 +49,10 @@ pub struct CommonConnectorOpt {
     #[clap(flatten)]
     #[schemars(flatten)]
     pub smartmodule_common: CommonSmartModuleOpt,
+
+    #[clap(flatten)]
+    #[schemars(flatten)]
+    pub transform_common: CommonTransformOpt,
 }
 
 #[derive(Parser, Debug, JsonSchema, Clone, Default)]
@@ -171,7 +178,6 @@ impl CommonConnectorOpt {
         let fluvio = fluvio::Fluvio::connect_with_config(&cluster_config).await?;
         self.ensure_topic_exists().await?;
         let config_builder = fluvio::TopicProducerConfigBuilder::default();
-        let params = self.smartmodule_parameters();
 
         // Linger
         let config_builder = if let Some(linger) = self.producer_common.producer_linger {
@@ -199,50 +205,11 @@ impl CommonConnectorOpt {
             .topic_producer_with_config(&self.fluvio_topic, config)
             .await?;
 
-        let producer = match (
-            &self.smartmodule_common.smart_module,
-            &self.smartmodule_common.filter,
-            &self.smartmodule_common.filter_map,
-            &self.smartmodule_common.map,
-            &self.smartmodule_common.array_map,
-            &self.smartmodule_common.aggregate,
-        ) {
-            (Some(smartmodule_name), _, _, _, _, _) => {
-                let context = match &self.smartmodule_common.aggregate_initial_value {
-                    Some(initial_value) => SmartModuleContextData::Aggregate {
-                        accumulator: initial_value.as_bytes().to_vec(),
-                    },
-                    None => SmartModuleContextData::None,
-                };
-
-                let data = self.get_smartmodule(smartmodule_name, &fluvio).await?;
-                producer.with_smartmodule(data, params, context)?
-            }
-            (_, Some(filter_path), _, _, _, _) => {
-                let data = self.get_smartmodule(filter_path, &fluvio).await?;
-                producer.with_filter(data, params)?
-            }
-            (_, _, Some(filter_map_path), _, _, _) => {
-                let data = self.get_smartmodule(filter_map_path, &fluvio).await?;
-                producer.with_filter_map(data, params)?
-            }
-            (_, _, _, Some(map_path), _, _) => {
-                let data = self.get_smartmodule(map_path, &fluvio).await?;
-                producer.with_map(data, params)?
-            }
-            (_, _, _, _, Some(array_map_path), _) => {
-                let data = self.get_smartmodule(array_map_path, &fluvio).await?;
-                producer.with_array_map(data, params)?
-            }
-            (_, _, _, _, _, Some(aggregate)) => {
-                let data = self.get_smartmodule(aggregate, &fluvio).await?;
-                let initial = self.get_aggregate_initial_value(&fluvio).await?;
-                producer.with_aggregate(data, params, initial)?
-            }
-            _ => producer,
-        };
-
-        Ok(producer)
+        if let Some(chain) = self.transform_common.create_smart_module_chain().await? {
+            Ok(producer.with_chain(chain)?)
+        } else {
+            Ok(producer)
+        }
     }
 }
 #[cfg(feature = "sink")]
@@ -262,7 +229,7 @@ impl CommonConnectorOpt {
     > {
         let mut cluster_config = FluvioConfig::load()?;
         cluster_config.client_id = Some(format!("fluvio_connector_{}", connector_name));
-        let fluvio = Fluvio::connect_with_config(&cluster_config).await?;
+        let fluvio = fluvio::Fluvio::connect_with_config(&cluster_config).await?;
         let params = self.smartmodule_parameters().into();
         let wasm_invocation: Option<SmartModuleInvocation> = match (
             &self.smartmodule_common.smart_module,
@@ -324,6 +291,38 @@ impl CommonConnectorOpt {
         let offset = fluvio::Offset::end();
         Ok(consumer.stream_with_config(offset, config).await?)
     }
+
+    async fn get_aggregate_initial_value(
+        &self,
+        fluvio: &fluvio::Fluvio,
+    ) -> anyhow::Result<Vec<u8>> {
+        use tokio_stream::StreamExt;
+        if let Some(initial_value) = &self.smartmodule_common.aggregate_initial_value {
+            if initial_value == "use-last" {
+                let consumer = fluvio
+                    .partition_consumer(self.fluvio_topic.clone(), 0)
+                    .await?;
+                let stream = consumer.stream(fluvio::Offset::from_end(1)).await?;
+                let timeout = stream.timeout(Duration::from_millis(3000));
+                tokio::pin!(timeout);
+                let last_record = StreamExt::try_next(&mut timeout)
+                    .await
+                    .ok()
+                    .flatten()
+                    .transpose();
+
+                if let Ok(Some(record)) = last_record {
+                    Ok(record.value().to_vec())
+                } else {
+                    Ok(Vec::new())
+                }
+            } else {
+                Ok(initial_value.as_bytes().to_vec())
+            }
+        } else {
+            Ok(Vec::new())
+        }
+    }
 }
 
 impl CommonConnectorOpt {
@@ -359,61 +358,51 @@ impl CommonConnectorOpt {
         }
         Ok(())
     }
+}
 
-    pub async fn get_smartmodule(&self, name: &str, fluvio: &Fluvio) -> anyhow::Result<Vec<u8>> {
-        use flate2::bufread::GzDecoder;
-        use std::io::Read;
+#[derive(Parser, Debug, JsonSchema, Clone, Default)]
+pub struct CommonTransformOpt {
+    #[clap(long)]
+    transform: Vec<TransformOpt>,
+}
 
-        match std::fs::read(name) {
-            Ok(data) => Ok(data),
-            Err(_) => {
-                let admin = fluvio.admin().await;
-
-                let smartmodule_spec_list = &admin
-                    .list::<SmartModuleSpec, String>(vec![name.into()])
-                    .await?;
-
-                let smartmodule_spec = &smartmodule_spec_list
-                    .first()
-                    .context("Not found smartmodule")?
-                    .spec;
-
-                let mut decoder = GzDecoder::new(&*smartmodule_spec.wasm.payload);
-                let mut buffer = Vec::with_capacity(smartmodule_spec.wasm.payload.len());
-                decoder.read_to_end(&mut buffer)?;
-                Ok(buffer)
-            }
+#[cfg(any(feature = "sink", feature = "source"))]
+impl CommonTransformOpt {
+    pub async fn create_smart_module_chain(
+        &self,
+    ) -> anyhow::Result<Option<fluvio_smartengine::SmartModuleChainBuilder>> {
+        if self.transform.is_empty() {
+            return Ok(None);
         }
+        let admin = FluvioAdmin::connect().await?;
+        let mut builder = fluvio_smartengine::SmartModuleChainBuilder::default();
+        for step in &self.transform {
+            let raw = get_smartmodule(&step.uses, &admin).await?;
+
+            let config = fluvio_smartengine::SmartModuleConfig::builder()
+                .params(step.with.clone().into())
+                .build()?;
+            builder.add_smart_module(config, raw);
+        }
+
+        Ok(Some(builder))
     }
+}
 
-    #[cfg(any(feature = "sink", feature = "source"))]
-    async fn get_aggregate_initial_value(&self, fluvio: &Fluvio) -> anyhow::Result<Vec<u8>> {
-        use tokio_stream::StreamExt;
-        if let Some(initial_value) = &self.smartmodule_common.aggregate_initial_value {
-            if initial_value == "use-last" {
-                let consumer = fluvio
-                    .partition_consumer(self.fluvio_topic.clone(), 0)
-                    .await?;
-                let stream = consumer.stream(fluvio::Offset::from_end(1)).await?;
-                let timeout = stream.timeout(Duration::from_millis(3000));
-                tokio::pin!(timeout);
-                let last_record = StreamExt::try_next(&mut timeout)
-                    .await
-                    .ok()
-                    .flatten()
-                    .transpose();
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[allow(dead_code)]
+#[derive(Debug, JsonSchema, Clone, Deserialize)]
+pub struct TransformOpt {
+    pub(crate) uses: String,
+    pub(crate) invoke: String,
+    pub(crate) with: BTreeMap<String, String>,
+}
 
-                if let Ok(Some(record)) = last_record {
-                    Ok(record.value().to_vec())
-                } else {
-                    Ok(Vec::new())
-                }
-            } else {
-                Ok(initial_value.as_bytes().to_vec())
-            }
-        } else {
-            Ok(Vec::new())
-        }
+impl FromStr for TransformOpt {
+    type Err = serde_json::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        serde_json::from_str(s)
     }
 }
 
@@ -438,4 +427,28 @@ pub trait GetOpts {
     fn name() -> &'static str;
     fn version() -> &'static str;
     fn description() -> &'static str;
+}
+
+async fn get_smartmodule(name: &str, admin: &FluvioAdmin) -> anyhow::Result<Vec<u8>> {
+    use flate2::bufread::GzDecoder;
+    use std::io::Read;
+
+    match std::fs::read(name) {
+        Ok(data) => Ok(data),
+        Err(_) => {
+            let smartmodule_spec_list = &admin
+                .list::<SmartModuleSpec, String>(vec![name.into()])
+                .await?;
+
+            let smartmodule_spec = &smartmodule_spec_list
+                .first()
+                .context("Not found smartmodule")?
+                .spec;
+
+            let mut decoder = GzDecoder::new(&*smartmodule_spec.wasm.payload);
+            let mut buffer = Vec::with_capacity(smartmodule_spec.wasm.payload.len());
+            decoder.read_to_end(&mut buffer)?;
+            Ok(buffer)
+        }
+    }
 }

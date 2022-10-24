@@ -1,11 +1,9 @@
-use crate::opt::TransformOpt;
 use fluvio::dataplane::record::Record;
 use fluvio_smartengine::{
-    metrics::SmartModuleChainMetrics, SmartEngine, SmartModuleChainInstance, SmartModuleConfig,
+    metrics::SmartModuleChainMetrics, SmartEngine, SmartModuleChainBuilder,
+    SmartModuleChainInstance,
 };
 
-use fluvio::Fluvio;
-use fluvio_connectors_common::opt::CommonConnectorOpt;
 use fluvio_smartmodule::dataplane::smartmodule::SmartModuleInput;
 
 #[derive(Debug)]
@@ -15,31 +13,10 @@ pub struct Transformations {
 }
 
 impl Transformations {
-    // TODO: move up to common crate
-    pub async fn from_fluvio(value: Vec<TransformOpt>) -> anyhow::Result<Transformations> {
-        let mut builder = SmartEngine::new().builder();
-        if value.is_empty() {
-            return Ok(Self {
-                smart_module_chain: builder.initialize()?,
-                metrics: SmartModuleChainMetrics::default(),
-            });
-        }
-
-        let fluvio = Fluvio::connect().await?;
-
-        for step in value {
-            let raw = CommonConnectorOpt::default()
-                .get_smartmodule(&step.uses, &fluvio)
-                .await?;
-
-            let config = SmartModuleConfig::builder()
-                .params(step.with.into())
-                .build()?;
-            builder.add_smart_module(config, raw)?;
-        }
-
+    pub async fn from_chain(builder: SmartModuleChainBuilder) -> anyhow::Result<Transformations> {
+        let engine = SmartEngine::new();
         Ok(Self {
-            smart_module_chain: builder.initialize()?,
+            smart_module_chain: builder.initialize(&engine)?,
             metrics: SmartModuleChainMetrics::default(),
         })
     }
