@@ -90,7 +90,7 @@ fn main() -> Result<(), MqttConnectorError> {
 
             mqttoptions.set_transport(Transport::tls_with_config(client_config.into()));
         }
-        let producer = opts.common.create_producer().await?;
+        let producer = opts.common.create_producer("mqtt").await?;
         let formatter = formatter::from_output_type(&opts.payload_output_type);
         loop {
             let (client, mut eventloop) = AsyncClient::new(mqttoptions.clone(), 10);

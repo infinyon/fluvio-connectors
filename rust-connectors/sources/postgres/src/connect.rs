@@ -75,7 +75,7 @@ impl PgConnector {
             tracing::info!("No prior LSN discovered, starting PgConnector at beginning");
         }
 
-        let producer = config.common.create_producer().await.unwrap();
+        let producer = config.common.create_producer("postgres").await.unwrap();
 
         let (pg_client, conn) = config
             .url

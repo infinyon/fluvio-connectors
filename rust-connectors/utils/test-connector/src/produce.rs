@@ -5,7 +5,7 @@ use std::time::Duration;
 pub async fn produce(opts: TestConnectorOpts) -> anyhow::Result<()> {
     let producer = opts
         .common
-        .create_producer()
+        .create_producer("test")
         .await
         .expect("Failed to create producer");
 

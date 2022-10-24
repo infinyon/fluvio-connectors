@@ -7,6 +7,7 @@ use std::{collections::BTreeMap, time::Duration};
 
 use fluvio::{
     metadata::smartmodule::SmartModuleSpec, metadata::topic::TopicSpec, Compression, Fluvio,
+    FluvioConfig,
 };
 #[cfg(any(feature = "sink", feature = "source"))]
 use fluvio_spu_schema::server::smartmodule::SmartModuleContextData;
@@ -160,8 +161,14 @@ pub struct CommonProducerOpt {
 
 #[cfg(feature = "source")]
 impl CommonConnectorOpt {
-    pub async fn create_producer(&self) -> anyhow::Result<fluvio::TopicProducer> {
-        let fluvio = fluvio::Fluvio::connect().await?;
+    pub async fn create_producer(
+        &self,
+        connector_name: &str,
+    ) -> anyhow::Result<fluvio::TopicProducer> {
+        let mut cluster_config = FluvioConfig::load()?;
+        cluster_config.client_id = Some(format!("fluvio_connector_{}", connector_name));
+
+        let fluvio = fluvio::Fluvio::connect_with_config(&cluster_config).await?;
         self.ensure_topic_exists().await?;
         let config_builder = fluvio::TopicProducerConfigBuilder::default();
         let params = self.smartmodule_parameters();
@@ -247,12 +254,15 @@ impl CommonConnectorOpt {
 
     pub async fn create_consumer_stream(
         &self,
+        connector_name: &str,
     ) -> anyhow::Result<
         impl tokio_stream::Stream<
             Item = Result<fluvio::consumer::Record, fluvio_protocol::link::ErrorCode>,
         >,
     > {
-        let fluvio = Fluvio::connect().await?;
+        let mut cluster_config = FluvioConfig::load()?;
+        cluster_config.client_id = Some(format!("fluvio_connector_{}", connector_name));
+        let fluvio = Fluvio::connect_with_config(&cluster_config).await?;
         let params = self.smartmodule_parameters().into();
         let wasm_invocation: Option<SmartModuleInvocation> = match (
             &self.smartmodule_common.smart_module,

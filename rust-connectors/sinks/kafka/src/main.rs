@@ -38,7 +38,7 @@ async fn main() -> anyhow::Result<()> {
 
     let mut stream = kafka_sink_deps
         .common_connector_opt
-        .create_consumer_stream()
+        .create_consumer_stream("kafka")
         .await?;
 
     while let Some(Ok(record)) = stream.next().await {

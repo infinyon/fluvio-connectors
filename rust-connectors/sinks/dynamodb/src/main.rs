@@ -73,7 +73,7 @@ impl DynamoDbOpt {
         let client = Client::from_conf(dynamodb_local_config);
         self.create_table(&client).await?;
 
-        let mut stream = self.common.create_consumer_stream().await?;
+        let mut stream = self.common.create_consumer_stream("dynamodb").await?;
         info!("Starting stream");
         while let Some(Ok(record)) = stream.next().await {
             if let Err(e) = self.send_to_dynamodb(&record, &client).await {
