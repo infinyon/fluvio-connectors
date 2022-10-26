@@ -2,7 +2,6 @@
 
 setup() {
     cargo build -p http-json-mock
-    cargo build -p fluvio-wasm-map --target wasm32-unknown-unknown --release
 
     ../../../target/debug/http-json-mock & disown
 
@@ -14,7 +13,10 @@ setup() {
     fluvio topic create $TOPIC || true
 
     MODULE=${UUID}-map
-    fluvio smart-module create $MODULE --wasm-file ../../../target/wasm32-unknown-unknown/release/fluvio_wasm_map.wasm
+    cd ../../utils/fluvio-smartstream-map
+    smdk build
+    smdk load
+    cd - 
 
     sed -i.BAK "s/http-json-connector/${UUID}/g" $FILE
 
@@ -27,6 +29,7 @@ teardown() {
     cargo run --bin connector-run --manifest-path ../../../Cargo.toml -- delete  --config $FILE
     fluvio topic delete $TOPIC
     fluvio smart-module delete $MODULE
+    fluvio sm delete infinyon/map-uppercase@0.1.0
     kill $MOCK_PID
 }
 

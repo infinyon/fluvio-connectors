@@ -278,7 +278,8 @@ jobs:
           sleep 3
           echo foo | fluvio produce foobar
           fluvio consume foobar -o 0 -d
-
+      - name: Install Fluvio SMDK
+        run: fluvio install smdk
       - uses: actions/checkout@v3
       - name: Install Rust stable
         uses: actions-rs/toolchain@v1
