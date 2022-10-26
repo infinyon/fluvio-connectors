@@ -1635,7 +1635,7 @@ checksum = "4f94fa09c2aeea5b8839e414b7b841bf429fd25b9c522116ac97ee87856d88b2"
 
 [[package]]
 name = "dynamodb-sink"
-version = "0.3.2"
+version = "0.3.1"
 dependencies = [
  "anyhow",
  "aws-config",
@@ -2693,7 +2693,7 @@ dependencies = [
 
 [[package]]
 name = "http-source"
-version = "0.5.0"
+version = "0.4.0"
 dependencies = [
  "clap 3.2.23",
  "fluvio-connectors-common",
@@ -3163,7 +3163,7 @@ dependencies = [
 
 [[package]]
 name = "kafka-sink"
-version = "0.3.2"
+version = "0.3.1"
 dependencies = [
  "anyhow",
  "clap 3.2.23",
@@ -3446,7 +3446,7 @@ dependencies = [
 
 [[package]]
 name = "mqtt-source"
-version = "0.6.0"
+version = "0.5.0"
 dependencies = [
  "anyhow",
  "async-global-executor",
@@ -3906,7 +3906,7 @@ dependencies = [
 
 [[package]]
 name = "postgres-sink"
-version = "0.3.2"
+version = "0.3.1"
 dependencies = [
  "bytes 1.2.1",
  "clap 3.2.23",
@@ -3935,7 +3935,7 @@ dependencies = [
 
 [[package]]
 name = "postgres-source"
-version = "0.4.0"
+version = "0.3.1"
 dependencies = [
  "adaptive_backoff",
  "bytes 1.2.1",
@@ -4872,7 +4872,7 @@ dependencies = [
 
 [[package]]
 name = "slack-sink"
-version = "0.3.2"
+version = "0.3.1"
 dependencies = [
  "anyhow",
  "clap 3.2.23",
@@ -4942,7 +4942,7 @@ dependencies = [
 
 [[package]]
 name = "sql-sink"
-version = "0.1.1"
+version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-std",
