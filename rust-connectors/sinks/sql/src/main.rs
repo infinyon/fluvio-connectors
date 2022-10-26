@@ -43,7 +43,15 @@ async fn main() -> anyhow::Result<()> {
     let mut stream = raw_opts.common.create_consumer_stream("sql").await?;
     info!("connected to fluvio stream");
 
-    let mut transformations = Transformations::from_fluvio(raw_opts.transform).await?;
+    let mut transformations = Transformations::from_chain(
+        raw_opts
+            .common
+            .transform_common
+            .create_smart_module_chain()
+            .await?
+            .unwrap_or_default(),
+    )
+    .await?;
     debug!("{:?} transformations loaded", transformations);
 
     info!(

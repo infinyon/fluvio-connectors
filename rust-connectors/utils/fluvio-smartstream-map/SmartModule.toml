@@ -1,0 +1,12 @@
+[package]
+name = "map-uppercase"
+group = "infinyon"
+version = "0.1.0"
+apiVersion = "0.1.0"
+description = "Test SmartModule"
+license = "Apache-2.0"
+repository = "https://github.com/infinyon/fluvio-connectors"
+
+[[params]]
+name = "key"
+description = "description"

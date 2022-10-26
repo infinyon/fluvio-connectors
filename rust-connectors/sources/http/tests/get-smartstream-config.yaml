@@ -8,4 +8,8 @@ parameters:
   method: GET
   body: ""
   interval: 1s
-  map: http-json-connector-map
+transforms:
+  - uses: infinyon/map-uppercase@0.1.0
+    invoke: insert
+    with:
+      key: value
