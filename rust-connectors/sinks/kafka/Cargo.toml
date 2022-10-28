@@ -17,5 +17,5 @@ serde = "1"
 tokio-stream = "0.1"
 fluvio-future = { version = "0.4.1", features = ["subscriber"] }
 
-rdkafka = { version = "0.28", features = ["cmake-build"] }
-kafka = "0.9.0"
+#rdkafka = { version = "0.28", features = ["cmake-build"] }
+kafka = { version = "0.9.0" }
