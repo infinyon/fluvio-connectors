@@ -1,13 +1,15 @@
 use clap::Parser;
 use fluvio_connectors_common::opt::CommonConnectorOpt;
 use fluvio_connectors_common::{common_initialize, git_hash_version};
-use fluvio_future::tracing::{error, info, debug};
+use fluvio_future::tracing::{debug, error, info};
+use humantime::parse_duration;
+use kafka::client::Compression as KafkaCompression;
 use kafka::client::{KafkaClient, ProduceMessage, RequiredAcks};
-use std::time::Duration;
 use schemars::schema_for;
 use schemars::JsonSchema;
+use std::str::FromStr;
+use std::time::Duration;
 use tokio_stream::StreamExt;
-
 
 #[derive(Parser, Debug, JsonSchema, Clone)]
 pub struct KafkaOpt {
@@ -28,6 +30,33 @@ pub struct KafkaOpt {
     #[clap(flatten)]
     #[schemars(flatten)]
     pub common: CommonConnectorOpt,
+
+    #[clap(long)]
+    pub client_id: Option<String>,
+
+    #[clap(long)]
+    pub compression: Option<Compression>,
+
+    #[clap(long, parse(try_from_str = parse_duration))]
+    pub fetch_max_wait_time: Option<Duration>,
+
+    #[clap(long)]
+    pub fetch_min_bytes: Option<i32>,
+
+    #[clap(long)]
+    pub fetch_max_bytes_per_partition: Option<i32>,
+
+    #[clap(long)]
+    pub fetch_crc_validation: Option<bool>,
+
+    #[clap(long, parse(try_from_str = parse_duration))]
+    pub retry_backoff_time: Option<Duration>,
+
+    #[clap(long)]
+    pub retry_max_attempts: Option<u32>,
+
+    #[clap(long, parse(try_from_str = parse_duration))]
+    pub connection_idle_timeout: Option<Duration>,
 }
 
 #[tokio::main]
@@ -50,9 +79,37 @@ async fn main() -> anyhow::Result<()> {
         git_hash = git_hash_version(),
         "Starting Kafka sink connector",
     );
-    let mut stream = raw_opts.common.create_consumer_stream("kafka").await?;
     let mut kafka_client = KafkaClient::new(vec![raw_opts.kafka_url.clone()]);
-    let _ = kafka_client.load_metadata_all()?;
+    if let Some(client_id) = raw_opts.client_id {
+        kafka_client.set_client_id(client_id);
+    }
+    if let Some(compression) = raw_opts.compression {
+        kafka_client.set_compression(compression.into());
+    }
+    if let Some(fetch_max_wait_time) = raw_opts.fetch_max_wait_time {
+        kafka_client.set_fetch_max_wait_time(fetch_max_wait_time)?;
+    }
+    if let Some(fetch_min_bytes) = raw_opts.fetch_min_bytes {
+        kafka_client.set_fetch_min_bytes(fetch_min_bytes);
+    }
+    if let Some(fetch_crc_validation) = raw_opts.fetch_crc_validation {
+        kafka_client.set_fetch_crc_validation(fetch_crc_validation);
+    }
+    if let Some(fetch_max_bytes_per_partition) = raw_opts.fetch_max_bytes_per_partition {
+        kafka_client.set_fetch_max_bytes_per_partition(fetch_max_bytes_per_partition);
+    }
+    if let Some(retry_backoff_time) = raw_opts.retry_backoff_time {
+        kafka_client.set_retry_backoff_time(retry_backoff_time);
+    }
+    if let Some(retry_max_attempts) = raw_opts.retry_max_attempts {
+        kafka_client.set_retry_max_attempts(retry_max_attempts);
+    }
+    if let Some(connection_idle_timeout) = raw_opts.connection_idle_timeout {
+        kafka_client.set_connection_idle_timeout(connection_idle_timeout);
+    }
+    kafka_client.load_metadata_all()?;
+
+    let mut stream = raw_opts.common.create_consumer_stream("kafka").await?;
     info!("Starting stream");
     while let Some(Ok(record)) = stream.next().await {
         let kafka_topic = raw_opts
@@ -76,4 +133,30 @@ async fn main() -> anyhow::Result<()> {
     }
 
     Ok(())
+}
+
+#[derive(Debug, Clone, JsonSchema)]
+pub enum Compression {
+    None,
+    Gzip,
+    Snappy,
+}
+impl FromStr for Compression {
+    type Err = String;
+    fn from_str(s: &str) -> Result<Self, <Self as FromStr>::Err> {
+        match s.to_lowercase().as_str() {
+            "gzip" => Ok(Self::Gzip),
+            "snappy" => Ok(Self::Snappy),
+            _ => Ok(Self::None),
+        }
+    }
+}
+impl From<Compression> for KafkaCompression {
+    fn from(c: Compression) -> KafkaCompression {
+        match c {
+            Compression::None => KafkaCompression::NONE,
+            Compression::Gzip => KafkaCompression::GZIP,
+            Compression::Snappy => KafkaCompression::SNAPPY,
+        }
+    }
 }
