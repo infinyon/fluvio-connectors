@@ -24,7 +24,7 @@ teardown() {
 }
 
 @test "http-connector-get-time-test" {
-    MAX_MS_FOR_5_RECORDS=600
+    MAX_MS_FOR_5_RECORDS=650
     echo "Starting consumer on topic $TOPIC"
     echo "This test ensures that with a http interval of 100ms, and 0ms source-linger time, 5 records should be produces in under ${MAX_MS_FOR_5_RECORDSH}ms"
     sleep 13
