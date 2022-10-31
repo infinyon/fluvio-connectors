@@ -10,6 +10,7 @@ use fluvio::{
     metadata::smartmodule::SmartModuleSpec, metadata::topic::TopicSpec, Compression, FluvioAdmin,
     FluvioConfig,
 };
+use fluvio_smartmodule::dataplane::smartmodule::SmartModuleExtraParams;
 
 #[cfg(feature = "sink")]
 use fluvio_spu_schema::server::smartmodule::SmartModuleContextData;
@@ -229,99 +230,18 @@ impl CommonConnectorOpt {
     > {
         let mut cluster_config = FluvioConfig::load()?;
         cluster_config.client_id = Some(format!("fluvio_connector_{}", connector_name));
-        let fluvio = fluvio::Fluvio::connect_with_config(&cluster_config).await?;
-        let params = self.smartmodule_parameters().into();
-        let wasm_invocation: Option<SmartModuleInvocation> = match (
-            &self.smartmodule_common.smart_module,
-            &self.smartmodule_common.filter,
-            &self.smartmodule_common.map,
-            &self.smartmodule_common.array_map,
-            &self.smartmodule_common.filter_map,
-            &self.smartmodule_common.aggregate,
-        ) {
-            (Some(smartmodule), _, _, _, _, _) => {
-                let context = match &self.smartmodule_common.aggregate_initial_value {
-                    Some(initial_value) => SmartModuleContextData::Aggregate {
-                        accumulator: initial_value.as_bytes().to_vec(),
-                    },
-                    None => SmartModuleContextData::None,
-                };
-                Some(SmartModuleInvocation {
-                    wasm: SmartModuleInvocationWasm::Predefined(smartmodule.to_owned()),
-                    kind: SmartModuleKind::Generic(context),
-                    params,
-                })
-            }
-            (_, Some(filter_path), _, _, _, _) => Some(SmartModuleInvocation {
-                wasm: SmartModuleInvocationWasm::Predefined(filter_path.to_owned()),
-                kind: SmartModuleKind::Filter,
-                params,
-            }),
-            (_, _, Some(map_path), _, _, _) => Some(SmartModuleInvocation {
-                wasm: SmartModuleInvocationWasm::Predefined(map_path.to_owned()),
-                kind: SmartModuleKind::Map,
-                params,
-            }),
-            (_, _, _, Some(array_map_path), _, _) => Some(SmartModuleInvocation {
-                wasm: SmartModuleInvocationWasm::Predefined(array_map_path.to_owned()),
-                kind: SmartModuleKind::ArrayMap,
-                params,
-            }),
-            (_, _, _, _, Some(filter_map_path), _) => Some(SmartModuleInvocation {
-                wasm: SmartModuleInvocationWasm::Predefined(filter_map_path.to_owned()),
-                kind: SmartModuleKind::FilterMap,
-                params,
-            }),
-            (_, _, _, _, _, Some(aggregate_path)) => {
-                let initial = self.get_aggregate_initial_value(&fluvio).await?;
-                Some(SmartModuleInvocation {
-                    wasm: SmartModuleInvocationWasm::Predefined(aggregate_path.to_owned()),
-                    kind: SmartModuleKind::Aggregate {
-                        accumulator: initial,
-                    },
-                    params,
-                })
-            }
-            _ => None,
-        };
+        let smartmodule = self
+            .transform_common
+            .transform
+            .iter()
+            .map(|t| t.into())
+            .collect();
         let mut builder = fluvio::ConsumerConfig::builder();
-        builder.smartmodule(wasm_invocation);
+        builder.smartmodule(smartmodule);
         let config = builder.build()?;
         let consumer = self.create_consumer().await?;
         let offset = fluvio::Offset::end();
         Ok(consumer.stream_with_config(offset, config).await?)
-    }
-
-    async fn get_aggregate_initial_value(
-        &self,
-        fluvio: &fluvio::Fluvio,
-    ) -> anyhow::Result<Vec<u8>> {
-        use tokio_stream::StreamExt;
-        if let Some(initial_value) = &self.smartmodule_common.aggregate_initial_value {
-            if initial_value == "use-last" {
-                let consumer = fluvio
-                    .partition_consumer(self.fluvio_topic.clone(), 0)
-                    .await?;
-                let stream = consumer.stream(fluvio::Offset::from_end(1)).await?;
-                let timeout = stream.timeout(Duration::from_millis(3000));
-                tokio::pin!(timeout);
-                let last_record = StreamExt::try_next(&mut timeout)
-                    .await
-                    .ok()
-                    .flatten()
-                    .transpose();
-
-                if let Ok(Some(record)) = last_record {
-                    Ok(record.value().to_vec())
-                } else {
-                    Ok(Vec::new())
-                }
-            } else {
-                Ok(initial_value.as_bytes().to_vec())
-            }
-        } else {
-            Ok(Vec::new())
-        }
     }
 }
 
@@ -403,6 +323,16 @@ impl FromStr for TransformOpt {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         serde_json::from_str(s)
+    }
+}
+
+impl From<&TransformOpt> for SmartModuleInvocation {
+    fn from(opt: &TransformOpt) -> Self {
+        SmartModuleInvocation {
+            wasm: SmartModuleInvocationWasm::Predefined(opt.uses.clone()),
+            kind: SmartModuleKind::Generic(SmartModuleContextData::None),
+            params: SmartModuleExtraParams::from(opt.with.clone()),
+        }
     }
 }
 
