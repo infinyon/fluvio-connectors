@@ -1,12 +1,8 @@
 # TARGET?=x86_64-unknown-linux-musl
 # Build docker image for Fluvio.
-ARCH=$(shell uname -m)
+ARCH=$(shell rustc --print cfg | grep target_arch | cut -d '=' -f 2 | sed 's/"//g')
 ifndef TARGET
-ifeq ($(ARCH),arm64)
-TARGET=aarch64-unknown-linux-musl
-else
-TARGET=x86_64-unknown-linux-musl
-endif
+TARGET=${ARCH}-unknown-linux-musl
 endif
 
 RUSTV?=stable
