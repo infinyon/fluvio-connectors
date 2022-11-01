@@ -17,3 +17,7 @@
 
 # Hub packages
 **/*.ipkg
+
+#macOS system files
+**/.DS_Store
+

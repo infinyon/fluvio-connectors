@@ -21,8 +21,6 @@ use fluvio_spu_schema::server::smartmodule::{
 };
 use serde::Deserialize;
 
-use crate::error::CliError;
-
 #[derive(Parser, Debug, JsonSchema, Clone, Default)]
 #[clap(settings = &[AppSettings::DeriveDisplayOrder])]
 pub struct CommonConnectorOpt {
@@ -49,10 +47,6 @@ pub struct CommonConnectorOpt {
 
     #[clap(flatten)]
     #[schemars(flatten)]
-    pub smartmodule_common: CommonSmartModuleOpt,
-
-    #[clap(flatten)]
-    #[schemars(flatten)]
     pub transform_common: CommonTransformOpt,
 }
 
@@ -62,92 +56,6 @@ pub struct CommonConsumerOpt {
     pub consumer_partition: i32,
 }
 
-#[derive(Parser, Debug, JsonSchema, Clone, Default)]
-pub struct CommonSmartModuleOpt {
-    /// Path of filter smartmodule used as a pre-produce step
-    /// if using source connector. If using sink connector this smartmodule
-    /// will be used in consumer.
-    ///
-    /// If the value is not a path to a file, it will be used
-    /// to lookup a SmartModule by name
-    #[clap(long, group("smartmodule_group"))]
-    pub filter: Option<String>,
-
-    /// Path of filter_map smartmodule used as a pre-produce step
-    /// if using source connector. If using sink connector this smartmodule
-    /// will be used in consumer.
-    ///
-    /// If the value is not a path to a file, it will be used
-    /// to lookup a SmartModule by name
-    #[clap(long, group("smartmodule_group"))]
-    pub filter_map: Option<String>,
-
-    /// Path of map smartmodule used as a pre-produce step
-    /// if using source connector. If using sink connector this smartmodule
-    /// will be used in consumer.
-    ///
-    /// If the value is not a path to a file, it will be used
-    /// to lookup a SmartModule by name
-    #[clap(long, group("smartmodule_group"))]
-    pub map: Option<String>,
-
-    /// Path of arraymap smartmodule used as a pre-produce step
-    /// if using source connector. If using sink connector this smartmodule
-    /// will be used in consumer.
-    ///
-    /// If the value is not a path to a file, it will be used
-    /// to lookup a SmartModule by name
-    #[clap(long, group("smartmodule_group"), alias = "arraymap")]
-    pub array_map: Option<String>,
-
-    /// Path of aggregate smartmodule used as a pre-produce step
-    /// if using source connector. If using sink connector this smartmodule
-    /// will be used in consumer.
-    ///
-    /// If the value is not a path to a file, it will be used
-    /// to lookup a SmartModule by name
-    #[clap(long, group("aggregate_group"), group("smartmodule_group"))]
-    pub aggregate: Option<String>,
-
-    #[clap(long, requires = "aggregate_group")]
-    pub aggregate_initial_value: Option<String>,
-
-    /// Path of smartmodule used as a pre-produce step
-    /// if using source connector. If using sink connector this smartmodule
-    /// will be used in consumer.
-    ///
-    /// If the value is not a path to a file, it will be used
-    /// to lookup a SmartModule by name
-    #[clap(
-        long,
-        alias = "smartmodule",
-        group("aggregate_group"),
-        group("smartmodule_group")
-    )]
-    pub smart_module: Option<String>,
-
-    /// (Optional) Extra input parameters passed to the smartmodule module.
-    /// They should be passed using key:value format.
-    ///
-    /// It only accepts one key:value pair. In order to pass multiple pairs, call this option multiple times.
-    ///
-    /// Example:
-    /// --smartmodule-parameters key1:value --smartmodule-parameters key2:value
-    #[clap(
-        long,
-        parse(try_from_str = parse_key_val),
-        requires = "smartmodule_group",
-        number_of_values = 1
-    )]
-    pub smartmodule_parameters: Option<Vec<(String, String)>>,
-}
-
-fn parse_key_val(s: &str) -> Result<(String, String), CliError> {
-    let pos = s.find(':').ok_or_else(|| {
-        CliError::InvalidArg(format!("invalid KEY=value: no `:` found in `{}`", s))
-    })?;
-    Ok((s[..pos].parse()?, s[pos + 1..].parse()?))
-}
 #[derive(Parser, Debug, JsonSchema, Clone, Default)]
 pub struct CommonProducerOpt {
     /// Time to wait before sending
@@ -246,14 +154,6 @@ impl CommonConnectorOpt {
 }
 
 impl CommonConnectorOpt {
-    pub fn smartmodule_parameters(&self) -> BTreeMap<String, String> {
-        self.smartmodule_common
-            .smartmodule_parameters
-            .clone()
-            .map(|params| params.into_iter().collect())
-            .unwrap_or_default()
-    }
-
     pub fn enable_logging(&self) {
         if std::env::var("RUST_LOG").is_err() {
             std::env::set_var("RUST_LOG", "info")
