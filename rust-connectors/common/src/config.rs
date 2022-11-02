@@ -75,7 +75,6 @@ pub struct ProducerParameters {
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct TransformStep {
     uses: String,
-    invoke: String,
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     with: BTreeMap<String, JsonString>,
 }
@@ -373,7 +372,6 @@ mod tests {
             }),
             transforms: Some(vec![TransformStep {
                 uses: "infinyon/json-sql".to_string(),
-                invoke: "insert".to_string(),
                 with: BTreeMap::from([
                     (
                         "mapping".to_string(),
@@ -556,12 +554,6 @@ mod tests {
             connector_spec.transforms.as_ref().unwrap()[0].uses.as_str(),
             "infinyon/sql"
         );
-        assert_eq!(
-            connector_spec.transforms.as_ref().unwrap()[0]
-                .invoke
-                .as_str(),
-            "insert"
-        );
         assert_eq!(connector_spec.transforms.as_ref().unwrap()[0].with,
                        BTreeMap::from([("mapping".to_string(), JsonString("{\"map-columns\":{\"device_id\":{\"json-key\":\"device.device_id\",\"value\":{\"default\":0,\"required\":true,\"type\":\"int\"}},\"record\":{\"json-key\":\"$\",\"value\":{\"required\":true,\"type\":\"jsonb\"}}},\"table\":\"topic_message\"}".to_string()))]));
     }
@@ -580,7 +572,6 @@ mod tests {
         let transform = connector_spec.transforms.unwrap();
         assert_eq!(transform.len(), 3);
         assert_eq!(transform[0].uses.as_str(), "infinyon/json-sql");
-        assert_eq!(transform[0].invoke.as_str(), "insert");
         assert_eq!(
             transform[0].with,
             BTreeMap::from([(
@@ -589,10 +580,8 @@ mod tests {
             )])
         );
         assert_eq!(transform[1].uses.as_str(), "infinyon/avro-sql");
-        assert_eq!(transform[1].invoke.as_str(), "map");
         assert_eq!(transform[1].with, BTreeMap::default());
         assert_eq!(transform[2].uses.as_str(), "infinyon/regex-filter");
-        assert_eq!(transform[2].invoke.as_str(), "insert");
         assert_eq!(
             transform[2].with,
             BTreeMap::from([("regex".to_string(), JsonString("\\w".to_string()))])

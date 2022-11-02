@@ -214,7 +214,6 @@ impl CommonTransformOpt {
 #[derive(Debug, JsonSchema, Clone, Deserialize)]
 pub struct TransformOpt {
     pub(crate) uses: String,
-    pub(crate) invoke: String,
     pub(crate) with: BTreeMap<String, String>,
 }
 
