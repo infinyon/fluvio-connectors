@@ -4,7 +4,7 @@ use fluvio_connectors_common::{common_initialize, git_hash_version};
 use fluvio_future::tracing::{debug, error, info};
 use humantime::parse_duration;
 use kafka::client::Compression as KafkaCompression;
-use kafka::client::{KafkaClient, ProduceMessage, RequiredAcks};
+use kafka::client::{KafkaClient, ProduceMessage, RequiredAcks, SecurityConfig};
 use schemars::schema_for;
 use schemars::JsonSchema;
 use std::str::FromStr;
@@ -57,6 +57,41 @@ pub struct KafkaOpt {
 
     #[clap(long, parse(try_from_str = parse_duration))]
     pub connection_idle_timeout: Option<Duration>,
+
+    #[clap(flatten)]
+    #[schemars(flatten)]
+    pub security: SecurityOpt,
+}
+#[derive(Parser, Debug, JsonSchema, Clone)]
+pub struct SecurityOpt {
+    #[clap(long)]
+    pub key_file: Option<String>,
+
+    #[clap(long)]
+    pub cert_file: Option<String>,
+}
+use openssl::ssl::{SslConnector, SslMethod, SslFiletype, SslVerifyMode};
+impl SecurityOpt {
+    fn get_config(&self) -> Option<SecurityConfig> {
+
+        // TODO use key file options.
+        let (key, cert) = ("client.key".to_string(), "client.crt".to_string());
+
+        // OpenSSL offers a variety of complex configurations. Here is an example:
+        let mut builder = SslConnector::builder(SslMethod::tls()).unwrap();
+        builder.set_cipher_list("DEFAULT").unwrap();
+        builder
+            .set_certificate_file(cert, SslFiletype::PEM)
+            .unwrap();
+        builder
+            .set_private_key_file(key, SslFiletype::PEM)
+            .unwrap();
+        builder.check_private_key().unwrap();
+        builder.set_default_verify_paths().unwrap();
+        builder.set_verify(SslVerifyMode::PEER);
+        let connector = builder.build();
+        Some(SecurityConfig::new(connector))
+    }
 }
 
 #[tokio::main]
@@ -79,7 +114,11 @@ async fn main() -> anyhow::Result<()> {
         git_hash = git_hash_version(),
         "Starting Kafka sink connector",
     );
-    let mut kafka_client = KafkaClient::new(vec![raw_opts.kafka_url.clone()]);
+    let mut kafka_client = if let Some(security_config) = raw_opts.security.get_config() {
+        KafkaClient::new_secure(vec![raw_opts.kafka_url.clone()], security_config)
+    } else  {
+        KafkaClient::new(vec![raw_opts.kafka_url.clone()])
+    };
     if let Some(client_id) = raw_opts.client_id {
         kafka_client.set_client_id(client_id);
     }

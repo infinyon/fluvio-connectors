@@ -3160,6 +3160,7 @@ dependencies = [
  "fluvio-future 0.4.2",
  "humantime",
  "kafka",
+ "openssl",
  "schemars",
  "serde",
  "serde_json",
