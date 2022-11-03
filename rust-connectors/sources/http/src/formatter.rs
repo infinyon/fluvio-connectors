@@ -69,7 +69,7 @@ impl HttpResponseRecord {
             _ => None,
         };
 
-        if new_output_type != None && new_output_parts != None {
+        if new_output_type.is_some() && new_output_parts.is_some(){
             self.output_type = new_output_type;
             self.output_parts = new_output_parts;
 
@@ -123,11 +123,11 @@ impl HttpResponseRecord {
         // Status Line HTTP/X XXX CANONICAL
         if self.output_parts == Some(HttpOutputParts::HttpRecordFull) {
             let status_line: Vec<String> = vec![
-                self.version.to_owned().unwrap_or_else(|| "".to_string()),
+                self.version.to_owned().unwrap_or_default(),
                 self.status_code.unwrap_or(0).to_string(),
                 self.status_string
                     .to_owned()
-                    .unwrap_or_else(|| "".to_string()),
+                    .unwrap_or_default(),
             ];
             record_out_parts.push(status_line.join(" "));
         }
@@ -224,7 +224,7 @@ mod tests {
             "{} {} {}\n{}\n\n{}",
             version.clone().unwrap(),
             status.unwrap(),
-            status_string.clone().unwrap_or_else(|| "".to_string()),
+            status_string.clone().unwrap_or_default(),
             expected_headers,
             fuzz_body_input
         );
