@@ -69,7 +69,7 @@ impl HttpResponseRecord {
             _ => None,
         };
 
-        if new_output_type.is_some() && new_output_parts.is_some(){
+        if new_output_type.is_some() && new_output_parts.is_some() {
             self.output_type = new_output_type;
             self.output_parts = new_output_parts;
 
@@ -125,9 +125,7 @@ impl HttpResponseRecord {
             let status_line: Vec<String> = vec![
                 self.version.to_owned().unwrap_or_default(),
                 self.status_code.unwrap_or(0).to_string(),
-                self.status_string
-                    .to_owned()
-                    .unwrap_or_default(),
+                self.status_string.to_owned().unwrap_or_default(),
             ];
             record_out_parts.push(status_line.join(" "));
         }
