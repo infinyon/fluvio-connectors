@@ -30,8 +30,6 @@ fluvio             = { git = "https://github.com/infinyon/fluvio", branch = "mas
 fluvio-smartengine = { git = "https://github.com/infinyon/fluvio", branch = "master" }
 fluvio-protocol    = { git = "https://github.com/infinyon/fluvio", branch = "master" }
 fluvio-spu-schema  = { git = "https://github.com/infinyon/fluvio", branch = "master" }
-rdkafka = { path = "../rust-rdkafka/" }
-krb5-src = { path = "../rust-krb5-src" }
 
 
 [profile.release-lto]
