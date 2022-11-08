@@ -81,6 +81,49 @@ pub struct KafkaOpt {
     #[clap(flatten)]
     #[schemars(flatten)]
     pub common: CommonConnectorOpt,
+
+    #[clap(flatten)]
+    #[schemars(flatten)]
+    pub security: SecurityOpt,
+}
+
+#[derive(Parser, Debug, JsonSchema, Clone)]
+pub struct SecurityOpt {
+    #[clap(long)]
+    pub ssl_key_file: Option<String>,
+
+    #[clap(long)]
+    pub ssl_cert_file: Option<String>,
+    #[clap(long)]
+    pub ssl_ca_file: Option<String>,
+
+    #[clap(long)]
+    pub security_protocol: Option<SecurityProtocolOpt>,
+}
+#[derive(Parser, Debug, JsonSchema, Clone)]
+pub enum SecurityProtocolOpt {
+    SSL,
+    // TODO: SASL_SSL and SASL_PLAINTEXT
+}
+impl ToString for SecurityProtocolOpt {
+    fn to_string(&self) -> String {
+        match self {
+            Self::SSL => "SSL".to_string()
+        }
+    }
+}
+
+use std::str::FromStr;
+impl FromStr for SecurityProtocolOpt {
+    type Err = String;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s.to_lowercase() == "ssl" {
+            Ok(Self::SSL)
+        } else {
+            // TODO: Add SASL_SSL and SASL_PLAINTEXT
+            Err("Invalid option. SSL is the only supported security protocol".into())
+        }
+    }
 }
 
 pub struct KafkaSinkDependencies {
@@ -100,6 +143,7 @@ impl KafkaSinkDependencies {
             kafka_partition,
             kafka_option,
             common: common_connector_opt,
+            security,
         } = opts;
 
         // Use fluvio_topic as kafka_topic fallback value
@@ -122,6 +166,9 @@ impl KafkaSinkDependencies {
                 client_config.set(key, value);
             }
             client_config.set("bootstrap.servers", kafka_url.clone());
+            if let Some(protocol) = security.security_protocol {
+                client_config.set("security.protocol", protocol.to_string());
+            }
             client_config
         };
 
