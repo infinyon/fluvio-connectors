@@ -17,4 +17,4 @@ serde = "1"
 tokio-stream = "0.1"
 fluvio-future = { version = "0.4.1", features = ["subscriber"] }
 
-rdkafka = { version = "0.26", features = ["cmake-build", "libz-static", "tokio"], default-features = false  }
+rdkafka = { version = "0.26.0", features = ["cmake-build", "libz-static", "tokio", "ssl-vendored" , "gssapi-vendored"], default-features = false  }

@@ -1,4 +1,5 @@
 use clap::Parser;
+use std::str::FromStr;
 use fluvio_connectors_common::opt::CommonConnectorOpt;
 use fluvio_connectors_common::{common_initialize, git_hash_version};
 use fluvio_future::tracing::{error, info};
@@ -87,45 +88,6 @@ pub struct KafkaOpt {
     pub security: SecurityOpt,
 }
 
-#[derive(Parser, Debug, JsonSchema, Clone)]
-pub struct SecurityOpt {
-    #[clap(long)]
-    pub ssl_key_file: Option<String>,
-
-    #[clap(long)]
-    pub ssl_cert_file: Option<String>,
-    #[clap(long)]
-    pub ssl_ca_file: Option<String>,
-
-    #[clap(long)]
-    pub security_protocol: Option<SecurityProtocolOpt>,
-}
-#[derive(Parser, Debug, JsonSchema, Clone)]
-pub enum SecurityProtocolOpt {
-    SSL,
-    // TODO: SASL_SSL and SASL_PLAINTEXT
-}
-impl ToString for SecurityProtocolOpt {
-    fn to_string(&self) -> String {
-        match self {
-            Self::SSL => "SSL".to_string()
-        }
-    }
-}
-
-use std::str::FromStr;
-impl FromStr for SecurityProtocolOpt {
-    type Err = String;
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s.to_lowercase() == "ssl" {
-            Ok(Self::SSL)
-        } else {
-            // TODO: Add SASL_SSL and SASL_PLAINTEXT
-            Err("Invalid option. SSL is the only supported security protocol".into())
-        }
-    }
-}
-
 pub struct KafkaSinkDependencies {
     pub kafka_topic: String,
     pub kafka_partition: Option<i32>,
@@ -169,11 +131,29 @@ impl KafkaSinkDependencies {
             if let Some(protocol) = security.security_protocol {
                 client_config.set("security.protocol", protocol.to_string());
             }
+
+            if let Some(cacert_file) = security.ssl_ca_file {
+                if let Ok(cacert_contents) = std::fs::read_to_string(cacert_file) {
+                    client_config.set("ssl.ca.pem", cacert_contents);
+                }
+            }
+
+            if let Some(key_file) = security.ssl_key_file {
+                if let Ok(key_contents) = std::fs::read_to_string(key_file) {
+                    client_config.set("ssl.key.pem", key_contents);
+                }
+            }
+
+            if let Some(cert_file) = security.ssl_cert_file {
+                if let Ok(cert_contents) = std::fs::read_to_string(cert_file) {
+                    client_config.set("ssl.certificate.pem", cert_contents);
+                }
+            }
+
             client_config
         };
 
         // Prepare topic, ensure it exists before creating producer
-
         let admin = AdminClient::from_config(&client_config)?;
         admin
             .create_topics(
@@ -194,5 +174,43 @@ impl KafkaSinkDependencies {
             kafka_producer,
             common_connector_opt,
         })
+    }
+}
+
+#[derive(Parser, Debug, JsonSchema, Clone)]
+pub struct SecurityOpt {
+    #[clap(long)]
+    pub ssl_key_file: Option<String>,
+
+    #[clap(long)]
+    pub ssl_cert_file: Option<String>,
+    #[clap(long)]
+    pub ssl_ca_file: Option<String>,
+
+    #[clap(long)]
+    pub security_protocol: Option<SecurityProtocolOpt>,
+}
+#[derive(Parser, Debug, JsonSchema, Clone)]
+pub enum SecurityProtocolOpt {
+    SSL,
+    // TODO: SASL_SSL and SASL_PLAINTEXT
+}
+impl ToString for SecurityProtocolOpt {
+    fn to_string(&self) -> String {
+        match self {
+            Self::SSL => "SSL".to_string()
+        }
+    }
+}
+
+impl FromStr for SecurityProtocolOpt {
+    type Err = String;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s.to_lowercase() == "ssl" {
+            Ok(Self::SSL)
+        } else {
+            // TODO: Add SASL_SSL and SASL_PLAINTEXT
+            Err("Invalid option. SSL is the only supported security protocol".into())
+        }
     }
 }
