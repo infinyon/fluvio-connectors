@@ -1,5 +1,4 @@
 use clap::Parser;
-use std::str::FromStr;
 use fluvio_connectors_common::opt::CommonConnectorOpt;
 use fluvio_connectors_common::{common_initialize, git_hash_version};
 use fluvio_future::tracing::{error, info};
@@ -7,6 +6,7 @@ use rdkafka::config::ClientConfig;
 use rdkafka::producer::{FutureProducer, FutureRecord};
 use schemars::schema_for;
 use schemars::JsonSchema;
+use std::str::FromStr;
 use tokio_stream::StreamExt;
 
 #[tokio::main]
@@ -198,7 +198,7 @@ pub enum SecurityProtocolOpt {
 impl ToString for SecurityProtocolOpt {
     fn to_string(&self) -> String {
         match self {
-            Self::SSL => "SSL".to_string()
+            Self::SSL => "SSL".to_string(),
         }
     }
 }
