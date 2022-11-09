@@ -315,6 +315,7 @@ jobs:
     name: Publish ${{ matrix.connector-name }} images to Docker Hub
     needs: [build_containers, integration_tests]
     runs-on: ${{ matrix.os }}
+    if: github.event_name == 'push' && github.ref == 'refs/heads/staging'
     strategy:
       fail-fast: true
       matrix:
