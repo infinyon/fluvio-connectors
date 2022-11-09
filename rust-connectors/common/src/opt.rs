@@ -274,7 +274,7 @@ async fn get_smartmodule(name: &str, admin: &FluvioAdmin) -> anyhow::Result<Vec<
                 .context("Not found smartmodule")?
                 .spec;
 
-            let mut decoder = GzDecoder::new(&*smartmodule_spec.wasm.payload);
+            let mut decoder = GzDecoder::new(&**smartmodule_spec.wasm.payload);
             let mut buffer = Vec::with_capacity(smartmodule_spec.wasm.payload.len());
             decoder.read_to_end(&mut buffer)?;
             Ok(buffer)
