@@ -30,6 +30,7 @@ fluvio             = { git = "https://github.com/infinyon/fluvio", branch = "mas
 fluvio-smartengine = { git = "https://github.com/infinyon/fluvio", branch = "master" }
 fluvio-protocol    = { git = "https://github.com/infinyon/fluvio", branch = "master" }
 fluvio-spu-schema  = { git = "https://github.com/infinyon/fluvio", branch = "master" }
+sasl2-sys          = { git = "https://github.com/infinyon/rust-sasl/", branch = "remove-linking-to-resolv" }
 
 
 [profile.release-lto]

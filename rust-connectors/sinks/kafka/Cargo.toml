@@ -17,4 +17,6 @@ serde = "1"
 tokio-stream = "0.1"
 fluvio-future = { version = "0.4.1", features = ["subscriber"] }
 
-rdkafka = { version = "0.26.0", features = ["cmake-build", "libz-static", "tokio", "ssl-vendored" , "gssapi-vendored"], default-features = false  }
+# There is some difference between rev v0.26.0 and the 0.26.0 on crates.io.
+# Changing it to use the crates.io version breaks the musl cross compile.
+rdkafka = { git="https://github.com/fede1024/rust-rdkafka", rev="v0.26.0", features = ["cmake-build", "libz-static", "tokio", "ssl-vendored" , "gssapi-vendored"], default-features = false  }
