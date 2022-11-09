@@ -21,7 +21,7 @@ teardown() {
     echo "Starting consumer on topic $TOPIC"
     sleep 8
 
-    fluvio consume -o 0 -d $TOPIC | while read input; do
+    fluvio consume -B -d $TOPIC | while read input; do
         expected="Hello, Fluvio! - $count"
         echo $input = $expected
         [ "$input" = "$expected" ]

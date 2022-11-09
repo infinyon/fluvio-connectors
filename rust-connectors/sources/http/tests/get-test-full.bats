@@ -30,13 +30,13 @@ teardown() {
     echo "Starting consumer on topic $TOPIC"
     sleep 10
 
-    run fluvio consume -o 0 --end-offset 0 -d $TOPIC
+    run fluvio consume --start 0 --end 0 -d $TOPIC
     assert_output --partial 'HTTP/1.1 200 OK'
 
-    run fluvio consume -o 0 --end-offset 0 -d $TOPIC
+    run fluvio consume --start 0 --end 0 -d $TOPIC
     assert_output --partial 'content-type: text/plain;charset=utf-8'
 
-    run fluvio consume -o 1 --end-offset 1 -d $TOPIC
+    run fluvio consume --start 1 --end 1 -d $TOPIC
     assert_output --partial 'Hello, Fluvio! - ' 
 }
 
