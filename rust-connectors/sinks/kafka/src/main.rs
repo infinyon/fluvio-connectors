@@ -8,6 +8,8 @@ use schemars::schema_for;
 use schemars::JsonSchema;
 use std::str::FromStr;
 use tokio_stream::StreamExt;
+use std::io::Write;
+use tempfile::NamedTempFile;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -132,22 +134,41 @@ impl KafkaSinkDependencies {
                 client_config.set("security.protocol", protocol.to_string());
             }
 
-            if let Some(cacert_file) = security.ssl_ca_file {
-                if let Ok(cacert_contents) = std::fs::read_to_string(cacert_file) {
-                    client_config.set("ssl.ca.pem", cacert_contents);
-                }
+            match (security.ssl_key_file, security.ssl_key_pem) {
+                (Some(key_file), None) => {
+                    if let Ok(key_contents) = std::fs::read_to_string(key_file) {
+                        client_config.set("ssl.key.pem", key_contents);
+                    }
+                },
+                (_, Some(key_pem)) => {
+                    client_config.set("ssl.key.pem", key_pem);
+                },
+                (_, _) => {}
+            }
+            match (security.ssl_cert_file, security.ssl_cert_pem) {
+                (Some(cert_file), None) => {
+                    if let Ok(cert_contents) = std::fs::read_to_string(cert_file) {
+                        client_config.set("ssl.certificate.pem", cert_contents);
+                    }
+                },
+                (_, Some(cert_pem)) => {
+                    client_config.set("ssl.certificate.pem", cert_pem);
+                },
+                (_, _) => {}
             }
 
-            if let Some(key_file) = security.ssl_key_file {
-                if let Ok(key_contents) = std::fs::read_to_string(key_file) {
-                    client_config.set("ssl.key.pem", key_contents);
-                }
-            }
-
-            if let Some(cert_file) = security.ssl_cert_file {
-                if let Ok(cert_contents) = std::fs::read_to_string(cert_file) {
-                    client_config.set("ssl.certificate.pem", cert_contents);
-                }
+            match (security.ssl_ca_file, security.ssl_ca_pem) {
+                (Some(ca_file), None) => {
+                    client_config.set("ssl.ca.location", ca_file);
+                },
+                (_, Some(ca_pem)) => {
+                    let mut tmpfile = NamedTempFile::new().unwrap();
+                    write!(tmpfile, "{}", ca_pem).unwrap();
+                    let path = tmpfile.into_temp_path();
+                    path.persist("/tmp/kafka-client-ca.pem")?;
+                    client_config.set("ssl.ca.location", "/tmp/kafka-client-ca.pem");
+                },
+                (_, _) => {}
             }
 
             client_config
@@ -179,13 +200,21 @@ impl KafkaSinkDependencies {
 
 #[derive(Parser, Debug, JsonSchema, Clone)]
 pub struct SecurityOpt {
-    #[clap(long)]
+    #[clap(long, group = "ssl-key")]
     pub ssl_key_file: Option<String>,
 
-    #[clap(long)]
+    #[clap(long, group = "ssl-key", env = "FLUVIO_KAFKA_CLIENT_KEY")]
+    pub ssl_key_pem: Option<String>,
+
+    #[clap(long, group = "ssl-cert")]
     pub ssl_cert_file: Option<String>,
-    #[clap(long)]
+    #[clap(long, group = "ssl-cert", env = "FLUVIO_KAFKA_CLIENT_CERT")]
+    pub ssl_cert_pem: Option<String>,
+
+    #[clap(long, group = "ssl-ca")]
     pub ssl_ca_file: Option<String>,
+    #[clap(long, group = "ssl-ca", env = "FLUVIO_KAFKA_CLIENT_CA")]
+    pub ssl_ca_pem: Option<String>,
 
     #[clap(long)]
     pub security_protocol: Option<SecurityProtocolOpt>,
