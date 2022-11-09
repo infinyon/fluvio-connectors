@@ -1,27 +1,23 @@
 name: CI
 
-
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
-
 on:
   workflow_dispatch:
   push:
-    branches: [staging, trying ]
+    branches: [staging, trying]
     paths:
-    - '**'
-    - '!/*.md'
-    - '!/**.md'
+      - "**"
+      - "!/*.md"
+      - "!/**.md"
   pull_request:
-    branches: [ main ]
+    branches: [main]
     paths:
-    - '**'
-    - '!/*.md'
-    - '!/**.md'
-
-
+      - "**"
+      - "!/*.md"
+      - "!/**.md"
 
 jobs:
   check:
@@ -66,10 +62,10 @@ jobs:
         run: cargo clippy --all-targets -- -D warnings
 
   build_connector_bins:
-    name:  Build binary ${{ matrix.connector-name }} for ${{ matrix.rust-target }} on (${{ matrix.os }})
+    name: Build binary ${{ matrix.connector-name }} for ${{ matrix.rust-target }} on (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
-  #    fail-fast: true
+      #    fail-fast: true
       matrix:
         os: [ubuntu-latest]
         rust-target:
@@ -277,7 +273,7 @@ jobs:
           fluvio topic create foobar
           sleep 3
           echo foo | fluvio produce foobar
-          fluvio consume foobar -o 0 -d
+          fluvio consume foobar -B -d
       - name: Install Fluvio SMDK
         run: fluvio install smdk
       - uses: actions/checkout@v3
@@ -409,7 +405,7 @@ jobs:
           fluvio topic create foobar
           sleep 3
           echo foo | fluvio produce foobar
-          fluvio consume foobar -o 0 -d
+          fluvio consume foobar -B -d
       - name: Install Rust stable
         uses: actions-rs/toolchain@v1
         with:
@@ -448,7 +444,7 @@ jobs:
           fluvio topic create foobar
           sleep 3
           echo foo | fluvio produce foobar
-          fluvio consume foobar -o 0 -d
+          fluvio consume foobar -B -d
       - name: Install Rust stable
         uses: actions-rs/toolchain@v1
         with:
@@ -501,8 +497,6 @@ jobs:
         run: |
           cargo check -p fluvio-connectors-common --no-default-features
 
-
-
   ## Job that follows the success of all required jobs in this workflow.
   ## Used by Bors to detect that all required jobs have completed successfully
   done:
@@ -511,8 +505,8 @@ jobs:
     needs:
       - check
       - docker_push
- #     - postgres_sink_and_source_integration_tests
- #     - postgres_source_integration_tests
+    #     - postgres_sink_and_source_integration_tests
+    #     - postgres_source_integration_tests
     runs-on: ubuntu-latest
     steps:
       - name: Done
