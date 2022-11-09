@@ -7,7 +7,7 @@ setup() {
     echo $UUID
     TOPIC=longevity
     fluvio topic create $TOPIC || true
-    STARTING_OFFSET=$(fluvio partition list -O json | jq ".[] | select (.name | contains(\"$TOPIC\")) | .status.leader.leo")
+    STARTING_OFFSET=$(fluvio partition list -O json | tail -n +3 | jq ".[] | select (.name | contains(\"$TOPIC\")) | .status.leader.leo")
     export STARTING_OFFSET
     cp ./tests/test-mode-config.yaml $FILE
 
@@ -24,7 +24,7 @@ teardown() {
     echo "Waiting a moment for fluvio-test to write to topic $TOPIC"
     sleep 30
 
-    ENDING_OFFSET=$(fluvio partition list -O json | jq ".[] | select (.name | contains(\"$TOPIC\")) | .status.leader.leo")
+    ENDING_OFFSET=$(fluvio partition list -O json | tail -n +3 | jq ".[] | select (.name | contains(\"$TOPIC\")) | .status.leader.leo")
     echo "Starting offset: $STARTING_OFFSET"
     echo "Ending offset: $ENDING_OFFSET"
     [ "0" -ne "$ENDING_OFFSET" ]
