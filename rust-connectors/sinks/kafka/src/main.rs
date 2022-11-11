@@ -71,9 +71,11 @@ pub struct KafkaOpt {
     #[clap(long, env = "KAFKA_URL", hide_env_values = true)]
     pub kafka_url: String,
 
+    /// The kakfa topic to use. This will default to the fluvio topic if unset.
     #[clap(long)]
     pub kafka_topic: Option<String>,
 
+    /// The kafka partition to use. This is optional
     #[clap(long)]
     pub kafka_partition: Option<i32>,
 
@@ -200,22 +202,37 @@ impl KafkaSinkDependencies {
 
 #[derive(Parser, Debug, JsonSchema, Clone)]
 pub struct SecurityOpt {
+    /// The SSL key file to use. This should be used when running the connector outside the docker
+    /// environment.
     #[clap(long, group = "ssl-key")]
     pub ssl_key_file: Option<String>,
 
+    /// The SSL key pem text. This should be used by the `FLUVIO_KAFKA_CLIENT_KEY` environment
+    /// variable or secret.
     #[clap(long, group = "ssl-key", env = "FLUVIO_KAFKA_CLIENT_KEY")]
     pub ssl_key_pem: Option<String>,
 
+    /// The SSL cert file to use. This should be used when running the connector outside the docker
+    /// environment.
     #[clap(long, group = "ssl-cert")]
     pub ssl_cert_file: Option<String>,
+
+    /// The SSL cert pem text. This should be used by the `FLUVIO_KAFKA_CLIENT_CERT` environment
+    /// variable or secret.
     #[clap(long, group = "ssl-cert", env = "FLUVIO_KAFKA_CLIENT_CERT")]
     pub ssl_cert_pem: Option<String>,
 
+    /// The SSL ca file to use. This should be used when running the connector outside the docker
+    /// environment.
     #[clap(long, group = "ssl-ca")]
     pub ssl_ca_file: Option<String>,
+
+    /// The SSL ca pem text. This should be used by the `FLUVIO_KAFKA_CLIENT_CA` environment
+    /// variable or secret.
     #[clap(long, group = "ssl-ca", env = "FLUVIO_KAFKA_CLIENT_CA")]
     pub ssl_ca_pem: Option<String>,
 
+    /// The kafka security protocol. Currently only supports `SSL`.
     #[clap(long)]
     pub security_protocol: Option<SecurityProtocolOpt>,
 }
