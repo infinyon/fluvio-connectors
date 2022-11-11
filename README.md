@@ -26,7 +26,7 @@
 | Connector          | Release | Type | Protocols/Description      |
 |:-------------------|:-------:|:-----|:---------------------------|
 | [sources/http]     |  0.4.0  | Rust | HTTP Polling 1.0, 1.1, 2.0 |
-| [sources/mqtt]     |  0.5.1  | Rust | MQTT V4, V5                |
+| [sources/mqtt]     |  0.5.0  | Rust | MQTT V4, V5                |
 | [sources/postgres] |  0.3.0  | Rust | Postgres CDC               |
 | [sources/syslog]   |  0.2.0  | Rust | Syslog                     |
 
