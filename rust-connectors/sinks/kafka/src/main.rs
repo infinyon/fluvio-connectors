@@ -6,10 +6,10 @@ use rdkafka::config::ClientConfig;
 use rdkafka::producer::{FutureProducer, FutureRecord};
 use schemars::schema_for;
 use schemars::JsonSchema;
-use std::str::FromStr;
-use tokio_stream::StreamExt;
 use std::io::Write;
+use std::str::FromStr;
 use tempfile::NamedTempFile;
+use tokio_stream::StreamExt;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -139,10 +139,10 @@ impl KafkaSinkDependencies {
                     if let Ok(key_contents) = std::fs::read_to_string(key_file) {
                         client_config.set("ssl.key.pem", key_contents);
                     }
-                },
+                }
                 (_, Some(key_pem)) => {
                     client_config.set("ssl.key.pem", key_pem);
-                },
+                }
                 (_, _) => {}
             }
             match (security.ssl_cert_file, security.ssl_cert_pem) {
@@ -150,24 +150,24 @@ impl KafkaSinkDependencies {
                     if let Ok(cert_contents) = std::fs::read_to_string(cert_file) {
                         client_config.set("ssl.certificate.pem", cert_contents);
                     }
-                },
+                }
                 (_, Some(cert_pem)) => {
                     client_config.set("ssl.certificate.pem", cert_pem);
-                },
+                }
                 (_, _) => {}
             }
 
             match (security.ssl_ca_file, security.ssl_ca_pem) {
                 (Some(ca_file), None) => {
                     client_config.set("ssl.ca.location", ca_file);
-                },
+                }
                 (_, Some(ca_pem)) => {
                     let mut tmpfile = NamedTempFile::new().unwrap();
                     write!(tmpfile, "{}", ca_pem).unwrap();
                     let path = tmpfile.into_temp_path();
                     path.persist("/tmp/kafka-client-ca.pem")?;
                     client_config.set("ssl.ca.location", "/tmp/kafka-client-ca.pem");
-                },
+                }
                 (_, _) => {}
             }
 
