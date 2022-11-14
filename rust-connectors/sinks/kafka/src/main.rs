@@ -6,6 +6,9 @@ use rdkafka::config::ClientConfig;
 use rdkafka::producer::{FutureProducer, FutureRecord};
 use schemars::schema_for;
 use schemars::JsonSchema;
+use std::io::Write;
+use std::str::FromStr;
+use tempfile::NamedTempFile;
 use tokio_stream::StreamExt;
 
 #[tokio::main]
@@ -68,9 +71,11 @@ pub struct KafkaOpt {
     #[clap(long, env = "KAFKA_URL", hide_env_values = true)]
     pub kafka_url: String,
 
+    /// The kakfa topic to use. This will default to the fluvio topic if unset.
     #[clap(long)]
     pub kafka_topic: Option<String>,
 
+    /// The kafka partition to use. This is optional
     #[clap(long)]
     pub kafka_partition: Option<i32>,
 
@@ -81,6 +86,10 @@ pub struct KafkaOpt {
     #[clap(flatten)]
     #[schemars(flatten)]
     pub common: CommonConnectorOpt,
+
+    #[clap(flatten)]
+    #[schemars(flatten)]
+    pub security: SecurityOpt,
 }
 
 pub struct KafkaSinkDependencies {
@@ -100,6 +109,7 @@ impl KafkaSinkDependencies {
             kafka_partition,
             kafka_option,
             common: common_connector_opt,
+            security,
         } = opts;
 
         // Use fluvio_topic as kafka_topic fallback value
@@ -122,11 +132,51 @@ impl KafkaSinkDependencies {
                 client_config.set(key, value);
             }
             client_config.set("bootstrap.servers", kafka_url.clone());
+            if let Some(protocol) = security.security_protocol {
+                client_config.set("security.protocol", protocol.to_string());
+            }
+
+            match (security.ssl_key_file, security.ssl_key_pem) {
+                (Some(key_file), None) => {
+                    if let Ok(key_contents) = std::fs::read_to_string(key_file) {
+                        client_config.set("ssl.key.pem", key_contents);
+                    }
+                }
+                (_, Some(key_pem)) => {
+                    client_config.set("ssl.key.pem", key_pem);
+                }
+                (_, _) => {}
+            }
+            match (security.ssl_cert_file, security.ssl_cert_pem) {
+                (Some(cert_file), None) => {
+                    if let Ok(cert_contents) = std::fs::read_to_string(cert_file) {
+                        client_config.set("ssl.certificate.pem", cert_contents);
+                    }
+                }
+                (_, Some(cert_pem)) => {
+                    client_config.set("ssl.certificate.pem", cert_pem);
+                }
+                (_, _) => {}
+            }
+
+            match (security.ssl_ca_file, security.ssl_ca_pem) {
+                (Some(ca_file), None) => {
+                    client_config.set("ssl.ca.location", ca_file);
+                }
+                (_, Some(ca_pem)) => {
+                    let mut tmpfile = NamedTempFile::new().unwrap();
+                    write!(tmpfile, "{}", ca_pem).unwrap();
+                    let path = tmpfile.into_temp_path();
+                    path.persist("/tmp/kafka-client-ca.pem")?;
+                    client_config.set("ssl.ca.location", "/tmp/kafka-client-ca.pem");
+                }
+                (_, _) => {}
+            }
+
             client_config
         };
 
         // Prepare topic, ensure it exists before creating producer
-
         let admin = AdminClient::from_config(&client_config)?;
         admin
             .create_topics(
@@ -147,5 +197,66 @@ impl KafkaSinkDependencies {
             kafka_producer,
             common_connector_opt,
         })
+    }
+}
+
+#[derive(Parser, Debug, JsonSchema, Clone)]
+pub struct SecurityOpt {
+    /// The SSL key file to use. This should be used when running the connector outside the docker
+    /// environment.
+    #[clap(long, group = "ssl-key")]
+    pub ssl_key_file: Option<String>,
+
+    /// The SSL key pem text. This should be used by the `FLUVIO_KAFKA_CLIENT_KEY` environment
+    /// variable or secret.
+    #[clap(long, group = "ssl-key", env = "FLUVIO_KAFKA_CLIENT_KEY")]
+    pub ssl_key_pem: Option<String>,
+
+    /// The SSL cert file to use. This should be used when running the connector outside the docker
+    /// environment.
+    #[clap(long, group = "ssl-cert")]
+    pub ssl_cert_file: Option<String>,
+
+    /// The SSL cert pem text. This should be used by the `FLUVIO_KAFKA_CLIENT_CERT` environment
+    /// variable or secret.
+    #[clap(long, group = "ssl-cert", env = "FLUVIO_KAFKA_CLIENT_CERT")]
+    pub ssl_cert_pem: Option<String>,
+
+    /// The SSL ca file to use. This should be used when running the connector outside the docker
+    /// environment.
+    #[clap(long, group = "ssl-ca")]
+    pub ssl_ca_file: Option<String>,
+
+    /// The SSL ca pem text. This should be used by the `FLUVIO_KAFKA_CLIENT_CA` environment
+    /// variable or secret.
+    #[clap(long, group = "ssl-ca", env = "FLUVIO_KAFKA_CLIENT_CA")]
+    pub ssl_ca_pem: Option<String>,
+
+    /// The kafka security protocol. Currently only supports `SSL`.
+    #[clap(long)]
+    pub security_protocol: Option<SecurityProtocolOpt>,
+}
+#[derive(Parser, Debug, JsonSchema, Clone)]
+pub enum SecurityProtocolOpt {
+    SSL,
+    // TODO: SASL_SSL and SASL_PLAINTEXT
+}
+impl ToString for SecurityProtocolOpt {
+    fn to_string(&self) -> String {
+        match self {
+            Self::SSL => "SSL".to_string(),
+        }
+    }
+}
+
+impl FromStr for SecurityProtocolOpt {
+    type Err = String;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s.to_lowercase() == "ssl" {
+            Ok(Self::SSL)
+        } else {
+            // TODO: Add SASL_SSL and SASL_PLAINTEXT
+            Err("Invalid option. SSL is the only supported security protocol".into())
+        }
     }
 }
