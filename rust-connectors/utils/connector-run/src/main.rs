@@ -133,6 +133,15 @@ fn convert_to_k8_deployment(config: &ConnectorConfig) -> anyhow::Result<Deployme
         ..Default::default()
     })
 }
+fn build_envs(config: &ConnectorConfig) -> anyhow::Result<HashMap<String, String>> {
+    let secrets = &config.secrets;
+    let env: HashMap<String, String> = HashMap::from_iter(
+        secrets
+            .iter()
+            .map(|(key, value)| (key.clone(), (**value).to_string())),
+    );
+    Ok(env)
+}
 
 fn build_args(config: &ConnectorConfig) -> anyhow::Result<Vec<String>> {
     let parameters = &config.parameters;

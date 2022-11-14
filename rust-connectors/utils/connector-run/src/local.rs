@@ -3,7 +3,7 @@ use std::process::Command;
 use clap::Parser;
 use fluvio_connectors_common::config::ConnectorConfig;
 
-use crate::build_args;
+use crate::{build_args, build_envs};
 
 #[derive(Debug, Parser)]
 pub struct LocalOpt {
@@ -34,15 +34,23 @@ impl LocalOpt {
             fluvio_config_path.as_os_str().to_string_lossy()
         );
 
-        let mut child = Command::new("docker")
+        let mut env_args: Vec<String> = vec![];
+        for (key, value) in &build_envs(&config)? {
+            env_args.push(format!("{}={}", key, value));
+        }
+
+        let mut binding = Command::new("docker");
+        let mut command = binding
             .arg("run")
             .args(self.docker_arg.as_slice())
+            .arg("--rm")
             .arg("-i")
             .arg("--mount")
-            .arg(fluvio_config_mount)
-            .arg(image)
-            .args(args)
-            .spawn()?;
+            .arg(fluvio_config_mount);
+        for arg in &env_args {
+            command = command.arg("--env").arg(arg);
+        }
+        let mut child = command.arg(image).args(args).spawn()?;
 
         child.wait().expect("failed while waiting for child");
 
