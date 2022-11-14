@@ -32,7 +32,13 @@ async fn main() -> anyhow::Result<()> {
         "Starting Kafka sink connector",
     );
 
-    let kafka_sink_deps = KafkaSinkDependencies::from_kafka_opt(raw_opts).await?;
+    let kafka_sink_deps = match KafkaSinkDependencies::from_kafka_opt(raw_opts).await {
+        Ok(val) => val,
+        Err(e) => {
+            error!("Error connecting getting kafka sink connection - {:?}", e);
+            return Err(e)?;
+        }
+    };
     let kafka_producer = &kafka_sink_deps.kafka_producer;
     let kafka_partition = &kafka_sink_deps.kafka_partition;
     let kafka_topic = &kafka_sink_deps.kafka_topic;
@@ -83,6 +89,10 @@ pub struct KafkaOpt {
     #[clap(long)]
     pub kafka_option: Vec<String>,
 
+    /// Boolean to create a kafka topic. Defaults to `false`
+    #[clap(long)]
+    pub create_kafka_topic: Option<bool>,
+
     #[clap(flatten)]
     #[schemars(flatten)]
     pub common: CommonConnectorOpt,
@@ -101,14 +111,13 @@ pub struct KafkaSinkDependencies {
 
 impl KafkaSinkDependencies {
     async fn from_kafka_opt(opts: KafkaOpt) -> anyhow::Result<KafkaSinkDependencies> {
-        use rdkafka::admin::{AdminClient, AdminOptions, NewTopic, TopicReplication};
-        use rdkafka::config::FromClientConfig;
         let KafkaOpt {
             kafka_url,
             kafka_topic,
             kafka_partition,
             kafka_option,
             common: common_connector_opt,
+            create_kafka_topic,
             security,
         } = opts;
 
@@ -165,30 +174,24 @@ impl KafkaSinkDependencies {
                 }
                 (_, Some(ca_pem)) => {
                     let mut tmpfile = NamedTempFile::new().unwrap();
+
                     write!(tmpfile, "{}", ca_pem).unwrap();
-                    let path = tmpfile.into_temp_path();
-                    path.persist("/tmp/kafka-client-ca.pem")?;
-                    client_config.set("ssl.ca.location", "/tmp/kafka-client-ca.pem");
+                    let (_file, path) = tmpfile.keep()?;
+                    let path = path.into_os_string().into_string().unwrap_or_default();
+                    client_config.set("ssl.ca.location", path);
                 }
                 (_, _) => {}
             }
 
             client_config
         };
+        if let Some(true) = create_kafka_topic {
+            if let Err(e) = Self::create_kafka_topic(&kafka_topic, &client_config).await {
+                error!("Error creating topic on kafka cluster {e}");
+            }
+        }
 
-        // Prepare topic, ensure it exists before creating producer
-        let admin = AdminClient::from_config(&client_config)?;
-        admin
-            .create_topics(
-                &[NewTopic::new(
-                    kafka_topic.as_str(),
-                    1,
-                    TopicReplication::Fixed(1),
-                )],
-                &AdminOptions::new(),
-            )
-            .await?;
-
+        info!("Creating a producer");
         let kafka_producer = client_config.create().expect("Producer creation error");
 
         Ok(KafkaSinkDependencies {
@@ -197,6 +200,23 @@ impl KafkaSinkDependencies {
             kafka_producer,
             common_connector_opt,
         })
+    }
+    async fn create_kafka_topic(
+        kafka_topic: &str,
+        client_config: &rdkafka::ClientConfig,
+    ) -> anyhow::Result<()> {
+        info!("Creating topic on kafka cluster");
+        // Prepare topic, ensure it exists before creating producer
+        use rdkafka::admin::{AdminClient, AdminOptions, NewTopic, TopicReplication};
+        use rdkafka::config::FromClientConfig;
+        let admin = AdminClient::from_config(client_config)?;
+        admin
+            .create_topics(
+                &[NewTopic::new(kafka_topic, 1, TopicReplication::Fixed(1))],
+                &AdminOptions::new(),
+            )
+            .await?;
+        Ok(())
     }
 }
 
