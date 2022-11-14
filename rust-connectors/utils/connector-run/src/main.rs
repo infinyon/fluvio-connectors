@@ -172,6 +172,7 @@ fn build_args(config: &ConnectorConfig) -> anyhow::Result<Vec<String>> {
 
     if let Some(ref transform_params) = config.transforms {
         let transforms: Result<Vec<String>, serde_json::Error> = transform_params
+            .transforms
             .iter()
             .map(serde_json::to_string)
             .map_ok(|transform| format!("--transform={}", transform))

@@ -8,6 +8,7 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use std::time::Duration;
 
+use fluvio_smartengine::transformation::TransformationConfig;
 use serde::{Deserialize, Serialize};
 
 use bytesize::ByteSize;
@@ -40,8 +41,8 @@ pub struct ConnectorConfig {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub consumer: Option<ConsumerParameters>,
 
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub transforms: Option<Vec<TransformStep>>,
+    #[serde(default, flatten, skip_serializing_if = "Option::is_none")]
+    pub transforms: Option<TransformationConfig>,
 }
 
 #[allow(clippy::derive_partial_eq_without_eq)]
@@ -69,14 +70,6 @@ pub struct ProducerParameters {
 
     #[serde(skip)]
     batch_size: Option<ByteSize>,
-}
-
-#[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
-pub struct TransformStep {
-    uses: String,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
-    with: BTreeMap<String, JsonString>,
 }
 
 impl ConnectorConfig {
@@ -179,9 +172,6 @@ impl From<BTreeMap<String, String>> for ManagedConnectorParameterValue {
     }
 }
 
-#[derive(Default, Clone, Debug, PartialEq, Eq, Serialize)]
-pub struct JsonString(String);
-
 use serde::de::{self, MapAccess, SeqAccess, Visitor};
 use serde::Deserializer;
 struct ParameterValueVisitor;
@@ -272,62 +262,10 @@ impl<'de> Visitor<'de> for ParameterValueVisitor {
     }
 }
 
-impl<'de> Deserialize<'de> for JsonString {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        struct AsJsonString;
-        impl<'de> Visitor<'de> for AsJsonString {
-            type Value = JsonString;
-
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                formatter.write_str("str, string, sequence or map")
-            }
-
-            fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-            where
-                E: de::Error,
-            {
-                Ok(JsonString(v.to_string()))
-            }
-
-            fn visit_string<E>(self, v: String) -> Result<Self::Value, E>
-            where
-                E: de::Error,
-            {
-                Ok(JsonString(v))
-            }
-
-            fn visit_map<M>(self, map: M) -> Result<Self::Value, M::Error>
-            where
-                M: MapAccess<'de>,
-            {
-                let json: serde_json::Value =
-                    Deserialize::deserialize(de::value::MapAccessDeserializer::new(map))?;
-                serde_json::to_string(&json).map(JsonString).map_err(|err| {
-                    de::Error::custom(format!("unable to serialize map to json: {}", err))
-                })
-            }
-
-            fn visit_seq<M>(self, seq: M) -> Result<Self::Value, M::Error>
-            where
-                M: SeqAccess<'de>,
-            {
-                let json: serde_json::Value =
-                    Deserialize::deserialize(de::value::SeqAccessDeserializer::new(seq))?;
-                serde_json::to_string(&json).map(JsonString).map_err(|err| {
-                    de::Error::custom(format!("unable to serialize seq to json: {}", err))
-                })
-            }
-        }
-        deserializer.deserialize_any(AsJsonString)
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    use fluvio_smartengine::transformation::TransformationStep;
     use pretty_assertions::assert_eq;
 
     #[test]
@@ -370,16 +308,19 @@ mod tests {
             consumer: Some(ConsumerParameters {
                 partition: Some(10),
             }),
-            transforms: Some(vec![TransformStep {
-                uses: "infinyon/json-sql".to_string(),
-                with: BTreeMap::from([
-                    (
-                        "mapping".to_string(),
-                        JsonString("{\"table\":\"topic_message\"}".to_string()),
-                    ),
-                    ("param".to_string(), JsonString("param_value".to_string())),
-                ]),
-            }]),
+            transforms: Some(
+                TransformationStep {
+                    uses: "infinyon/json-sql".to_string(),
+                    with: BTreeMap::from([
+                        (
+                            "mapping".to_string(),
+                            "{\"table\":\"topic_message\"}".into(),
+                        ),
+                        ("param".to_string(), "param_value".into()),
+                    ]),
+                }
+                .into(),
+            ),
         };
 
         //when
@@ -551,11 +492,13 @@ mod tests {
         //then
         assert!(connector_spec.transforms.is_some());
         assert_eq!(
-            connector_spec.transforms.as_ref().unwrap()[0].uses.as_str(),
+            connector_spec.transforms.as_ref().unwrap().transforms[0]
+                .uses
+                .as_str(),
             "infinyon/sql"
         );
-        assert_eq!(connector_spec.transforms.as_ref().unwrap()[0].with,
-                       BTreeMap::from([("mapping".to_string(), JsonString("{\"map-columns\":{\"device_id\":{\"json-key\":\"device.device_id\",\"value\":{\"default\":0,\"required\":true,\"type\":\"int\"}},\"record\":{\"json-key\":\"$\",\"value\":{\"required\":true,\"type\":\"jsonb\"}}},\"table\":\"topic_message\"}".to_string()))]));
+        assert_eq!(connector_spec.transforms.as_ref().unwrap().transforms[0].with,
+                       BTreeMap::from([("mapping".to_string(), "{\"map-columns\":{\"device_id\":{\"json-key\":\"device.device_id\",\"value\":{\"default\":0,\"required\":true,\"type\":\"int\"}},\"record\":{\"json-key\":\"$\",\"value\":{\"required\":true,\"type\":\"jsonb\"}}},\"table\":\"topic_message\"}".into())]));
     }
 
     #[test]
@@ -569,14 +512,14 @@ mod tests {
 
         //then
         assert!(connector_spec.transforms.is_some());
-        let transform = connector_spec.transforms.unwrap();
+        let transform = connector_spec.transforms.unwrap().transforms;
         assert_eq!(transform.len(), 3);
         assert_eq!(transform[0].uses.as_str(), "infinyon/json-sql");
         assert_eq!(
             transform[0].with,
             BTreeMap::from([(
                 "mapping".to_string(),
-                JsonString("{\"table\":\"topic_message\"}".to_string())
+                "{\"table\":\"topic_message\"}".into()
             )])
         );
         assert_eq!(transform[1].uses.as_str(), "infinyon/avro-sql");
@@ -584,7 +527,7 @@ mod tests {
         assert_eq!(transform[2].uses.as_str(), "infinyon/regex-filter");
         assert_eq!(
             transform[2].with,
-            BTreeMap::from([("regex".to_string(), JsonString("\\w".to_string()))])
+            BTreeMap::from([("regex".to_string(), "\\w".into())])
         );
     }
 }
