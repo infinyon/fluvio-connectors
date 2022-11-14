@@ -1,22 +1,13 @@
-use anyhow::Context;
 use bytesize::ByteSize;
 use clap::{AppSettings, Parser};
+use fluvio_sc_schema::topic::TopicSpec;
 use humantime::parse_duration;
 use schemars::{schema_for, JsonSchema};
 use std::str::FromStr;
 use std::{collections::BTreeMap, time::Duration};
 
 use fluvio::{
-    metadata::smartmodule::SmartModuleSpec, metadata::topic::TopicSpec, Compression, FluvioAdmin,
-    FluvioConfig,
-};
-use fluvio_smartmodule::dataplane::smartmodule::SmartModuleExtraParams;
-
-#[cfg(feature = "sink")]
-use fluvio_spu_schema::server::smartmodule::SmartModuleContextData;
-
-#[cfg(feature = "sink")]
-use fluvio_spu_schema::server::smartmodule::{
+    Compression, FluvioConfig, SmartModuleContextData, SmartModuleExtraParams,
     SmartModuleInvocation, SmartModuleInvocationWasm, SmartModuleKind,
 };
 use serde::Deserialize;
@@ -186,23 +177,31 @@ pub struct CommonTransformOpt {
     transform: Vec<TransformOpt>,
 }
 
-#[cfg(any(feature = "sink", feature = "source"))]
+#[cfg(feature = "source")]
 impl CommonTransformOpt {
     pub async fn create_smart_module_chain(
         &self,
-    ) -> anyhow::Result<Option<fluvio_smartengine::SmartModuleChainBuilder>> {
+    ) -> anyhow::Result<Option<fluvio::SmartModuleChainBuilder>> {
+        use fluvio_sc_schema::smartmodule::SmartModuleApiClient;
+
         if self.transform.is_empty() {
             return Ok(None);
         }
-        let admin = FluvioAdmin::connect().await?;
-        let mut builder = fluvio_smartengine::SmartModuleChainBuilder::default();
+        let api_client =
+            SmartModuleApiClient::connect_with_config(FluvioConfig::load()?.try_into()?).await?;
+        let mut builder = fluvio::SmartModuleChainBuilder::default();
         for step in &self.transform {
-            let raw = get_smartmodule(&step.uses, &admin).await?;
+            let wasm = api_client
+                .get(step.uses.clone())
+                .await?
+                .ok_or_else(|| anyhow::anyhow!("smartmodule {} not found", step.uses))?
+                .wasm
+                .as_raw_wasm()?;
 
-            let config = fluvio_smartengine::SmartModuleConfig::builder()
+            let config = fluvio::SmartModuleConfig::builder()
                 .params(step.with.clone().into())
                 .build()?;
-            builder.add_smart_module(config, raw);
+            builder.add_smart_module(config, wasm);
         }
 
         Ok(Some(builder))
@@ -256,28 +255,4 @@ pub trait GetOpts {
     fn name() -> &'static str;
     fn version() -> &'static str;
     fn description() -> &'static str;
-}
-
-async fn get_smartmodule(name: &str, admin: &FluvioAdmin) -> anyhow::Result<Vec<u8>> {
-    use flate2::bufread::GzDecoder;
-    use std::io::Read;
-
-    match std::fs::read(name) {
-        Ok(data) => Ok(data),
-        Err(_) => {
-            let smartmodule_spec_list = &admin
-                .list::<SmartModuleSpec, String>(vec![name.into()])
-                .await?;
-
-            let smartmodule_spec = &smartmodule_spec_list
-                .first()
-                .context("Not found smartmodule")?
-                .spec;
-
-            let mut decoder = GzDecoder::new(&**smartmodule_spec.wasm.payload);
-            let mut buffer = Vec::with_capacity(smartmodule_spec.wasm.payload.len());
-            decoder.read_to_end(&mut buffer)?;
-            Ok(buffer)
-        }
-    }
 }
