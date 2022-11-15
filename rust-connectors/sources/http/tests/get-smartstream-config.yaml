@@ -10,6 +10,5 @@ parameters:
   interval: 1s
 transforms:
   - uses: infinyon/map-uppercase@0.1.0
-    invoke: insert
     with:
       key: value

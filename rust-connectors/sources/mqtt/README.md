@@ -61,7 +61,7 @@ Controls how the output of `payload` field is produced
 
 Use following configuration:
 
-```
+```yaml
 version: latest
 name: my-mqtt-new
 type: mqtt-source
@@ -83,3 +83,34 @@ brew install mosquitto
 
 mosquitto_pub -h test.mosquitto.org -t ag-mqtt-topic -m '{"device": {"device_id":17, "name":"device17"}}'
 ```
+
+## Transforms
+Fluvio Mqtt Connector supports [Transforms](../../common/README.md#transforms).
+
+The previous example can be extended to add extra transformations to outgoing records:
+```yaml
+version: latest
+name: my-mqtt-new
+type: mqtt-source
+topic: mqtt-topic
+direction: source
+create-topic: true
+parameters:
+  mqtt_topic: "ag-mqtt-topic"
+  payload_output_type: json
+secrets:
+  MQTT_URL: mqtt://test.mosquitto.org/
+transforms:
+  - uses: infinyon/jolt@0.1.0
+    with:
+      spec:
+        - operation: shift
+          spec: 
+            payload:
+              device: "device"
+        - operation: default
+          spec:
+            source: "mqtt-connector"   
+```
+The object `device` in the resulting record will be "unwrapped" and the addition field `source` with value `mqtt-connector`
+will be added.

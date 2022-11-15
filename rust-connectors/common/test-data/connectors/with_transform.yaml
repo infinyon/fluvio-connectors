@@ -5,7 +5,6 @@ topic: my-mqtt
 create_topic: false
 transforms:
   - uses: infinyon/sql
-    invoke: insert
     with:
       mapping:
         table: "topic_message"

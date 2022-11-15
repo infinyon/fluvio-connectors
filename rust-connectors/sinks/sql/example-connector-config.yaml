@@ -9,7 +9,6 @@ parameters:
   rust_log: 'sql_sink=INFO,sqlx=WARN'
 transforms:
   - uses: infinyon/json-sql
-    invoke: insert
     with:
       table: "topic_message"
       map-columns:

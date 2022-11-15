@@ -52,7 +52,8 @@ Controls how the output Record is produced
 
 ## Example Config
 
-```
+#### Simple
+```yaml
 version: latest
 name: cat-facts
 type: http-source
@@ -62,3 +63,27 @@ parameters:
   endpoint: https://catfact.ninja/fact
   interval: 10s
 ```
+
+#### With [Transforms](../../common/README.md#transforms)
+```yaml
+version: latest
+name: cat-facts
+type: http-source
+topic: cat-facts
+direction: source
+parameters:
+  endpoint: https://catfact.ninja/fact
+  interval: 10s
+transforms:
+  - uses: infinyon/jolt@0.1.0
+    with:
+      spec:
+        - operation: default
+          spec:
+            source: "http-connector"
+        - operation: remove
+          spec:
+            length: ""
+```
+In this case, additional transformation will be performed before records are sent to Fluvio topic: field `length` will be removed and
+field `source` with string value `http-connector` will be added.
