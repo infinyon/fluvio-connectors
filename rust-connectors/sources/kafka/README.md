@@ -11,3 +11,6 @@ This is a connector for taking data from a Kafka topic and going to a fluvio top
 | kafka-topic          | same topic as fluvio  | String   | The kafka topic                               |
 | kafka-partition      | 0                     | String   | The kafka partition                           |
 | kafka-group          | "fluvio-kafka-source" | String   | The kafka group                               |
+
+## Transforms
+Fluvio Kafka Source Connector supports [Transforms](../../common/README.md#transforms).

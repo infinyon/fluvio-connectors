@@ -22,7 +22,8 @@ The first entry in the column list will be the partition key.
 | AWS_ACCESS_KEY_ID    | -        | String                                            | Your AWS secret key id         |
 | AWS_SECRET_ACCESS_KEY| -        | String                                            | your aws secret access key     |
 
-
+## Transforms
+Fluvio DynamoDb Connector supports [Transforms](../../common/README.md#transforms).
 
 ## Development
 

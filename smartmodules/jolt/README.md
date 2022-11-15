@@ -17,7 +17,6 @@ parameters:
   rust_log: 'sql_sink=INFO,sqlx=WARN'
 transforms:
   - uses: infinyon/jolt@0.1.0
-    invoke: insert
     with:
       spec:
         - operation: shift
@@ -29,7 +28,6 @@ transforms:
             device:
               type: "mobile"         #if not present, adds '$device.type' = 'mobile'
   - uses: infinyon/json-sql@0.1.0
-    invoke: insert
     with:
       mapping:
         table: "topic_message"
