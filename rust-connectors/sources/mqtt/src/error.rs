@@ -29,6 +29,8 @@ pub enum MqttConnectorError {
     ParseError(#[from] ParseError),
     #[error("Anyhow Error: `{0:#?}`.")]
     Anyhow(#[from] AnyhowError),
+    #[error("Internal Channel Closed")]
+    ChannelClosed,
 }
 
 impl From<MqttError> for MqttConnectorError {

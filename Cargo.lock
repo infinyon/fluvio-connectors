@@ -3457,6 +3457,7 @@ version = "0.5.1"
 dependencies = [
  "anyhow",
  "async-global-executor",
+ "async-std",
  "clap 3.2.23",
  "fluvio-connectors-common",
  "fluvio-future 0.4.2",
