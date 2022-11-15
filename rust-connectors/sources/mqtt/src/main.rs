@@ -21,16 +21,19 @@ use schemars::schema_for;
 use serde::Deserialize;
 use serde::Serialize;
 use std::convert::TryFrom;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use url::Url;
 
 const CHANNEL_BUFFER_SIZE: usize = 500;
+const MIN_LOG_WARN_TIME: Duration = Duration::from_secs(5 * 60);
 
 async fn mqtt_loop(
     tx: Sender<MqttEvent>,
+    rx: Receiver<MqttEvent>,
     mut eventloop: EventLoop,
 ) -> Result<(), MqttConnectorError> {
-    let mut should_log_warning = true;
+    let mut last_warn = Instant::now();
+    let mut num_dropped_messages = 0u64;
     loop {
         // eventloop.poll() docs state "Don't block while iterating"
         let notification = match eventloop.poll().await {
@@ -42,16 +45,22 @@ async fn mqtt_loop(
         };
 
         if let Ok(mqtt_event) = MqttEvent::try_from(notification) {
-            match tx.try_send(mqtt_event) {
-                Ok(_) => {
-                    should_log_warning = true;
+            if tx.is_full() {
+                num_dropped_messages += 1;
+                let elapsed = last_warn.elapsed();
+                if elapsed > MIN_LOG_WARN_TIME {
+                    warn!("Queue backed up. Dropped {num_dropped_messages} mqtt messages in last {elapsed:?}");
+                    last_warn = Instant::now();
+                    num_dropped_messages = 0;
                 }
+
+                _ = rx.try_recv()
+            }
+            match tx.try_send(mqtt_event) {
+                Ok(_) => {}
                 Err(e) => match e {
                     async_std::channel::TrySendError::Full(_) => {
-                        if should_log_warning {
-                            warn!("Queue backed up, dropping mqtt messages");
-                            should_log_warning = false;
-                        }
+                        unreachable!();
                     }
                     async_std::channel::TrySendError::Closed(_) => {
                         error!("Channel closed");
@@ -166,7 +175,7 @@ fn main() -> Result<(), MqttConnectorError> {
             .subscribe(mqtt_topic.clone(), QoS::AtMostOnce)
             .await?;
         let (tx, rx) = channel::bounded(CHANNEL_BUFFER_SIZE);
-        let mqtt_jh = spawn(mqtt_loop(tx, eventloop));
+        let mqtt_jh = spawn(mqtt_loop(tx, rx.clone(), eventloop));
         let fluvio_jh = spawn(fluvio_loop(rx, producer, formatter));
         mqtt_jh.await?;
         fluvio_jh.await
