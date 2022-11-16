@@ -21,25 +21,29 @@ use schemars::schema_for;
 use serde::Deserialize;
 use serde::Serialize;
 use std::convert::TryFrom;
+use std::sync::atomic::AtomicBool;
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 use url::Url;
 
-const CHANNEL_BUFFER_SIZE: usize = 500;
+const CHANNEL_BUFFER_SIZE: usize = 10000;
 const MIN_LOG_WARN_TIME: Duration = Duration::from_secs(5 * 60);
 
 async fn mqtt_loop(
     tx: Sender<MqttEvent>,
     rx: Receiver<MqttEvent>,
     mut eventloop: EventLoop,
+    should_exit: Arc<AtomicBool>,
 ) -> Result<(), MqttConnectorError> {
     let mut last_warn = Instant::now();
     let mut num_dropped_messages = 0u64;
-    loop {
+    while !should_exit.load(std::sync::atomic::Ordering::Relaxed) {
         // eventloop.poll() docs state "Don't block while iterating"
         let notification = match eventloop.poll().await {
             Ok(notification) => notification,
             Err(e) => {
                 error!("Mqtt error {}", e);
+                fluvio_future::timer::sleep(Duration::from_secs(5)).await;
                 continue;
             }
         };
@@ -64,35 +68,46 @@ async fn mqtt_loop(
                     }
                     async_std::channel::TrySendError::Closed(_) => {
                         error!("Channel closed");
+                        should_exit.store(true, std::sync::atomic::Ordering::Relaxed);
                         return Err(MqttConnectorError::ChannelClosed);
                     }
                 },
             }
         }
     }
+    info!("Exit signal received, exiting");
+    Ok(())
 }
 
 async fn fluvio_loop(
     rx: Receiver<MqttEvent>,
     producer: TopicProducer,
     formatter: Box<dyn Formatter + Sync + Send>,
+    should_exit: Arc<AtomicBool>,
 ) -> Result<(), MqttConnectorError> {
-    loop {
+    while !should_exit.load(std::sync::atomic::Ordering::Relaxed) {
         let mqtt_event = match rx.recv().await {
             Ok(mqtt_event) => mqtt_event,
             Err(_) => {
                 error!("Channel closed");
+                should_exit.store(true, std::sync::atomic::Ordering::Relaxed);
                 return Err(MqttConnectorError::ChannelClosed);
             }
         };
-        let fluvio_record = formatter.to_string(&mqtt_event)?;
+        let fluvio_record = formatter.to_string(&mqtt_event).map_err(|x| {
+            should_exit.store(true, std::sync::atomic::Ordering::Relaxed);
+            x
+        })?;
         debug!("Record before smartstream {}", fluvio_record);
+
         if let Err(e) = producer.send(RecordKey::NULL, fluvio_record).await {
             error!("Fluvio error! {}", e);
             producer.clear_errors().await;
-            fluvio_future::timer::sleep(Duration::from_secs(5));
+            fluvio_future::timer::sleep(Duration::from_secs(5)).await;
         }
     }
+    info!("Exit signal received, exiting");
+    Ok(())
 }
 
 fn main() -> Result<(), MqttConnectorError> {
@@ -175,8 +190,10 @@ fn main() -> Result<(), MqttConnectorError> {
             .subscribe(mqtt_topic.clone(), QoS::AtMostOnce)
             .await?;
         let (tx, rx) = channel::bounded(CHANNEL_BUFFER_SIZE);
-        let mqtt_jh = spawn(mqtt_loop(tx, rx.clone(), eventloop));
-        let fluvio_jh = spawn(fluvio_loop(rx, producer, formatter));
+        let should_exit = Arc::new(AtomicBool::default());
+        let mqtt_jh = spawn(mqtt_loop(tx, rx.clone(), eventloop, should_exit.clone()));
+        let fluvio_jh = spawn(fluvio_loop(rx, producer, formatter, should_exit));
+
         mqtt_jh.await?;
         fluvio_jh.await
     })
