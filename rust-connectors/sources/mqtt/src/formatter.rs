@@ -8,7 +8,7 @@ pub(crate) trait Formatter {
     fn to_string(&self, event: &MqttEvent) -> anyhow::Result<String>;
 }
 
-pub(crate) fn from_output_type(output_type: &OutputType) -> Box<dyn Formatter> {
+pub(crate) fn from_output_type(output_type: &OutputType) -> Box<dyn Formatter + Sync + Send> {
     match output_type {
         OutputType::Binary => Box::new(BinaryPayload {}),
         OutputType::Json => Box::new(JsonPayload {}),
