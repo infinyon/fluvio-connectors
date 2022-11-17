@@ -91,7 +91,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Set RELEASE mode
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/staging'
         shell: bash
         run: |
           echo "RELEASE=true" | tee -a $GITHUB_ENV
