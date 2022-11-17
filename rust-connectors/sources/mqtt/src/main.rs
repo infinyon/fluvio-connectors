@@ -43,8 +43,7 @@ async fn mqtt_loop(
             Ok(notification) => notification,
             Err(e) => {
                 error!("Mqtt error {}", e);
-                fluvio_future::timer::sleep(Duration::from_secs(5)).await;
-                continue;
+                return Err(MqttConnectorError::MqttConnection(e));
             }
         };
 
@@ -85,6 +84,8 @@ async fn fluvio_loop(
     formatter: Box<dyn Formatter + Sync + Send>,
     should_exit: Arc<AtomicBool>,
 ) -> Result<(), MqttConnectorError> {
+    let mut last_warn = Instant::now();
+    let mut num_dropped_messages = 0u64;
     while !should_exit.load(std::sync::atomic::Ordering::Relaxed) {
         let mqtt_event = match rx.recv().await {
             Ok(mqtt_event) => mqtt_event,
@@ -94,16 +95,25 @@ async fn fluvio_loop(
                 return Err(MqttConnectorError::ChannelClosed);
             }
         };
-        let fluvio_record = formatter.to_string(&mqtt_event).map_err(|x| {
-            should_exit.store(true, std::sync::atomic::Ordering::Relaxed);
-            x
-        })?;
-        debug!("Record before smartstream {}", fluvio_record);
 
-        if let Err(e) = producer.send(RecordKey::NULL, fluvio_record).await {
-            error!("Fluvio error! {}", e);
-            producer.clear_errors().await;
-            fluvio_future::timer::sleep(Duration::from_secs(5)).await;
+        match formatter.to_string(&mqtt_event) {
+            Ok(fluvio_record) => {
+                debug!("Record before smartstream {}", fluvio_record);
+                if let Err(e) = producer.send(RecordKey::NULL, fluvio_record).await {
+                    error!("Fluvio error! {}", e);
+                    producer.clear_errors().await;
+                    fluvio_future::timer::sleep(Duration::from_secs(5)).await;
+                }
+            }
+            Err(_) => {
+                num_dropped_messages += 1;
+                let elapsed = last_warn.elapsed();
+                if elapsed > MIN_LOG_WARN_TIME {
+                    warn!("Failed to format message. Dropped {num_dropped_messages} failed to parse messages in last {elapsed:?}");
+                    last_warn = Instant::now();
+                    num_dropped_messages = 0;
+                }
+            }
         }
     }
     info!("Exit signal received, exiting");
@@ -182,20 +192,25 @@ fn main() -> Result<(), MqttConnectorError> {
 
             mqttoptions.set_transport(Transport::tls_with_config(client_config.into()));
         }
-        let producer = opts.common.create_producer("mqtt").await?;
-        info!("Connected to Fluvio");
-        let formatter = formatter::from_output_type(&opts.payload_output_type);
-        let (client, eventloop) = AsyncClient::new(mqttoptions.clone(), 10);
-        client
-            .subscribe(mqtt_topic.clone(), QoS::AtMostOnce)
-            .await?;
-        let (tx, rx) = channel::bounded(CHANNEL_BUFFER_SIZE);
-        let should_exit = Arc::new(AtomicBool::default());
-        let mqtt_jh = spawn(mqtt_loop(tx, rx.clone(), eventloop, should_exit.clone()));
-        let fluvio_jh = spawn(fluvio_loop(rx, producer, formatter, should_exit));
 
-        mqtt_jh.await?;
-        fluvio_jh.await
+        loop {
+            let producer = opts.common.create_producer("mqtt").await?;
+            info!("Connected to Fluvio");
+            let formatter = formatter::from_output_type(&opts.payload_output_type);
+            let (client, eventloop) = AsyncClient::new(mqttoptions.clone(), 10);
+            client
+                .subscribe(mqtt_topic.clone(), QoS::AtMostOnce)
+                .await?;
+            let (tx, rx) = channel::bounded(CHANNEL_BUFFER_SIZE);
+            let should_exit = Arc::new(AtomicBool::default());
+            let mqtt_jh = spawn(mqtt_loop(tx, rx.clone(), eventloop, should_exit.clone()));
+            let fluvio_jh = spawn(fluvio_loop(rx, producer, formatter, should_exit));
+            let mqtt_result = mqtt_jh.await;
+            let fluvio_result = fluvio_jh.await;
+            info!("loops exited with status mqtt: {mqtt_result:?} fluvio: {fluvio_result:?}");
+            info!("reconnecting after 5 seconds");
+            fluvio_future::timer::sleep(Duration::from_secs(5)).await;
+        }
     })
 }
 
