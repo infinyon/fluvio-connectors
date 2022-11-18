@@ -222,7 +222,7 @@ consumer:
   partition: 0
         "#;
 
-        let config: ConnectorConfig = serde_yaml::from_str(&contents).unwrap();
+        let config: ConnectorConfig = serde_yaml::from_str(contents).unwrap();
         let args = build_args(&config).unwrap().join(" ");
         println!("{args:?}");
         println!("{config:#?}");
