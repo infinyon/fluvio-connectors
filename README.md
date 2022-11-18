@@ -25,8 +25,8 @@
 
 | Connector          | Release | Type | Protocols/Description      |
 |:-------------------|:-------:|:-----|:---------------------------|
-| [sources/http]     |  0.4.0  | Rust | HTTP Polling 1.0, 1.1, 2.0 |
-| [sources/mqtt]     |  0.5.0  | Rust | MQTT V4, V5                |
+| [sources/http]     |  0.4.1  | Rust | HTTP Polling 1.0, 1.1, 2.0 |
+| [sources/mqtt]     |  0.5.1  | Rust | MQTT V4, V5                |
 | [sources/postgres] |  0.3.0  | Rust | Postgres CDC               |
 | [sources/syslog]   |  0.2.0  | Rust | Syslog                     |
 
@@ -47,8 +47,8 @@
 | [sinks/postgres] |  0.3.0  | Rust | Postgres CDC               |
 | [sinks/slack]    |  0.3.0  | Rust | Sends messages to slack    |
 | [sinks/dynamodb] |  0.3.0  | Rust | Sends messages to dynamodb |
-| [sinks/kafka]    |  0.3.0  | Rust | Sends messages to dynamodb |
-| [sinks/sql]      |  0.5.0  | Rust | Postgres/SQLite            |
+| [sinks/kafka]    |  0.3.1  | Rust | Sends messages to dynamodb |
+| [sinks/sql]      |  0.1.0  | Rust | Postgres/SQLite            |
 
 [sinks/postgres]: https://github.com/infinyon/fluvio-connectors/tree/main/rust-connectors/sinks/postgres
 [sinks/slack]: https://github.com/infinyon/fluvio-connectors/tree/main/rust-connectors/sinks/slack
