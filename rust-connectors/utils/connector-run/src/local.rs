@@ -50,7 +50,9 @@ impl LocalOpt {
         for arg in &env_args {
             command = command.arg("--env").arg(arg);
         }
-        let mut child = command.arg(image).args(args).spawn()?;
+        command = command.arg(image).args(args);
+        println!("Spawning with command: {command:?}");
+        let mut child = command.spawn()?;
 
         child.wait().expect("failed while waiting for child");
 
