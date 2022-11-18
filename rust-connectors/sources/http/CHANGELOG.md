@@ -1,4 +1,7 @@
 # Connector Change Log
+## http Version 0.4.1 - 2022-11-18
+* Performance improvements.
+
 ## http Version 0.3.1 - UNRELEASED
 * Added support to smartmodule-parameters and smartmodule without explicit type. ([PR #287](https://github.com/infinyon/fluvio-connectors/pull/287)
 

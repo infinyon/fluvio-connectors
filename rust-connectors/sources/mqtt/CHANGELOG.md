@@ -1,5 +1,8 @@
 # Connector Change Log
 
+## mqtt Version 0.5.1 - 2022-11-18
+* Performance improvements.
+
 ## mqtt Version 0.4.0 - UNRELEASED
 * feat(mqtt): added `json` payload output type. ([PR #342](https://github.com/infinyon/fluvio-connectors/pull/342)
 
