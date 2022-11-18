@@ -8,6 +8,7 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use std::time::Duration;
 
+use fluvio_future::tracing::debug;
 use fluvio_smartengine::transformation::TransformationConfig;
 use serde::{Deserialize, Serialize};
 
@@ -89,7 +90,38 @@ impl ConnectorConfig {
                 producer.batch_size = Some(batch_size);
             }
         }
+        debug!("Using connector config {connector_config:#?}");
         Ok(connector_config)
+    }
+
+    pub fn consumer_parameters(&self) -> Vec<String> {
+        let mut params = Vec::new();
+        if let Some(consumer) = self.consumer.as_ref() {
+            if let Some(partition) = consumer.partition {
+                params.push("--consumer-partition".to_string());
+                params.push(format!("{}", partition));
+            }
+        }
+        params
+    }
+    pub fn producer_parameters(&self) -> Vec<String> {
+        let mut params = Vec::new();
+        if let Some(producer) = self.producer.as_ref() {
+            if let Some(linger) = producer.linger {
+                params.push("--producer-linger".to_string());
+
+                params.push(format!("{}ms", linger.as_millis()));
+            }
+            if let Some(compression) = producer.compression {
+                params.push("--producer-compression".to_string());
+                params.push(format!("{}", compression.to_string()));
+            }
+            if let Some(batch_size_string) = producer.batch_size_string.as_ref() {
+                params.push("--producer-batch-size".to_string());
+                params.push(batch_size_string.to_string());
+            }
+        }
+        params
     }
 }
 

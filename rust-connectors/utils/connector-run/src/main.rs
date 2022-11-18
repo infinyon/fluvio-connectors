@@ -173,6 +173,8 @@ fn build_args(config: &ConnectorConfig) -> anyhow::Result<Vec<String>> {
                 args
             }
         })
+        .chain(config.producer_parameters().into_iter())
+        .chain(config.consumer_parameters().into_iter())
         .collect::<Vec<_>>();
 
     // Prefixing the args with a "--" passed to the container is needed for an unclear reason.
@@ -190,4 +192,46 @@ fn build_args(config: &ConnectorConfig) -> anyhow::Result<Vec<String>> {
     }
 
     Ok(args)
+}
+
+#[cfg(test)]
+mod tests {
+    use fluvio_connectors_common::config::ConnectorConfig;
+
+    use crate::build_args;
+
+    #[test]
+    fn test_build_args() {
+        let contents = r#"
+version: latest
+name: connector_name
+type: mqtt-source
+topic: fluvio_topic
+direction: source
+create-topic: true
+parameters:
+  mqtt_topic: "dummy_mqtt_topic"
+  payload_output_type: json
+secrets:
+  MQTT_URL: mqtt://dummy_url
+producer:
+  batch-size: '10mb'
+  linger: 1s
+  compression: gzip
+consumer:
+  partition: 0
+        "#;
+
+        let config: ConnectorConfig = serde_yaml::from_str(&contents).unwrap();
+        let args = build_args(&config).unwrap().join(" ");
+        println!("{args:?}");
+        println!("{config:#?}");
+        assert!(args.contains("--fluvio-topic=fluvio_topic"));
+        assert!(args.contains("--mqtt-topic=dummy_mqtt_topic"));
+        assert!(args.contains("--payload-output-type=json"));
+        assert!(args.contains("--producer-linger 1000ms"));
+        assert!(args.contains("--producer-batch-size 10mb"));
+        assert!(args.contains("--producer-compression gzip"));
+        assert!(args.contains("--consumer-partition 0"));
+    }
 }
