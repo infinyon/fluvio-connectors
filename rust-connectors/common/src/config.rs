@@ -114,7 +114,7 @@ impl ConnectorConfig {
             }
             if let Some(compression) = producer.compression {
                 params.push("--producer-compression".to_string());
-                params.push(format!("{}", compression.to_string()));
+                params.push(compression.to_string());
             }
             if let Some(batch_size_string) = producer.batch_size_string.as_ref() {
                 params.push("--producer-batch-size".to_string());
