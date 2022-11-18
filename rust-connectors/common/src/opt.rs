@@ -44,7 +44,7 @@ pub struct CommonConnectorOpt {
 #[derive(Parser, Debug, JsonSchema, Clone, Default)]
 pub struct CommonConsumerOpt {
     #[clap(long, default_value = "0")]
-    pub consumer_partition: i32,
+    pub consumer_partition: u32,
 }
 
 #[derive(Parser, Debug, JsonSchema, Clone, Default)]
