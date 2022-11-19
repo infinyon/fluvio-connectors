@@ -7,6 +7,7 @@ pub mod fluvio {
 
 pub mod config;
 pub(crate) mod error;
+#[cfg(any(feature = "source", feature = "sink"))]
 pub mod metrics;
 #[cfg(not(target_os = "windows"))]
 pub mod monitoring;
