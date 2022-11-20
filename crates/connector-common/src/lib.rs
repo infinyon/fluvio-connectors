@@ -7,11 +7,9 @@ pub mod fluvio {
 
 pub mod config;
 pub(crate) mod error;
-#[cfg(any(feature = "source", feature = "sink"))]
+
 pub mod metrics;
-#[cfg(all(any(feature = "source", feature = "sink"), not(target_os = "windows")))]
 pub mod monitoring;
-#[cfg(any(feature = "source", feature = "sink"))]
 pub mod opt;
 
 pub fn git_hash_version() -> &'static str {

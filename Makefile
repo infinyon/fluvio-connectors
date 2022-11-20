@@ -1,9 +1,10 @@
 # TARGET?=x86_64-unknown-linux-musl
 # Build docker image for Fluvio.
 ARCH=$(shell rustc --print cfg | grep target_arch | cut -d '=' -f 2 | sed 's/"//g')
-ifndef TARGET
-TARGET=${ARCH}-unknown-linux-musl
-endif
+
+#ifndef TARGET
+#TARGET=${ARCH}-unknown-linux-musl
+#endif
 
 RUSTV?=stable
 BUILD_PROFILE=$(if $(RELEASE),release,debug)
@@ -16,7 +17,7 @@ TEST_CONNECTOR_BIN=$(if $(TARGET),./target/$(TARGET)/$(BUILD_PROFILE)/test-conne
 SYSLOG_BIN=$(if $(TARGET),./target/$(TARGET)/$(BUILD_PROFILE)/fluvio-syslog,./target/$(BUILD_PROFILE)/fluvio-syslog)
 
 # These defaults are set for development purposes only. CI will override
-CONNECTOR_NAME?=test-connector
+CONNECTOR_NAME?=connector-source-test
 CONNECTOR_VERSION=$(shell cargo metadata --format-version 1 | jq '.workspace_members[]' | sed 's/"//g' | awk '{if($$1 == "$(CONNECTOR_NAME)") print $$2}')
 GIT_COMMIT=$(shell git rev-parse HEAD)
 DOCKER_TAG=$(CONNECTOR_VERSION)-$(GIT_COMMIT)
@@ -29,7 +30,7 @@ smoke-test:
 	$(CARGO_BUILDER) run --bin fluvio-connector start ./test-connector/config.yaml
 
 build:
-	$(CARGO_BUILDER) build $(TARGET_FLAG) $(RELEASE_FLAG) --bin $(CONNECTOR_NAME)
+	$(CARGO_BUILDER) build $(TARGET_FLAG) $(RELEASE_FLAG) --bin $(CONNECTOR_NAME) -p $(CONNECTOR_NAME)
 
 ifeq (${CI},true)
 # In CI, we expect all artifacts to already be built and loaded for the script

@@ -1,5 +1,5 @@
 [package]
-name = "connector-test"
+name = "connector-source-test"
 version = "0.1.3"
 edition = "2018"
 
@@ -15,4 +15,4 @@ anyhow = "1.0.56"
 humantime = "2.1.0"
 
 fluvio-dataplane-protocol = "0.11"
-connector-common = { path = "../connector-common" }
+connector-common = { path = "../connector-common", features = ["source"]}
