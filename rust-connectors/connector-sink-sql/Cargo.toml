@@ -1,5 +1,5 @@
 [package]
-name = "sql-sink"
+name = "connector-sink-sql"
 version = "0.1.1"
 edition = "2021"
 publish = false

@@ -1,5 +1,5 @@
 [package]
-name = "test-connector"
+name = "connector-test"
 version = "0.1.3"
 edition = "2018"
 

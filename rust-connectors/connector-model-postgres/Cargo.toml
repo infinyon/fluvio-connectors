@@ -1,5 +1,5 @@
 [package]
-name = "fluvio-model-postgres"
+name = "connector-model-postgres"
 version = "0.1.0"
 edition = "2021"
 

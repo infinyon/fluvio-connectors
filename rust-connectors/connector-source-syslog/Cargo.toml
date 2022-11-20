@@ -1,5 +1,5 @@
 [package]
-name = "fluvio-syslog"
+name = "connector-source-syslog"
 version = "0.2.1"
 edition = "2021"
 

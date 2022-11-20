@@ -1,12 +1,12 @@
 [package]
-name = "slack-sink"
+name = "connector-source-kafka"
 version = "0.3.1"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-fluvio-connectors-common = { path = "../../common", features = ["sink"]}
+fluvio-connectors-common = { path = "../../common", features = ["source"] }
 anyhow = "1.0.56"
 schemars = { version = "0.8", features = ["url"] }
 clap = { version = "3.1", features = ["std", "derive", "env"], default-features = false }
@@ -14,6 +14,7 @@ tokio = { version = "1", features = ["full"] }
 serde_json = "1"
 
 serde = "1"
-reqwest = { version = "0.11", features = ["json"] }
 tokio-stream = "0.1"
 fluvio-future = { version = "0.4.1", features = ["subscriber"] }
+
+kafka = "0.9.0"

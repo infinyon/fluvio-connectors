@@ -1,5 +1,5 @@
 [package]
-name = "mqtt-source"
+name = "connector-source-mqtt"
 version = "0.5.2"
 edition = "2021"
 
