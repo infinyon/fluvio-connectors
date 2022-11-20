@@ -6,7 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-fluvio-connectors-common = { path = "../../common", features = ["sink"]}
 anyhow = "1.0.56"
 schemars = { version = "0.8", features = ["url"] }
 clap = { version = "3.1", features = ["std", "derive", "env"], default-features = false }
@@ -16,6 +15,7 @@ serde_json = "1"
 serde = "1"
 tokio-stream = "0.1"
 fluvio-future = { version = "0.4.1", features = ["subscriber"] }
+connector-common = { path = "../connector-common", features = ["sink"] }
 
 # There is some difference between rev v0.26.0 and the 0.26.0 on crates.io.
 # Changing it to use the crates.io version breaks the musl cross compile.

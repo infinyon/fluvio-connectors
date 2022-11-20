@@ -7,12 +7,12 @@ edition = "2018"
 
 [dependencies]
 async-std = { version = "1.8.0", default-features = false, features = ["attributes"] }
-fluvio-connectors-common = { path = "../../common" }
-fluvio-dataplane-protocol = "0.11"
-
 clap = { version = "3.1", features = ["std", "derive"], default-features = false }
 schemars = "0.8.6"
 serde_json = "1.0.68"
 serde = {version = "1.0.130", features = ["derive"] }
 anyhow = "1.0.56"
 humantime = "2.1.0"
+
+fluvio-dataplane-protocol = "0.11"
+connector-common = { path = "../connector-common" }

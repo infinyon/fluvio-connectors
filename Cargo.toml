@@ -8,15 +8,15 @@ members = [
     "rust-connectors/connector-source-kafka",
     "rust-connectors/connector-sink-postgres",
     "rust-connectors/connector-sink-slack",
-    "rust-connectors/connector-sinks-dynamodb",
+    "rust-connectors/connector-sink-dynamodb",
     "rust-connectors/connector-sink-kafka",
     "rust-connectors/connector-sink-sql",
     "rust-connectors/connector-model-postgres",
-    "rust-connectors/conector-model-sql",
+    "rust-connectors/connector-model-sql",
     "rust-connectors/http-json-mock",
     "rust-connectors/connector-run",
     "rust-connectors/connector-test",
-    "rust-connectors/smrtmodules/fluvio-smartstream-map/",
+    "smartmodules/fluvio-smartstream-map/",
     "smartmodules/json-sql",
     "smartmodules/jolt",
     "examples/github-stars/github-stars-smartmodule-map/",
@@ -26,14 +26,14 @@ resolver = "2"
 
 [patch.crates-io]
 fluvio-smartmodule = { git = "https://github.com/infinyon/fluvio", branch = "master" }
-fluvio             = { git = "https://github.com/infinyon/fluvio", branch = "master" }
+fluvio = { git = "https://github.com/infinyon/fluvio", branch = "master" }
 fluvio-smartengine = { git = "https://github.com/infinyon/fluvio", branch = "master" }
-fluvio-protocol    = { git = "https://github.com/infinyon/fluvio", branch = "master" }
-fluvio-spu-schema  = { git = "https://github.com/infinyon/fluvio", branch = "master" }
-fluvio-sc-schema   = { git = "https://github.com/infinyon/fluvio", branch = "master"}
+fluvio-protocol = { git = "https://github.com/infinyon/fluvio", branch = "master" }
+fluvio-spu-schema = { git = "https://github.com/infinyon/fluvio", branch = "master" }
+fluvio-sc-schema = { git = "https://github.com/infinyon/fluvio", branch = "master" }
 
-sasl2-sys          = { git = "https://github.com/infinyon/rust-sasl/", branch = "fix-cross-compiling" }
-krb5-src           = { git = "https://github.com/infinyon/rust-krb5-src", branch = "fix-cross-compiling" }
+sasl2-sys = { git = "https://github.com/infinyon/rust-sasl/", branch = "fix-cross-compiling" }
+krb5-src = { git = "https://github.com/infinyon/rust-krb5-src", branch = "fix-cross-compiling" }
 
 [profile.release-lto]
 inherits = "release"

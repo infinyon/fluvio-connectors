@@ -9,12 +9,16 @@ tokio = { version = "1", features = ["full"] }
 tokio-stream = { version = "0.1" }
 fluvio = { version = "0.15" }
 fluvio-future = { version = "0.4", features = ["subscriber"] }
-fluvio-connectors-common = { path = "../../common", features = ["sink"]}
-fluvio-model-postgres = { path = "../../models/fluvio-model-postgres" }
+
+
 bytes = "1"
 eyre = "0.6"
 thiserror = "1"
-clap = { version = "3.1", features = ["std", "derive", "env"], default-features = false }
+clap = { version = "3.1", features = [
+    "std",
+    "derive",
+    "env",
+], default-features = false }
 dotenv = "0.15"
 url = "2.2"
 serde = { version = "1", features = ["derive"] }
@@ -28,7 +32,13 @@ postgres-types = "0.2.2"
 tokio-postgres = { git = "https://github.com/MaterializeInc/rust-postgres", branch = "mz-0.7.2" }
 postgres-protocol = { git = "https://github.com/MaterializeInc/rust-postgres", branch = "mz-0.7.2" }
 
+connector-common = { path = "../connector-common", features = ["sink"] }
+connector-model-postgres = { path = "../connector-model-postgres" }
+
 [dev-dependencies]
-postgres-source = { path = "../../sources/postgres" }
-fluvio-future = { version = "0.4.1", features = ["fixture"] }
 uuid = { version = "1.1", features = ["serde", "v4"] }
+
+fluvio-future = { version = "0.4.1", features = ["fixture"] }
+connector-source-postgres = { path = "../connector-source-postgres" }
+
+

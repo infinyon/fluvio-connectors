@@ -7,17 +7,8 @@ license = "Apache-2.0"
 authors = ["Fluvio Contributors <team@fluvio.io>"]
 
 [dependencies]
-fluvio-model-sql = {path= "../../models/fluvio-model-sql" }
-fluvio-connectors-common = { path = "../../common", features = ["sink"]}
-fluvio-future = { version = "0.4.1" , features = ["subscriber"]}
-fluvio-smartengine = { version = "0.5" }
-fluvio-smartmodule = "0.3"
-fluvio-spu-schema = { version = "0.11.0", default-features = false }
-fluvio = { version = "0.15" }
-
 serde = { version = "1", features = ["derive"], default-features = false}
 serde_json = { version = "1", default-features = false }
-
 clap = { version = "3.1", features = ["std", "derive", "env"], default-features = false }
 schemars = { version = "0.8", features = ["url"], default-features = false  }
 itertools = { version = "0.10", default-features = false }
@@ -32,6 +23,17 @@ anyhow = { version = "1.0", default-features = false }
 isahc = { version = "1.7", default-features = false }
 tar = { version = "0.4", default-features = false }
 flate2 = { version = "1.0", default-features = false, features = ["rust_backend"] }
+
+fluvio-future = { version = "0.4.1" , features = ["subscriber"]}
+fluvio-smartengine = { version = "0.5" }
+fluvio-smartmodule = "0.3"
+fluvio-spu-schema = { version = "0.11.0", default-features = false }
+fluvio = { version = "0.15" }
+
+connector-model-sql = {path= "../connector-model-sql" }
+connector-common = { path = "../connector-common", features = ["sink"]}
+
+
 
 [dev-dependencies]
 httpmock = { version = "0.6", default-features = false }

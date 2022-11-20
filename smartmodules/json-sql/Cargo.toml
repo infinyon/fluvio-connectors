@@ -11,8 +11,8 @@ publish = false
 crate-type = ['cdylib', 'rlib']
 
 [dependencies]
-fluvio-model-sql = { path = "../../rust-connectors/models/fluvio-model-sql" }
 fluvio-smartmodule = { version = "0.3" }
+fluvio-model-sql = { path = "../../rust-connectors/connector-model-sql" }
 
 once_cell = { version = "1.13", default-features = false }
 serde = { version = "1", default-features = false, features = ["derive"] }
