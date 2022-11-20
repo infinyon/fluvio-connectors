@@ -1,4 +1,5 @@
 use connector_common::opt::CommonConnectorOpt;
+
 use fluvio::metadata::topic::TopicSpec;
 use tokio::task::JoinHandle;
 use tokio::time::{sleep, Duration};
@@ -314,7 +315,7 @@ async fn cleanup(
 }
 
 async fn start_pg_sink(fluvio_topic: String) -> eyre::Result<(JoinHandle<()>, Client)> {
-    use postgres_sink::{PgConnector, PgConnectorOpt};
+    use connector_sink_postgres::{PgConnector, PgConnectorOpt};
     let postgres_sink_url = std::env::var("FLUVIO_PG_SINK_DATABASE_URL")
         .expect("No FLUVIO_PG_DATABASE_URL environment variable found");
 
@@ -344,7 +345,8 @@ async fn start_pg_sink(fluvio_topic: String) -> eyre::Result<(JoinHandle<()>, Cl
 }
 
 async fn start_pg_source(fluvio_topic: String) -> eyre::Result<(JoinHandle<()>, Client)> {
-    use postgres_source::{PgConnector, PgConnectorOpt};
+    use connector_source_postgres::{PgConnector, PgConnectorOpt};
+
     let postgres_source_url = std::env::var("FLUVIO_PG_SOURCE_DATABASE_URL")
         .expect("No FLUVIO_PG_SOURCE_DATABASE_URL environment variable found");
     let (pg_source_client, conn) = postgres_source_url
