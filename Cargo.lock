@@ -1276,7 +1276,7 @@ dependencies = [
 
 [[package]]
 name = "connector-source-mqtt"
-version = "0.5.2"
+version = "0.0.0"
 dependencies = [
  "anyhow",
  "async-global-executor",

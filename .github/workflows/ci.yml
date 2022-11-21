@@ -52,7 +52,7 @@ jobs:
         run: make check
       - name: Cargo fmt
         if: ${{ matrix.check == 'fmt' }}
-        run: check-fmt
+        run: make check-fmt
       - name: Cargo clippy
         if: ${{ matrix.check == 'clippy' }}
         run: make check-clippy
