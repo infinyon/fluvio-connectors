@@ -40,7 +40,7 @@ function main() {
   # copy connector to temp
   cp "${connector_bin}" "${tmp_dir}/${connector_name}"
   chmod +x "${tmp_dir}/${connector_name}"
-  cp "${PROGDIR}/fluvio.Dockerfile" "${tmp_dir}/Dockerfile"
+  cp "${PROGDIR}/Dockerfile" "${tmp_dir}/Dockerfile"
 
   # We need to make sure we always know what dir we are in
   pushd "$BUILD_ROOT"
