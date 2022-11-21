@@ -1,30 +1,46 @@
 #!/usr/bin/env bash
 set -ex
 
+
+readonly PROGDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
 # The target platform - Ex: x86_64-unknown-linux-musl
-readonly TARGET="${TARGET:?Set TARGET platform to build}"
+# readonly TARGET="${TARGET:?Set TARGET platform to build}"
 # The tag to build this Docker image with - Ex: 0.7.4-abcdef (where abcdef is a git commit)
-readonly DOCKER_TAG="${DOCKER_TAG:-}"
+#readonly DOCKER_TAG="${DOCKER_TAG:-}"
 # The name of the connector - Ex: test-connector
-readonly CONNECTOR_NAME="${CONNECTOR_NAME:-test-connector}"
+#readonly CONNECTOR_NAME="${CONNECTOR_NAME:-test-connector}"
 # Default image name structure
-readonly IMAGE_NAME="infinyon/fluvio-connect-$CONNECTOR_NAME"
+#readonly IMAGE_NAME="infinyon/fluvio-connect-$CONNECTOR_NAME"
 
 # Creates a staging Docker build directory
-readonly BUILD_ROOT="$(realpath "$(dirname "${BASH_SOURCE[0]}")"/../../container-build)"
+# readonly BUILD_ROOT="$(realpath "$(dirname "${BASH_SOURCE[0]}")"/../../container-build)"
 # https://stackoverflow.com/a/31397073
-readonly WORK_DIR="$(mktemp -d "${BUILD_ROOT:-/tmp/}/tmp.XXXXXXXXX")"
+# readonly WORK_DIR="$(mktemp -d "${BUILD_ROOT:-/tmp/}/tmp.XXXXXXXXX")"
 
 # Default path to Dockerfile (for `docker build`)
-readonly DOCKERFILE_PATH="$(realpath "${DOCKERFILE_PATH:-$BUILD_ROOT/dockerfiles/default/Dockerfile}")"
+# readonly DOCKERFILE_PATH="$(realpath "${DOCKERFILE_PATH:-$BUILD_ROOT/dockerfiles/default/Dockerfile}")"
 
-# check if tmp dir was created
-if [[ ! "$WORK_DIR" || ! -d "$WORK_DIR" ]]; then
-  echo "Could not create temp dir"
-  exit 1
-fi
 
 function main() {
+
+  local -r connector_name=$1; shift
+  local -r connector_bin=$1; shift
+  local -r target=$1; shift
+  local -r image_name=$1; shift
+  local -r K8=$1
+  local -r tmp_dir=$(mktemp -d -t fluvio-docker-image-XXXXXX)
+  local build_args
+
+  if [ "$K8" = "minikube" ]; then
+    echo "Setting Minikube build context"
+    eval $(minikube -p minikube docker-env --shell=bash)
+  fi
+
+  # copy connector to temp
+  cp "${connector_bin}" "${tmp_dir}/${connector_name}"
+  chmod +x "${tmp_dir}/${connector_name}"
+  cp "${PROGDIR}/fluvio.Dockerfile" "${tmp_dir}/Dockerfile"
 
   # We need to make sure we always know what dir we are in
   pushd "$BUILD_ROOT"

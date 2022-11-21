@@ -46,22 +46,18 @@ jobs:
           key: ${{ matrix.rust-target }}-${{ matrix.check }}
       - name: Cargo test
         if: ${{ matrix.check == 'test' }}
-        run: |
-          cargo test -- --skip postgres_
+        run: make unit-tests
       - name: Cargo check
         if: ${{ matrix.check == 'check' }}
-        run: |
-          cargo check --all-targets
-
+        run: make check
       - name: Cargo fmt
         if: ${{ matrix.check == 'fmt' }}
-        run: cargo fmt -- --check
-
+        run: check-fmt
       - name: Cargo clippy
         if: ${{ matrix.check == 'clippy' }}
-        run: cargo clippy --all-targets -- -D warnings
+        run: make check-clippy
 
-  build_connector_bins:
+  build_connectors:
     name: Build binary ${{ matrix.connector-name }} for ${{ matrix.rust-target }} on (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
@@ -71,17 +67,17 @@ jobs:
         rust-target:
           - x86_64-unknown-linux-musl
           - aarch64-unknown-linux-musl
-        connector-name:
-          - test-connector
-          - mqtt-source
-          - http-source
-          - postgres-source
-          - postgres-sink
-          - slack-sink
-          - dynamodb-sink
-          - kafka-source
-          - kafka-sink
-          - sql-sink
+        connector:
+          - connector-source-test
+          - connector-source-mqtt
+          - connector-source-http
+          - connector-source-postgres-source
+          - connector-sink-postgres
+          - connector-sink-slack
+          - connector-sink-dynamodb
+          - connector-source-kafka
+          - connector-sink-kafka
+          - connector-sink-sql
         rust: [stable]
     env:
       RUST_BACKTRACE: full
@@ -111,61 +107,19 @@ jobs:
           version: "13.0"
       - name: Install zig
         run: ./actions/zig-install.sh ${{ matrix.os }}
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
         with:
-          key: ${{ matrix.os }}-${{ matrix.rust-target }}-${{ matrix.connector-name }}
+          key: ${{ matrix.os }}-${{ matrix.rust-target }}-${{ matrix.connector }}
       - name: Build
         env:
-          CONNECTOR_NAME: ${{ matrix.connector-name }}
+          CONNECTOR_NAME: ${{ matrix.connector }}
         run: make build
-
-      # Upload artifacts
-      - name: Upload artifact - ${{ matrix.connector-name }}
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ matrix.connector-name }}-${{ matrix.rust-target }}
-          path: ${{ env.RUST_BIN_DIR }}/${{ matrix.connector-name }}
-          retention-days: 1
-
-  build_containers:
-    name: Build image ${{ matrix.connector-name }} for ${{ matrix.rust-target }}
-    needs: [check, build_connector_bins]
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: true
-      matrix:
-        os: [ubuntu-latest]
-        rust: [stable]
-        rust-target:
-          - x86_64-unknown-linux-musl
-          - aarch64-unknown-linux-musl
-        connector-name:
-          - test-connector
-          - mqtt-source
-          - http-source
-          - postgres-source
-          - postgres-sink
-          - slack-sink
-          - dynamodb-sink
-          - kafka-source
-          - kafka-sink
-          - sql-sink
-    env:
-      RUSTV: ${{ matrix.rust }}
-      TARGET: ${{ matrix.rust-target }}
-    steps:
-      - uses: actions/checkout@v3
-
-      # Building w/ QEMU for the arm64 support
       - name: Set up QEMU
         id: qemu
         uses: docker/setup-qemu-action@v2
         with:
           image: tonistiigi/binfmt:latest
           platforms: all
-      #- name: Available platforms
-      #  run: echo ${{ steps.qemu.outputs.platforms }}
-
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v2
@@ -177,48 +131,36 @@ jobs:
           echo "Status:    ${{ steps.buildx.outputs.status }}"
           echo "Flags:     ${{ steps.buildx.outputs.flags }}"
           echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
+          "
 
-      # Download artifacts from build
-      - name: Download artifact - ${{ matrix.connector-name }} - ${{ matrix.rust-target }}
-        uses: actions/download-artifact@v3
-        with:
-          name: ${{ matrix.connector-name }}-${{ matrix.rust-target }}
-          # This is the directory the Makefile expects artifacts to live in
-          path: container-build
+      - name: copy binary
+        run:
+          mkdir -p container-build
+          cp ${{ env.RUST_BIN_DIR }}/${{ matrix.connector-name }} container-build
+          ls -la container-build
 
       - name: Print container-build dir
         run: |
           ls container-build;
-          chmod +x ./container-build/${{ matrix.connector-name }}
-          ./container-build/${{ matrix.connector-name }} -h || true
+          chmod +x ./container-build/${{ matrix.connector }}
+          ./container-build/${{ matrix.connector }} -h || true
 
-      # The build script will export the resulting image to
-      # /tmp/infinyon-fluvio-connector-${{ matrix.connector-name }}-${{ matrix.rust-target }}.tar
       - name: Build containers
-        if: matrix.connector-name != 'test-connector'
         env:
           TARGET: ${{ matrix.rust-target }}
-          CONNECTOR_NAME: ${{ matrix.connector-name }}
+          CONNECTOR_NAME: ${{ matrix.connector }}
           COMMIT_HASH: ${{ github.sha }}
-          # IMAGE_NAME: ${{ matrix.image-name }}
         run: make official-containers
 
-      - name: Build Test-connector
-        if: matrix.connector-name == 'test-connector'
-        env:
-          TARGET: ${{ matrix.rust-target }}
-          CONNECTOR_NAME: ${{ matrix.connector-name }}
-          COMMIT_HASH: ${{ github.sha }}
-          DOCKERFILE_PATH: ./container-build/dockerfiles/test-connector/Dockerfile
-          # IMAGE_NAME: ${{ matrix.image-name }}
-        run: make official-containers
+
       - name: Upload tarball as artifact
         uses: actions/upload-artifact@v3
         with:
-          name: infinyon-fluvio-connector-${{ matrix.connector-name }}-${{ matrix.rust-target }}.tar
-          path: /tmp/infinyon-fluvio-connector-${{ matrix.connector-name }}-${{ matrix.rust-target }}.tar
+          name: infinyon-fluvio-connector-${{ matrix.connector }}-${{ matrix.rust-target }}.tar
+          path: /tmp/infinyon-fluvio-connector-${{ matrix.connector }}-${{ matrix.rust-target }}.tar
           retention-days: 1
 
+  
   integration_tests:
     name: Integration testing on - ${{ matrix.os }} for ${{ matrix.connector-name }} connector.
     runs-on: ${{ matrix.os }}
@@ -482,21 +424,7 @@ jobs:
         run: |
           make -C ./examples/github-stars test
 
-  check-windows:
-    runs-on: windows-latest
-    if: false
-    steps:
-      - uses: actions/checkout@v3
-      - name: Install Rust stable
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          components: clippy
-          target: x86_64-pc-windows-msvc
-      - name: Cargo windows with no-default-features
-        timeout-minutes: 10
-        run: |
-          cargo check -p fluvio-connectors-common --no-default-features
+
 
   ## Job that follows the success of all required jobs in this workflow.
   ## Used by Bors to detect that all required jobs have completed successfully

@@ -1,29 +1,31 @@
-use async_std::channel::{self, Receiver, Sender};
-use async_std::task::spawn;
-use connector_common::fluvio::{RecordKey, TopicProducer};
-use connector_common::{common_initialize, git_hash_version};
-
 mod error;
 mod formatter;
 mod opt;
 
+use std::convert::TryFrom;
+use std::sync::atomic::AtomicBool;
+use std::sync::Arc;
+use std::time::{Duration, Instant};
+
+use async_std::channel::{self, Receiver, Sender};
+use async_std::task::spawn;
+use clap::Parser;
 use error::MqttConnectorError;
 use formatter::Formatter;
 use rumqttc::EventLoop;
-use tracing::log::warn;
-
-use crate::opt::{ConnectorDirection, MqttOpts};
-use clap::Parser;
-use fluvio_future::tracing::{debug, error, info};
 use rumqttc::{v4::Packet, AsyncClient, Event, MqttOptions, QoS, Transport};
 use rustls::ClientConfig;
 use schemars::schema_for;
 use serde::Deserialize;
 use serde::Serialize;
-use std::convert::TryFrom;
-use std::sync::atomic::AtomicBool;
-use std::sync::Arc;
-use std::time::{Duration, Instant};
+
+use connector_common::fluvio::{RecordKey, TopicProducer};
+use connector_common::{common_initialize, git_hash_version};
+use fluvio_future::tracing::{debug, error, info};
+use tracing::warn;
+
+use crate::opt::{ConnectorDirection, MqttOpts};
+
 use url::Url;
 
 const CHANNEL_BUFFER_SIZE: usize = 10000;
