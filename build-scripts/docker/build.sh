@@ -47,7 +47,7 @@ function main() {
     local arch="--build-arg ARCH=arm64v8/"
   fi
 
-  local build_arg_connector_name="--build-arg CONNECTOR_NAME=${connector_name}"
+  local build_arg_connector_name="--build-arg CONNECTOR=${connector_name}"
 
   # We need to make sure we always know what dir we are in
   #pushd "$BUILD_ROOT"
@@ -61,7 +61,7 @@ function main() {
 
   pushd "${tmp_dir}"
 
-  docker build -t "$image_name:latest" -t "$image_name:$commit_hash" -t "$image_name:$commit_hash-$target" $arch $build_arg_connector_name .
+  docker build $arch $build_arg_connector_name -t "$image_name:latest" -t "$image_name:$commit_hash" -t "$image_name:$commit_hash-$target"  .
 
 
   # Tag the image with a commit hash if we provide it

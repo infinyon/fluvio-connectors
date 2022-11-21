@@ -1,5 +1,5 @@
-ARG ARCH=
-ARG CONNECTOR_NAME=
+ARG ARCH
+ARG CONNECTOR
 FROM ${ARCH}alpine:3.12
 # Update to latest when https://github.com/alpinelinux/docker-alpine/issues/185 is fixed.
 
@@ -10,7 +10,8 @@ FROM ${ARCH}alpine:3.12
 #        apk add --arch aarch64 --no-cache tini ;\
 #    fi
 
-ENV CONNECTOR_NAME=${CONNECTOR_NAME}
+ENV CONNECTOR_NAME=$CONNECTOR
+ENV TEST_CONNECTOR_NAME=mconnector
 
 # Copy the connector somewhere the image's $PATH
 COPY ${CONNECTOR_NAME} /usr/local/bin/${CONNECTOR_NAME}

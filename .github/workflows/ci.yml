@@ -70,14 +70,14 @@ jobs:
         connector:
           - connector-source-test
           - connector-source-mqtt
-          - connector-source-http
-          - connector-source-postgres-source
-          - connector-sink-postgres
-          - connector-sink-slack
-          - connector-sink-dynamodb
-          - connector-source-kafka
-          - connector-sink-kafka
-          - connector-sink-sql
+   #       - connector-source-http
+   #       - connector-source-postgres-source
+   #       - connector-sink-postgres
+   #       - connector-sink-slack
+   #       - connector-sink-dynamodb
+   #       - connector-source-kafka
+   #       - connector-sink-kafka
+   #       - connector-sink-sql
         rust: [stable]
     env:
       RUST_BACKTRACE: full
@@ -122,9 +122,11 @@ jobs:
           platforms: all
       - name: Set up Docker Buildx
         id: buildx
+        if: false
         uses: docker/setup-buildx-action@v2
 
       - name: Inspect builder
+        if: false
         run: |
           echo "Name:      ${{ steps.buildx.outputs.name }}"
           echo "Endpoint:  ${{ steps.buildx.outputs.endpoint }}"
@@ -134,18 +136,21 @@ jobs:
           "
 
       - name: copy binary
+        if: false
         run:
           mkdir -p container-build
           cp ${{ env.RUST_BIN_DIR }}/${{ matrix.connector-name }} container-build
           ls -la container-build
 
       - name: Print container-build dir
+        if: false
         run: |
           ls container-build;
           chmod +x ./container-build/${{ matrix.connector }}
           ./container-build/${{ matrix.connector }} -h || true
 
       - name: Build containers
+        if: false
         env:
           TARGET: ${{ matrix.rust-target }}
           CONNECTOR_NAME: ${{ matrix.connector }}
@@ -154,6 +159,7 @@ jobs:
 
 
       - name: Upload tarball as artifact
+        if: false
         uses: actions/upload-artifact@v3
         with:
           name: infinyon-fluvio-connector-${{ matrix.connector }}-${{ matrix.rust-target }}.tar
@@ -163,6 +169,7 @@ jobs:
   
   integration_tests:
     name: Integration testing on - ${{ matrix.os }} for ${{ matrix.connector-name }} connector.
+    if: false
     runs-on: ${{ matrix.os }}
     needs: [build_containers]
     strategy:
@@ -255,9 +262,10 @@ jobs:
 
   docker_push:
     name: Publish ${{ matrix.connector-name }} images to Docker Hub
+    if: false
     needs: [build_containers, integration_tests]
     runs-on: ${{ matrix.os }}
-    if: github.event_name == 'push' && github.ref == 'refs/heads/staging'
+#    if: github.event_name == 'push' && github.ref == 'refs/heads/staging'
     strategy:
       fail-fast: true
       matrix:
@@ -399,6 +407,7 @@ jobs:
 
   examples:
     runs-on: ubuntu-latest
+    if: false
     steps:
       - uses: AbsaOSS/k3d-action@v2.3.0
         name: "Create fluvio k3d Cluster"
@@ -428,12 +437,14 @@ jobs:
 
   ## Job that follows the success of all required jobs in this workflow.
   ## Used by Bors to detect that all required jobs have completed successfully
+  ## Disabled other jobs temporary
   done:
     name: Done
     if: github.event_name == 'push' && github.ref == 'refs/heads/staging'
     needs:
       - check
-      - docker_push
+      - build_connectors
+    #  - docker_push
     #     - postgres_sink_and_source_integration_tests
     #     - postgres_source_integration_tests
     runs-on: ubuntu-latest
