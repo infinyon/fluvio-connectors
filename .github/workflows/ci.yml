@@ -171,7 +171,7 @@ jobs:
     name: Integration testing on - ${{ matrix.os }} for ${{ matrix.connector-name }} connector.
     if: false
     runs-on: ${{ matrix.os }}
- #   needs: [build_containers]
+    needs: [build_connectors]
     strategy:
       fail-fast: false
       matrix:
@@ -263,7 +263,7 @@ jobs:
   docker_push:
     name: Publish ${{ matrix.connector-name }} images to Docker Hub
     if: false
-    needs: [build_containers, integration_tests]
+    needs: [build_connectors, integration_tests]
     runs-on: ${{ matrix.os }}
 #    if: github.event_name == 'push' && github.ref == 'refs/heads/staging'
     strategy:
