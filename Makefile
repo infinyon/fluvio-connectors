@@ -17,7 +17,6 @@ TEST_CONNECTOR_BIN=$(if $(TARGET),./target/$(TARGET)/$(BUILD_PROFILE)/test-conne
 SYSLOG_BIN=$(if $(TARGET),./target/$(TARGET)/$(BUILD_PROFILE)/fluvio-syslog,./target/$(BUILD_PROFILE)/fluvio-syslog)
 
 # These defaults are set for development purposes only. CI will override
-CONNECTOR_NAME?=connector-source-test
 CONNECTOR_VERSION=$(shell cargo metadata --format-version 1 | jq '.workspace_members[]' | sed 's/"//g' | awk '{if($$1 == "$(CONNECTOR_NAME)") print $$2}')
 GIT_COMMIT=$(shell git rev-parse HEAD)
 DOCKER_TAG=$(CONNECTOR_VERSION)-$(GIT_COMMIT)
@@ -31,6 +30,38 @@ smoke-test:
 
 build:
 	$(CARGO_BUILDER) build $(TARGET_FLAG) $(RELEASE_FLAG) --bin $(CONNECTOR_NAME) -p $(CONNECTOR_NAME)
+
+
+# build all connectors
+build-connector-sink-dynamodb:	build
+build-connector-sink-dynamodb:	CONNECTOR_NAME=connector-sink-dynamodb
+
+build-connector-sink-kafka:	build
+build-connector-sink-kafka:	CONNECTOR_NAME=connector-sink-kafka
+
+build-connector-sink-postgres:	build
+build-connector-sink-postgres:	CONNECTOR_NAME=connector-sink-postgres
+
+build-connector-sink-slack:	build
+build-connector-sink-slack:	CONNECTOR_NAME=connector-sink-slack
+
+build-connector-sink-sql:	build
+build-connector-sink-sql:	CONNECTOR_NAME=connector-sink-sql
+
+build-connector-source-http: build
+build-connector-source-http: CONNECTOR_NAME=connector-source-http
+
+build-connector-source-postgres: build
+build-connector-source-postgres: CONNECTOR_NAME=connector-source-postgres
+
+build-connector-source-syslog: build
+build-connector-source-syslog: CONNECTOR_NAME=connector-source-syslog
+
+build-connector-source-test: build
+build-connector-source-test: CONNECTOR_NAME=connector-source-test
+
+build-connectors: build-connector-sink-dynamodb build-connector-sink-kafka build-connector-sink-postgres build-connector-sink-slack build-connector-sink-sql build-connector-source-http build-connector-source-postgres build-connector-source-syslog build-connector-source-test
+
 
 ifeq (${CI},true)
 # In CI, we expect all artifacts to already be built and loaded for the script
