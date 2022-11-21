@@ -87,7 +87,7 @@ docker-image: IMAGE_NAME=$(shell cat crates/$(CONNECTOR_NAME)/IMAGE_NAME)
 docker-image: build
 	echo "Building connector $(CONNECTOR_BIN) on $(TARGET) image with tag: $(GIT_COMMIT) k8 type: $(K8_CLUSTER)"
 	echo "Building docker image: $(IMAGE_NAME):$(DOCKER_TAG)"
-	./build-scripts/docker/build-connector-image.sh $(CONNECTOR_NAME) $(CONNECTOR_BIN) $(TARGET) $(IMAGE_NAME)  $(K8_CLUSTER)
+	./build-scripts/docker/build.sh $(CONNECTOR_NAME) $(CONNECTOR_BIN) $(TARGET) $(IMAGE_NAME) $(GIT_COMMIT) $(K8_CLUSTER)
 
 
 official-containers: build
