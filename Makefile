@@ -83,7 +83,7 @@ docker-image: TARGET=x86_64-unknown-linux-musl
 endif
 endif
 # get image name
-docker-image: IMAGE_NAME=$(shell cat crates/$(CONNECTOR_NAME)/IMAGE_NAME)
+docker-image: IMAGE_NAME=infinyon/test
 docker-image: build
 	echo "Building connector $(CONNECTOR_BIN) on $(TARGET) image with tag: $(GIT_COMMIT) k8 type: $(K8_CLUSTER)"
 	echo "Building docker image: $(IMAGE_NAME):$(DOCKER_TAG)"
