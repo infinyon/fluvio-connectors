@@ -11,11 +11,26 @@ repository = "https://github.com/mygroup/myconnector"
 [direction]
 source = true
 
+[image]
+repo = "infinyon/fluvio-connect-mqtt"
+
 [[protocol]]
 name = "mqtt"
 
 
 [[params]]
-name = "endpoint"
-description = "end point"
-type = "URL"
+name = "mqtt_topic"
+description = "MQTT Topic"
+type = "string"
+
+[[params]]
+name = "payload_output_type"
+description = "Output type"
+default = "json"
+type = "string"
+
+[[params]]
+name = "timeout"
+description = "timeout"
+optional = true
+type = "u64"
