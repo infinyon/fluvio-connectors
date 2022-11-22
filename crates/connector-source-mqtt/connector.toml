@@ -1,0 +1,36 @@
+[package]
+name = "connector-source-mqtt"
+group = "infinyon"
+version = "0.5.2"
+apiVersion = "0.1.0"
+minFluvio = "0.10.0"
+description = "My protocol"
+license = "Apache-2.0"
+repository = "https://github.com/mygroup/myconnector"
+
+[direction]
+source = true
+
+[image]
+repo = "infinyon/fluvio-connect-mqtt"
+
+[[protocol]]
+name = "mqtt"
+
+
+[[params]]
+name = "mqtt_topic"
+description = "MQTT Topic"
+type = "string"
+
+[[params]]
+name = "payload_output_type"
+description = "Output type"
+default = "json"
+type = "string"
+
+[[params]]
+name = "timeout"
+description = "timeout"
+optional = true
+type = "u64"

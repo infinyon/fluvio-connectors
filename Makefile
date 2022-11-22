@@ -1,9 +1,10 @@
 # TARGET?=x86_64-unknown-linux-musl
 # Build docker image for Fluvio.
-ARCH=$(shell rustc --print cfg | grep target_arch | cut -d '=' -f 2 | sed 's/"//g')
-ifndef TARGET
-TARGET=${ARCH}-unknown-linux-musl
-endif
+ARCH=$(shell uname -m)
+
+#ifndef TARGET
+#TARGET=${ARCH}-unknown-linux-musl
+#endif
 
 RUSTV?=stable
 BUILD_PROFILE=$(if $(RELEASE),release,debug)
@@ -11,12 +12,8 @@ RELEASE_FLAG=$(if $(RELEASE),--release,)
 TARGET_FLAG=$(if $(TARGET),--target $(TARGET),)
 CARGO_BUILDER=$(if $(findstring arm,$(TARGET)),cross,cargo) # If TARGET contains the substring "arm"
 
-# Connectors
-TEST_CONNECTOR_BIN=$(if $(TARGET),./target/$(TARGET)/$(BUILD_PROFILE)/test-connector,./target/$(BUILD_PROFILE)/test-connector)
-SYSLOG_BIN=$(if $(TARGET),./target/$(TARGET)/$(BUILD_PROFILE)/fluvio-syslog,./target/$(BUILD_PROFILE)/fluvio-syslog)
 
 # These defaults are set for development purposes only. CI will override
-CONNECTOR_NAME?=test-connector
 CONNECTOR_VERSION=$(shell cargo metadata --format-version 1 | jq '.workspace_members[]' | sed 's/"//g' | awk '{if($$1 == "$(CONNECTOR_NAME)") print $$2}')
 GIT_COMMIT=$(shell git rev-parse HEAD)
 DOCKER_TAG=$(CONNECTOR_VERSION)-$(GIT_COMMIT)
@@ -29,7 +26,41 @@ smoke-test:
 	$(CARGO_BUILDER) run --bin fluvio-connector start ./test-connector/config.yaml
 
 build:
-	$(CARGO_BUILDER) build $(TARGET_FLAG) $(RELEASE_FLAG) --bin $(CONNECTOR_NAME)
+	$(CARGO_BUILDER) build $(TARGET_FLAG) $(RELEASE_FLAG) --bin $(CONNECTOR_NAME) -p $(CONNECTOR_NAME)
+
+
+# build all connectors
+build-connector-sink-dynamodb:	build
+build-connector-sink-dynamodb:	CONNECTOR_NAME=connector-sink-dynamodb
+
+build-connector-sink-kafka:	build
+build-connector-sink-kafka:	CONNECTOR_NAME=connector-sink-kafka
+
+build-connector-sink-postgres:	build
+build-connector-sink-postgres:	CONNECTOR_NAME=connector-sink-postgres
+
+build-connector-sink-slack:	build
+build-connector-sink-slack:	CONNECTOR_NAME=connector-sink-slack
+
+build-connector-sink-sql:	build
+build-connector-sink-sql:	CONNECTOR_NAME=connector-sink-sql
+
+build-connector-source-http: build
+build-connector-source-http: CONNECTOR_NAME=connector-source-http
+
+build-connector-source-postgres: build
+build-connector-source-postgres: CONNECTOR_NAME=connector-source-postgres
+
+build-connector-source-syslog: build
+build-connector-source-syslog: CONNECTOR_NAME=connector-source-syslog
+
+build-connector-source-test: build
+build-connector-source-test: CONNECTOR_NAME=connector-source-test
+
+build-connector-source-mqtt: build
+build-connector-source-mqtt: CONNECTOR_NAME=connector-source-mqtt
+
+
 
 ifeq (${CI},true)
 # In CI, we expect all artifacts to already be built and loaded for the script
@@ -40,7 +71,26 @@ copy-binaries: build
 	cp $(CONNECTOR_BIN) container-build
 endif
 
-official-containers: copy-binaries
+
+# Build docker image
+# compute docker image target if not specified
+# this is convienent for development only
+ifndef TARGET
+ifeq ($(ARCH),arm64)
+docker-image: TARGET=aarch64-unknown-linux-musl
+else
+docker-image: TARGET=x86_64-unknown-linux-musl
+endif
+endif
+# get image name
+docker-image: IMAGE_NAME=infinyon/test
+docker-image: build
+	echo "Building connector $(CONNECTOR_BIN) on $(TARGET) image with tag: $(GIT_COMMIT) k8 type: $(K8_CLUSTER)"
+	echo "Building docker image: $(IMAGE_NAME):$(DOCKER_TAG)"
+	./build-scripts/docker/build.sh $(CONNECTOR_NAME) $(CONNECTOR_BIN) $(TARGET) $(IMAGE_NAME) $(GIT_COMMIT) $(K8_CLUSTER)
+
+
+official-containers: build
 	./build-scripts/docker/build-connector-image.sh
 
 METADATA_OUT=metadata.json
@@ -58,6 +108,18 @@ metadata:
 test:
 	make -C $(CONNECTOR_PATH) test
 
+
+unit-tests:
+	cargo test --lib --all-features
+
+check:
+	cargo check --all --all-features --tests
+
+check-clippy:
+	cargo clippy
+
+check-fmt:
+	cargo fmt -- --check
 
 clean:
 	$(CARGO_BUILDER) clean
