@@ -1,5 +1,5 @@
 [package]
-name = "fluvio-wasm-map"
+name = "fluvio_sm_map"
 version = "0.1.0"
 authors = ["Fluvio Contributors <team@fluvio.io>"]
 edition = "2018"

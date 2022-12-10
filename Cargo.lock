@@ -2281,13 +2281,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "fluvio-wasm-map"
-version = "0.1.0"
-dependencies = [
- "fluvio-smartmodule",
-]
-
-[[package]]
 name = "fluvio-wasm-timer"
 version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2300,6 +2293,13 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
+]
+
+[[package]]
+name = "fluvio_sm_map"
+version = "0.1.0"
+dependencies = [
+ "fluvio-smartmodule",
 ]
 
 [[package]]
