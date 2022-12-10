@@ -1084,7 +1084,7 @@ dependencies = [
  "k8-types",
  "serde",
  "serde_json",
- "serde_yaml",
+ "serde_yaml 0.8.26",
  "tokio",
 ]
 
@@ -1168,24 +1168,25 @@ checksum = "dcb25d077389e53838a8158c8e99174c5a9d902dee4904320db714f3c653ffba"
 
 [[package]]
 name = "cranelift-bforest"
-version = "0.89.2"
+version = "0.90.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "593b398dd0c5b1e2e3a9c3dae8584e287894ea84e361949ad506376e99196265"
+checksum = "b62c772976416112fa4484cbd688cb6fb35fd430005c1c586224fc014018abad"
 dependencies = [
  "cranelift-entity",
 ]
 
 [[package]]
 name = "cranelift-codegen"
-version = "0.89.2"
+version = "0.90.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "afc0d8faabd099ea15ab33d49d150e5572c04cfeb95d675fd41286739b754629"
+checksum = "9b40ed2dd13c2ac7e24f88a3090c68ad3414eb1d066a95f8f1f7b3b819cb4e46"
 dependencies = [
  "arrayvec 0.7.2",
  "bumpalo",
  "cranelift-bforest",
  "cranelift-codegen-meta",
  "cranelift-codegen-shared",
+ "cranelift-egraph",
  "cranelift-entity",
  "cranelift-isle",
  "gimli",
@@ -1197,33 +1198,47 @@ dependencies = [
 
 [[package]]
 name = "cranelift-codegen-meta"
-version = "0.89.2"
+version = "0.90.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1ac1669e42579476f001571d6ba4b825fac686282c97b88b18f8e34242066a81"
+checksum = "bb927a8f1c27c34ee3759b6b0ffa528d2330405d5cc4511f0cab33fe2279f4b5"
 dependencies = [
  "cranelift-codegen-shared",
 ]
 
 [[package]]
 name = "cranelift-codegen-shared"
-version = "0.89.2"
+version = "0.90.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e2a1b1eef9640ab72c1e7b583ac678083855a509da34b4b4378bd99954127c20"
+checksum = "43dfa417b884a9ab488d95fd6b93b25e959321fe7bfd7a0a960ba5d7fb7ab927"
+
+[[package]]
+name = "cranelift-egraph"
+version = "0.90.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e0a66b39785efd8513d2cca967ede56d6cc57c8d7986a595c7c47d0c78de8dce"
+dependencies = [
+ "cranelift-entity",
+ "fxhash",
+ "hashbrown",
+ "indexmap",
+ "log",
+ "smallvec",
+]
 
 [[package]]
 name = "cranelift-entity"
-version = "0.89.2"
+version = "0.90.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eea4e17c3791fd8134640b26242a9ddbd7c67db78f0bad98cb778bf563ef81a0"
+checksum = "0637ffde963cb5d759bc4d454cfa364b6509e6c74cdaa21298add0ed9276f346"
 dependencies = [
  "serde",
 ]
 
 [[package]]
 name = "cranelift-frontend"
-version = "0.89.2"
+version = "0.90.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fca1474b5302348799656d43a40eacd716a3b46169405a3af812832c9edf77b4"
+checksum = "fb72b8342685e850cb037350418f62cc4fc55d6c2eb9c7ca01b82f9f1a6f3d56"
 dependencies = [
  "cranelift-codegen",
  "log",
@@ -1233,15 +1248,15 @@ dependencies = [
 
 [[package]]
 name = "cranelift-isle"
-version = "0.89.2"
+version = "0.90.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "77aa537f020ea43483100153278e7215d41695bdcef9eea6642d122675f64249"
+checksum = "850579cb9e4b448f7c301f1e6e6cbad99abe3f1f1d878a4994cb66e33c6db8cd"
 
 [[package]]
 name = "cranelift-native"
-version = "0.89.2"
+version = "0.90.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8bdc6b65241a95b7d8eafbf4e114c082e49b80162a2dcd9c6bcc5989c3310c9e"
+checksum = "2d0a279e5bcba3e0466c734d8d8eb6bfc1ad29e95c37f3e4955b492b5616335e"
 dependencies = [
  "cranelift-codegen",
  "libc",
@@ -1250,9 +1265,9 @@ dependencies = [
 
 [[package]]
 name = "cranelift-wasm"
-version = "0.89.2"
+version = "0.90.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4eb6359f606a1c80ccaa04fae9dbbb504615ec7a49b6c212b341080fff7a65dd"
+checksum = "e6b8c5e7ffb754093fb89ec4bd4f9dbb9f1c955427299e334917d284745835c2"
 dependencies = [
  "cranelift-codegen",
  "cranelift-entity",
@@ -1520,18 +1535,18 @@ dependencies = [
 
 [[package]]
 name = "derive_builder"
-version = "0.11.2"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d07adf7be193b71cc36b193d0f5fe60b918a3a9db4dad0449f57bcfd519704a3"
+checksum = "8d67778784b508018359cbc8696edb3db78160bab2c2a28ba7f56ef6932997f8"
 dependencies = [
  "derive_builder_macro",
 ]
 
 [[package]]
 name = "derive_builder_core"
-version = "0.11.2"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1f91d4cfa921f1c05904dc3c57b4a32c38aed3340cce209f3a6fd1478babafc4"
+checksum = "c11bdc11a0c47bc7d37d582b5285da6849c96681023680b906673c5707af7b0f"
 dependencies = [
  "darling",
  "proc-macro2",
@@ -1541,9 +1556,9 @@ dependencies = [
 
 [[package]]
 name = "derive_builder_macro"
-version = "0.11.2"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8f0314b72bed045f3a68671b3c86328386762c93f82d98c65c3cb5e5f573dd68"
+checksum = "ebcda35c7a396850a55ffeac740804b40ffec779b98fffbb1738f4033f0ee79e"
 dependencies = [
  "derive_builder_core",
  "syn",
@@ -1846,8 +1861,8 @@ dependencies = [
 
 [[package]]
 name = "fluvio"
-version = "0.15.1"
-source = "git+https://github.com/infinyon/fluvio?branch=master#43d913ac68056ac5db6d24f2f328ba6abed61997"
+version = "0.15.2"
+source = "git+https://github.com/infinyon/fluvio?branch=master#402488b1a9c834e6f23dbe6f15d07c16f2d69b36"
 dependencies = [
  "async-channel",
  "async-lock",
@@ -1860,9 +1875,9 @@ dependencies = [
  "derive_builder",
  "dirs",
  "event-listener",
- "fluvio-compression 0.2.1 (git+https://github.com/infinyon/fluvio?branch=master)",
+ "fluvio-compression 0.2.2",
  "fluvio-future 0.4.2",
- "fluvio-protocol 0.8.1",
+ "fluvio-protocol 0.8.3",
  "fluvio-sc-schema",
  "fluvio-smartengine",
  "fluvio-smartmodule",
@@ -1898,8 +1913,8 @@ dependencies = [
 
 [[package]]
 name = "fluvio-compression"
-version = "0.2.1"
-source = "git+https://github.com/infinyon/fluvio?branch=master#43d913ac68056ac5db6d24f2f328ba6abed61997"
+version = "0.2.2"
+source = "git+https://github.com/infinyon/fluvio?branch=master#402488b1a9c834e6f23dbe6f15d07c16f2d69b36"
 dependencies = [
  "bytes 1.2.1",
  "flate2",
@@ -1920,7 +1935,7 @@ dependencies = [
  "flate2",
  "fluvio",
  "fluvio-future 0.4.2",
- "fluvio-protocol 0.8.1",
+ "fluvio-protocol 0.8.3",
  "fluvio-sc-schema",
  "fluvio-smartengine",
  "futures-util",
@@ -1930,7 +1945,7 @@ dependencies = [
  "schemars",
  "serde",
  "serde_json",
- "serde_yaml",
+ "serde_yaml 0.8.26",
  "thiserror",
  "tokio",
  "tokio-stream",
@@ -1938,15 +1953,15 @@ dependencies = [
 
 [[package]]
 name = "fluvio-controlplane-metadata"
-version = "0.19.2"
-source = "git+https://github.com/infinyon/fluvio?branch=master#43d913ac68056ac5db6d24f2f328ba6abed61997"
+version = "0.19.3"
+source = "git+https://github.com/infinyon/fluvio?branch=master#402488b1a9c834e6f23dbe6f15d07c16f2d69b36"
 dependencies = [
  "async-trait",
  "base64 0.13.1",
  "bytes 1.2.1",
  "flate2",
  "fluvio-future 0.4.2",
- "fluvio-protocol 0.8.1",
+ "fluvio-protocol 0.8.3",
  "fluvio-stream-model",
  "fluvio-types 0.4.0",
  "flv-util",
@@ -1969,7 +1984,7 @@ dependencies = [
  "content_inspector",
  "crc32c",
  "eyre",
- "fluvio-compression 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "fluvio-compression 0.2.1",
  "fluvio-future 0.4.2",
  "fluvio-protocol 0.7.9",
  "fluvio-types 0.3.9",
@@ -2060,22 +2075,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6a5fa561c1628d40bdde2fbde33cb1ce4597386a3f943b45b09703bc3534cf2d"
 dependencies = [
  "bytes 1.2.1",
- "fluvio-protocol-derive 0.4.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "fluvio-protocol-derive 0.4.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "tracing",
 ]
 
 [[package]]
 name = "fluvio-protocol"
-version = "0.8.1"
-source = "git+https://github.com/infinyon/fluvio?branch=master#43d913ac68056ac5db6d24f2f328ba6abed61997"
+version = "0.8.3"
+source = "git+https://github.com/infinyon/fluvio?branch=master#402488b1a9c834e6f23dbe6f15d07c16f2d69b36"
 dependencies = [
  "bytes 1.2.1",
  "content_inspector",
  "crc32c",
  "eyre",
- "fluvio-compression 0.2.1 (git+https://github.com/infinyon/fluvio?branch=master)",
+ "fluvio-compression 0.2.2",
  "fluvio-future 0.4.2",
- "fluvio-protocol-derive 0.4.3 (git+https://github.com/infinyon/fluvio?branch=master)",
+ "fluvio-protocol-derive 0.4.4 (git+https://github.com/infinyon/fluvio?branch=master)",
  "fluvio-types 0.4.0",
  "flv-util",
  "once_cell",
@@ -2087,9 +2102,9 @@ dependencies = [
 
 [[package]]
 name = "fluvio-protocol-derive"
-version = "0.4.3"
+version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e1dd5a390e6159c0eac091e8f5e4124374aea6b01a8fcffd5e249cdacbac4e1f"
+checksum = "5be1a3fafae877a328607b0f14df6c1a5f05eab778f2b7dfdf14635991f3eeec"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2099,8 +2114,8 @@ dependencies = [
 
 [[package]]
 name = "fluvio-protocol-derive"
-version = "0.4.3"
-source = "git+https://github.com/infinyon/fluvio?branch=master#43d913ac68056ac5db6d24f2f328ba6abed61997"
+version = "0.4.4"
+source = "git+https://github.com/infinyon/fluvio?branch=master#402488b1a9c834e6f23dbe6f15d07c16f2d69b36"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2111,10 +2126,10 @@ dependencies = [
 [[package]]
 name = "fluvio-sc-schema"
 version = "0.15.2"
-source = "git+https://github.com/infinyon/fluvio?branch=master#43d913ac68056ac5db6d24f2f328ba6abed61997"
+source = "git+https://github.com/infinyon/fluvio?branch=master#402488b1a9c834e6f23dbe6f15d07c16f2d69b36"
 dependencies = [
  "fluvio-controlplane-metadata",
- "fluvio-protocol 0.8.1",
+ "fluvio-protocol 0.8.3",
  "fluvio-socket",
  "fluvio-types 0.4.0",
  "log",
@@ -2126,18 +2141,18 @@ dependencies = [
 
 [[package]]
 name = "fluvio-smartengine"
-version = "0.5.1"
-source = "git+https://github.com/infinyon/fluvio?branch=master#43d913ac68056ac5db6d24f2f328ba6abed61997"
+version = "0.5.3"
+source = "git+https://github.com/infinyon/fluvio?branch=master#402488b1a9c834e6f23dbe6f15d07c16f2d69b36"
 dependencies = [
  "anyhow",
  "cfg-if 1.0.0",
  "derive_builder",
  "fluvio-future 0.4.2",
- "fluvio-protocol 0.8.1",
+ "fluvio-protocol 0.8.3",
  "fluvio-smartmodule",
  "serde",
  "serde_json",
- "serde_yaml",
+ "serde_yaml 0.9.14",
  "thiserror",
  "tracing",
  "wasmtime",
@@ -2145,11 +2160,11 @@ dependencies = [
 
 [[package]]
 name = "fluvio-smartmodule"
-version = "0.3.0"
-source = "git+https://github.com/infinyon/fluvio?branch=master#43d913ac68056ac5db6d24f2f328ba6abed61997"
+version = "0.3.1"
+source = "git+https://github.com/infinyon/fluvio?branch=master#402488b1a9c834e6f23dbe6f15d07c16f2d69b36"
 dependencies = [
  "eyre",
- "fluvio-protocol 0.8.1",
+ "fluvio-protocol 0.8.3",
  "fluvio-smartmodule-derive",
  "thiserror",
  "tracing",
@@ -2158,7 +2173,7 @@ dependencies = [
 [[package]]
 name = "fluvio-smartmodule-derive"
 version = "0.3.0"
-source = "git+https://github.com/infinyon/fluvio?branch=master#43d913ac68056ac5db6d24f2f328ba6abed61997"
+source = "git+https://github.com/infinyon/fluvio?branch=master#402488b1a9c834e6f23dbe6f15d07c16f2d69b36"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2168,7 +2183,7 @@ dependencies = [
 [[package]]
 name = "fluvio-socket"
 version = "0.13.1"
-source = "git+https://github.com/infinyon/fluvio?branch=master#43d913ac68056ac5db6d24f2f328ba6abed61997"
+source = "git+https://github.com/infinyon/fluvio?branch=master#402488b1a9c834e6f23dbe6f15d07c16f2d69b36"
 dependencies = [
  "async-channel",
  "async-lock",
@@ -2178,7 +2193,7 @@ dependencies = [
  "cfg-if 1.0.0",
  "event-listener",
  "fluvio-future 0.4.2",
- "fluvio-protocol 0.8.1",
+ "fluvio-protocol 0.8.3",
  "futures-util",
  "once_cell",
  "pin-project",
@@ -2191,14 +2206,14 @@ dependencies = [
 
 [[package]]
 name = "fluvio-spu-schema"
-version = "0.11.0"
-source = "git+https://github.com/infinyon/fluvio?branch=master#43d913ac68056ac5db6d24f2f328ba6abed61997"
+version = "0.11.1"
+source = "git+https://github.com/infinyon/fluvio?branch=master#402488b1a9c834e6f23dbe6f15d07c16f2d69b36"
 dependencies = [
  "bytes 1.2.1",
  "educe",
  "flate2",
  "fluvio-future 0.4.2",
- "fluvio-protocol 0.8.1",
+ "fluvio-protocol 0.8.3",
  "fluvio-smartmodule",
  "fluvio-types 0.4.0",
  "log",
@@ -2209,8 +2224,8 @@ dependencies = [
 
 [[package]]
 name = "fluvio-stream-model"
-version = "0.8.2"
-source = "git+https://github.com/infinyon/fluvio?branch=master#43d913ac68056ac5db6d24f2f328ba6abed61997"
+version = "0.8.3"
+source = "git+https://github.com/infinyon/fluvio?branch=master#402488b1a9c834e6f23dbe6f15d07c16f2d69b36"
 dependencies = [
  "async-rwlock",
  "event-listener",
@@ -2258,7 +2273,7 @@ dependencies = [
 [[package]]
 name = "fluvio-types"
 version = "0.4.0"
-source = "git+https://github.com/infinyon/fluvio?branch=master#43d913ac68056ac5db6d24f2f328ba6abed61997"
+source = "git+https://github.com/infinyon/fluvio?branch=master#402488b1a9c834e6f23dbe6f15d07c16f2d69b36"
 dependencies = [
  "event-listener",
  "thiserror",
@@ -3136,7 +3151,7 @@ dependencies = [
  "hostfile",
  "serde",
  "serde_json",
- "serde_yaml",
+ "serde_yaml 0.8.26",
  "thiserror",
  "tracing",
 ]
@@ -4820,6 +4835,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde_yaml"
+version = "0.9.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6d232d893b10de3eb7258ff01974d6ee20663d8e833263c99409d4b13a0209da"
+dependencies = [
+ "indexmap",
+ "itoa",
+ "ryu",
+ "serde",
+ "unsafe-libyaml",
+]
+
+[[package]]
 name = "sha-1"
 version = "0.9.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5867,6 +5895,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "unsafe-libyaml"
+version = "0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c1e5fa573d8ac5f1a856f8d7be41d390ee973daf97c806b2c1a465e4e1406e68"
+
+[[package]]
 name = "untrusted"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6068,18 +6102,18 @@ dependencies = [
 
 [[package]]
 name = "wasmparser"
-version = "0.92.0"
+version = "0.93.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7da34cec2a8c23db906cdf8b26e988d7a7f0d549eb5d51299129647af61a1b37"
+checksum = "c5a4460aa3e271fa180b6a5d003e728f3963fb30e3ba0fa7c9634caa06049328"
 dependencies = [
  "indexmap",
 ]
 
 [[package]]
 name = "wasmtime"
-version = "2.0.2"
+version = "3.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "743d37c265fa134a76de653c7e66be22590eaccd03da13cee99f3ac7a59cb826"
+checksum = "d18265705b1c49218776577d9f301d79ab06888c7f4a32e2ed24e68a55738ce7"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -6108,18 +6142,18 @@ dependencies = [
 
 [[package]]
 name = "wasmtime-asm-macros"
-version = "2.0.2"
+version = "3.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "de327cf46d5218315957138131ed904621e6f99018aa2da508c0dcf0c65f1bf2"
+checksum = "a201583f6c79b96e74dcce748fa44fb2958f474ef13c93f880ea4d3bed31ae4f"
 dependencies = [
  "cfg-if 1.0.0",
 ]
 
 [[package]]
 name = "wasmtime-cache"
-version = "2.0.2"
+version = "3.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "42bd53d27df1076100519b680b45d8209aed62b4bbaf0913732810cb216f7b2b"
+checksum = "3f37efc6945b08fcb634cffafc438dd299bac55a27c836954656c634d3e63c31"
 dependencies = [
  "anyhow",
  "base64 0.13.1",
@@ -6129,7 +6163,7 @@ dependencies = [
  "log",
  "rustix 0.35.13",
  "serde",
- "sha2 0.9.9",
+ "sha2 0.10.6",
  "toml",
  "windows-sys 0.36.1",
  "zstd",
@@ -6137,9 +6171,9 @@ dependencies = [
 
 [[package]]
 name = "wasmtime-cranelift"
-version = "2.0.2"
+version = "3.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "017c3605ccce867b3ba7f71d95e5652acc22b9dc2971ad6a6f9df4a8d7af2648"
+checksum = "fe208297e045ea0ee6702be88772ea40f918d55fbd4163981a4699aff034b634"
 dependencies = [
  "anyhow",
  "cranelift-codegen",
@@ -6158,9 +6192,9 @@ dependencies = [
 
 [[package]]
 name = "wasmtime-environ"
-version = "2.0.2"
+version = "3.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6aec5c1f81aab9bb35997113c171b6bb9093afc90e3757c55e0c08dc9ac612e4"
+checksum = "754b97f7441ac780a7fa738db5b9c23c1b70ef4abccd8ad205ada5669d196ba2"
 dependencies = [
  "anyhow",
  "cranelift-entity",
@@ -6177,9 +6211,9 @@ dependencies = [
 
 [[package]]
 name = "wasmtime-fiber"
-version = "2.0.2"
+version = "3.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1075aa43857086ef89afbe87602fe2dae98ad212582e722b6d3d2676bb5ee141"
+checksum = "e5f54abc960b4a055ba16b942cbbd1da641e0ad44cc97a7608f3d43c069b120e"
 dependencies = [
  "cc",
  "cfg-if 1.0.0",
@@ -6190,9 +6224,9 @@ dependencies = [
 
 [[package]]
 name = "wasmtime-jit"
-version = "2.0.2"
+version = "3.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "08c683893dbba3986aa71582a5332b87157fb95d34098de2e5f077c7f078726d"
+checksum = "32800cb6e29faabab7056593f70a4c00c65c75c365aaf05406933f2169d0c22f"
 dependencies = [
  "addr2line",
  "anyhow",
@@ -6204,21 +6238,21 @@ dependencies = [
  "log",
  "object",
  "rustc-demangle",
- "rustix 0.35.13",
  "serde",
  "target-lexicon",
  "thiserror",
  "wasmtime-environ",
  "wasmtime-jit-debug",
+ "wasmtime-jit-icache-coherence",
  "wasmtime-runtime",
  "windows-sys 0.36.1",
 ]
 
 [[package]]
 name = "wasmtime-jit-debug"
-version = "2.0.2"
+version = "3.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b2f8f15a81292eec468c79a4f887a37a3d02eb0c610f34ddbec607d3e9022f18"
+checksum = "fe057012a0ba6cee3685af1e923d6e0a6cb9baf15fb3ffa4be3d7f712c7dec42"
 dependencies = [
  "object",
  "once_cell",
@@ -6226,10 +6260,21 @@ dependencies = [
 ]
 
 [[package]]
-name = "wasmtime-runtime"
-version = "2.0.2"
+name = "wasmtime-jit-icache-coherence"
+version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "09af6238c962e8220424c815a7b1a9a6d0ba0694f0ab0ae12a6cda1923935a0d"
+checksum = "e6bbabb309c06cc238ee91b1455b748c45f0bdcab0dda2c2db85b0a1e69fcb66"
+dependencies = [
+ "cfg-if 1.0.0",
+ "libc",
+ "windows-sys 0.36.1",
+]
+
+[[package]]
+name = "wasmtime-runtime"
+version = "3.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "09a23b6e138e89594c0189162e524a29e217aec8f9a4e1959a34f74c64e8d17d"
 dependencies = [
  "anyhow",
  "cc",
@@ -6253,9 +6298,9 @@ dependencies = [
 
 [[package]]
 name = "wasmtime-types"
-version = "2.0.2"
+version = "3.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5dc3dd9521815984b35d6362f79e6b9c72475027cd1c71c44eb8df8fbf33a9fb"
+checksum = "68ec7615fde8c79737f1345d81f0b18da83b3db929a87b4604f27c932246d1e2"
 dependencies = [
  "cranelift-entity",
  "serde",
