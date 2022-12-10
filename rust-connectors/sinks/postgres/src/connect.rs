@@ -1,6 +1,7 @@
-use std::cmp::Ordering;
+use std::{cmp::Ordering, sync::Arc};
 
 use fluvio::{Fluvio, Offset, PartitionConsumer};
+use fluvio_connectors_common::{metrics::ConnectorMetrics, monitoring::init_monitoring};
 use fluvio_model_postgres::{
     Column, DeleteBody, InsertBody, LogicalReplicationMessage, ReplicationEvent, TruncateBody,
     UpdateBody,
@@ -32,6 +33,10 @@ impl PgConnector {
         let consumer = fluvio
             .partition_consumer(&config.common.fluvio_topic, 0)
             .await?;
+
+        let metrics = Arc::new(ConnectorMetrics::new(consumer.metrics()));
+        init_monitoring(metrics);
+
         let (pg_client, conn) = config
             .url
             .as_str()

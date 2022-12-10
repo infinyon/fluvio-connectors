@@ -7,7 +7,7 @@ use std::str::FromStr;
 use std::{collections::BTreeMap, time::Duration};
 
 use fluvio::{
-    Compression, FluvioConfig, SmartModuleContextData, SmartModuleExtraParams,
+    Compression, FluvioConfig, PartitionConsumer, SmartModuleContextData, SmartModuleExtraParams,
     SmartModuleInvocation, SmartModuleInvocationWasm, SmartModuleKind,
 };
 use serde::Deserialize;
@@ -121,6 +121,7 @@ impl CommonConnectorOpt {
 
     pub async fn create_consumer_stream(
         &self,
+        consumer: PartitionConsumer,
         connector_name: &str,
     ) -> anyhow::Result<
         impl tokio_stream::Stream<
@@ -138,7 +139,6 @@ impl CommonConnectorOpt {
         let mut builder = fluvio::ConsumerConfig::builder();
         builder.smartmodule(smartmodule);
         let config = builder.build()?;
-        let consumer = self.create_consumer().await?;
         let offset = fluvio::Offset::end();
         Ok(consumer.stream_with_config(offset, config).await?)
     }

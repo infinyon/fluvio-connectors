@@ -1,6 +1,8 @@
 use crate::convert::convert_replication_event;
 use crate::{Error, PgConnectorOpt};
 use fluvio_connectors_common::fluvio::{Fluvio, Offset, RecordKey, TopicProducer, TopicSpec};
+use fluvio_connectors_common::metrics::ConnectorMetrics;
+use fluvio_connectors_common::monitoring::init_monitoring;
 use fluvio_model_postgres::{Column, LogicalReplicationMessage, ReplicationEvent};
 use once_cell::sync::Lazy;
 use postgres_protocol::message::backend::{
@@ -8,6 +10,7 @@ use postgres_protocol::message::backend::{
 };
 use std::collections::BTreeMap;
 use std::pin::Pin;
+use std::sync::Arc;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tokio_postgres::config::ReplicationMode;
 use tokio_postgres::replication::LogicalReplicationStream;
@@ -76,6 +79,9 @@ impl PgConnector {
         }
 
         let producer = config.common.create_producer("postgres").await.unwrap();
+
+        let metrics = Arc::new(ConnectorMetrics::new(producer.metrics()));
+        init_monitoring(metrics);
 
         let (pg_client, conn) = config
             .url
