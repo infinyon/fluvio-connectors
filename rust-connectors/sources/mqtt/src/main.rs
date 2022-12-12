@@ -1,6 +1,8 @@
 use async_std::channel::{self, Receiver, Sender};
 use async_std::task::spawn;
 use fluvio_connectors_common::fluvio::{RecordKey, TopicProducer};
+use fluvio_connectors_common::metrics::ConnectorMetrics;
+use fluvio_connectors_common::monitoring::init_monitoring;
 use fluvio_connectors_common::{common_initialize, git_hash_version};
 
 mod error;
@@ -196,6 +198,11 @@ fn main() -> Result<(), MqttConnectorError> {
         loop {
             let producer = opts.common.create_producer("mqtt").await?;
             info!("Connected to Fluvio");
+
+            // This will restart counters.
+            let metrics = Arc::new(ConnectorMetrics::new(producer.metrics()));
+            init_monitoring(metrics);
+
             let formatter = formatter::from_output_type(&opts.payload_output_type);
             let (client, eventloop) = AsyncClient::new(mqttoptions.clone(), 10);
             client

@@ -1,4 +1,6 @@
 use clap::Parser;
+use fluvio_connectors_common::metrics::ConnectorMetrics;
+use fluvio_connectors_common::monitoring::init_monitoring;
 use fluvio_connectors_common::opt::CommonConnectorOpt;
 use fluvio_connectors_common::{common_initialize, git_hash_version};
 use fluvio_future::tracing::{error, info};
@@ -8,6 +10,7 @@ use schemars::schema_for;
 use schemars::JsonSchema;
 use std::io::Write;
 use std::str::FromStr;
+use std::sync::Arc;
 use tempfile::NamedTempFile;
 use tokio_stream::StreamExt;
 
@@ -45,9 +48,17 @@ async fn main() -> anyhow::Result<()> {
 
     info!("Starting stream");
 
+    let consumer = kafka_sink_deps
+        .common_connector_opt
+        .create_consumer()
+        .await?;
+    let metrics = Arc::new(ConnectorMetrics::new(consumer.metrics()));
+
+    init_monitoring(metrics);
+
     let mut stream = kafka_sink_deps
         .common_connector_opt
-        .create_consumer_stream("kafka")
+        .create_consumer_stream(consumer, "kafka")
         .await?;
 
     while let Some(Ok(record)) = stream.next().await {

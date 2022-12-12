@@ -1,11 +1,14 @@
 use clap::Parser;
 use fluvio_connectors_common::fluvio::Record;
+use fluvio_connectors_common::metrics::ConnectorMetrics;
+use fluvio_connectors_common::monitoring::init_monitoring;
 use fluvio_connectors_common::opt::CommonConnectorOpt;
 use fluvio_connectors_common::{common_initialize, git_hash_version};
 use fluvio_future::tracing::{debug, info};
 use schemars::schema_for;
 use schemars::JsonSchema;
 use std::collections::HashMap;
+use std::sync::Arc;
 use tokio_stream::StreamExt;
 
 #[tokio::main]
@@ -45,7 +48,15 @@ pub struct SlackOpt {
 
 impl SlackOpt {
     pub async fn execute(&self) -> anyhow::Result<()> {
-        let mut stream = self.common.create_consumer_stream("slack").await?;
+        let consumer = self.common.create_consumer().await?;
+        let metrics = Arc::new(ConnectorMetrics::new(consumer.metrics()));
+
+        init_monitoring(metrics);
+
+        let mut stream = self
+            .common
+            .create_consumer_stream(consumer, "slack")
+            .await?;
         info!("Starting stream");
         while let Some(Ok(record)) = stream.next().await {
             let _ = self.send_to_slack(&record).await;

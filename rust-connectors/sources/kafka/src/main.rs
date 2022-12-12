@@ -1,4 +1,8 @@
+use std::sync::Arc;
+
 use clap::Parser;
+use fluvio_connectors_common::metrics::ConnectorMetrics;
+use fluvio_connectors_common::monitoring::init_monitoring;
 use fluvio_connectors_common::opt::CommonConnectorOpt;
 use fluvio_connectors_common::{common_initialize, git_hash_version};
 use fluvio_future::tracing::info;
@@ -55,6 +59,10 @@ pub struct KafkaOpt {
 impl KafkaOpt {
     pub async fn execute(&self) -> anyhow::Result<()> {
         let producer = self.common.create_producer("kafka").await?;
+
+        let metrics = Arc::new(ConnectorMetrics::new(producer.metrics()));
+        init_monitoring(metrics);
+
         info!("Connected to fluvio!");
         let kafka_topic = self
             .kafka_topic

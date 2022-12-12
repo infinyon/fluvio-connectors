@@ -18,9 +18,6 @@ use fluvio_connectors_common::opt::GetOpts;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let metrics = Arc::new(ConnectorMetrics::new());
-    init_monitoring(metrics.clone());
-
     let opts = if let Some(opts) = HttpOpt::get_opt() {
         opts
     } else {
@@ -62,6 +59,9 @@ async fn main() -> Result<()> {
         .expect("Failed to create producer");
     tracing::info!("Connected to Fluvio");
 
+    let metrics = Arc::new(ConnectorMetrics::new(producer.metrics()));
+    init_monitoring(metrics);
+
     let client = reqwest::Client::new();
     let method: reqwest::Method = opts.method.parse()?;
 
@@ -92,9 +92,7 @@ async fn main() -> Result<()> {
 
         tracing::debug!(%record_out, "Producing");
 
-        let bytes_in = record_out.len() as u64;
         producer.send(RecordKey::NULL, record_out).await?;
-        metrics.add_inbound_bytes(bytes_in as u64);
     }
 
     Ok(())

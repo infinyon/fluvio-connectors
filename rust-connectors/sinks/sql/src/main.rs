@@ -15,8 +15,6 @@ use sql_sink::opt::SqlConnectorOpt;
 
 #[async_std::main]
 async fn main() -> anyhow::Result<()> {
-    let metrics = Arc::new(ConnectorMetrics::new());
-    init_monitoring(metrics.clone());
     if let Some("metadata") = std::env::args().nth(1).as_deref() {
         let schema = serde_json::json!({
             "name": env!("CARGO_PKG_NAME"),
@@ -38,7 +36,15 @@ async fn main() -> anyhow::Result<()> {
     let mut db = Db::connect(raw_opts.database_url.as_str()).await?;
     info!("connected to database {}", db.kind());
 
-    let mut stream = raw_opts.common.create_consumer_stream("sql").await?;
+    let consumer = raw_opts.common.create_consumer().await?;
+    let metrics = Arc::new(ConnectorMetrics::new(consumer.metrics()));
+
+    init_monitoring(metrics);
+
+    let mut stream = raw_opts
+        .common
+        .create_consumer_stream(consumer, "sql")
+        .await?;
     info!("connected to fluvio stream");
 
     info!(

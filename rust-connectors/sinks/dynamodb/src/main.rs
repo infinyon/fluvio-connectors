@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use aws_sdk_dynamodb::{
     model::{
         AttributeDefinition, AttributeValue, KeySchemaElement, KeyType, ProvisionedThroughput,
@@ -6,9 +8,9 @@ use aws_sdk_dynamodb::{
     Client, Endpoint,
 };
 use clap::Parser;
-use fluvio_connectors_common::fluvio::Record;
-use fluvio_connectors_common::opt::CommonConnectorOpt;
 use fluvio_connectors_common::{common_initialize, git_hash_version};
+use fluvio_connectors_common::{fluvio::Record, metrics::ConnectorMetrics};
+use fluvio_connectors_common::{monitoring::init_monitoring, opt::CommonConnectorOpt};
 use fluvio_future::tracing::{error, info};
 use schemars::{schema_for, JsonSchema};
 use serde_json::value::Value;
@@ -73,7 +75,15 @@ impl DynamoDbOpt {
         let client = Client::from_conf(dynamodb_local_config);
         self.create_table(&client).await?;
 
-        let mut stream = self.common.create_consumer_stream("dynamodb").await?;
+        let consumer = self.common.create_consumer().await?;
+        let metrics = Arc::new(ConnectorMetrics::new(consumer.metrics()));
+
+        init_monitoring(metrics);
+
+        let mut stream = self
+            .common
+            .create_consumer_stream(consumer, "dynamodb")
+            .await?;
         info!("Starting stream");
         while let Some(Ok(record)) = stream.next().await {
             if let Err(e) = self.send_to_dynamodb(&record, &client).await {
