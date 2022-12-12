@@ -60,7 +60,7 @@ async fn main() -> Result<()> {
     tracing::info!("Connected to Fluvio");
 
     let metrics = Arc::new(ConnectorMetrics::new(producer.metrics()));
-    init_monitoring(metrics.clone());
+    init_monitoring(metrics);
 
     let client = reqwest::Client::new();
     let method: reqwest::Method = opts.method.parse()?;
