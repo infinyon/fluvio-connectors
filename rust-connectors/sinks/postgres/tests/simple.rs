@@ -6,7 +6,7 @@ use tokio_postgres::{Client, NoTls};
 use url::Url;
 
 #[tokio::test]
-async fn postgres_sink_and_source() -> eyre::Result<()> {
+async fn postgres_sink_and_source() -> anyhow::Result<()> {
     fluvio_future::subscriber::init_logger();
     //let fluvio_topic = "postgres".to_string(); // To help debug, use "postgres"
     let fluvio_topic = uuid::Uuid::new_v4().to_string().replace('-', "");
@@ -296,7 +296,7 @@ async fn cleanup(
     pg_sink_client: Client,
     source_handle: JoinHandle<()>,
     pg_source_client: Client,
-) -> eyre::Result<()> {
+) -> anyhow::Result<()> {
     sink_handle.abort();
     source_handle.abort();
 
@@ -313,7 +313,7 @@ async fn cleanup(
     Ok(())
 }
 
-async fn start_pg_sink(fluvio_topic: String) -> eyre::Result<(JoinHandle<()>, Client)> {
+async fn start_pg_sink(fluvio_topic: String) -> anyhow::Result<(JoinHandle<()>, Client)> {
     use postgres_sink::{PgConnector, PgConnectorOpt};
     let postgres_sink_url = std::env::var("FLUVIO_PG_SINK_DATABASE_URL")
         .expect("No FLUVIO_PG_DATABASE_URL environment variable found");
@@ -343,7 +343,7 @@ async fn start_pg_sink(fluvio_topic: String) -> eyre::Result<(JoinHandle<()>, Cl
     Ok((handle, pg_sink_client))
 }
 
-async fn start_pg_source(fluvio_topic: String) -> eyre::Result<(JoinHandle<()>, Client)> {
+async fn start_pg_source(fluvio_topic: String) -> anyhow::Result<(JoinHandle<()>, Client)> {
     use postgres_source::{PgConnector, PgConnectorOpt};
     let postgres_source_url = std::env::var("FLUVIO_PG_SOURCE_DATABASE_URL")
         .expect("No FLUVIO_PG_SOURCE_DATABASE_URL environment variable found");

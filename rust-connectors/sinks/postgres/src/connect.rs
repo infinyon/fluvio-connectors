@@ -28,7 +28,7 @@ pub struct PgConnector {
 }
 
 impl PgConnector {
-    pub async fn new(config: PgConnectorOpt) -> eyre::Result<Self> {
+    pub async fn new(config: PgConnectorOpt) -> anyhow::Result<Self> {
         let fluvio = Fluvio::connect().await?;
         let consumer = fluvio
             .partition_consumer(&config.common.fluvio_topic, 0)
@@ -50,7 +50,7 @@ impl PgConnector {
             relations: BTreeMap::new(),
         })
     }
-    pub async fn get_offset(&self) -> eyre::Result<i64> {
+    pub async fn get_offset(&self) -> anyhow::Result<i64> {
         let schema_create = "CREATE SCHEMA IF NOT EXISTS fluvio";
         let _ = self.pg_client.execute(schema_create, &[]).await?;
         let table_create = "CREATE TABLE IF NOT EXISTS fluvio.offset (id INT8 PRIMARY KEY, current_offset INT8 NOT NULL)";
@@ -61,14 +61,14 @@ impl PgConnector {
             let current_offset: i64 = offset.get("current_offset");
             Ok(current_offset)
         } else {
-            let current_offset = 0;
+            let current_offset = 0_i64;
             let sql = "INSERT INTO fluvio.offset (id, current_offset) VALUES(1, $1);";
             let _ = self.pg_client.execute(sql, &[&current_offset]).await?;
             Ok(current_offset)
         }
     }
 
-    pub async fn get_relations(&mut self, offset: i64) -> eyre::Result<()> {
+    pub async fn get_relations(&mut self, offset: i64) -> anyhow::Result<()> {
         let stream = self.consumer.stream(Offset::from_beginning(0)).await?;
         let stream = stream.timeout(Duration::from_millis(100));
         tokio::pin!(stream);
@@ -85,7 +85,7 @@ impl PgConnector {
 
         Ok(())
     }
-    pub async fn process_stream(&mut self) -> eyre::Result<()> {
+    pub async fn process_stream(&mut self) -> anyhow::Result<()> {
         let offset = self.get_offset().await?;
         if offset >= 0 {
             self.get_relations(offset).await?;

@@ -8,7 +8,7 @@ use tokio_stream::StreamExt;
 use url::Url;
 
 #[tokio::test]
-async fn postgres_inserts() -> eyre::Result<()> {
+async fn postgres_inserts() -> anyhow::Result<()> {
     fluvio_future::subscriber::init_logger();
     let postgres_url = std::env::var("FLUVIO_PG_DATABASE_URL")
         .expect("No FLUVIO_PG_DATABASE_URL environment variable found");

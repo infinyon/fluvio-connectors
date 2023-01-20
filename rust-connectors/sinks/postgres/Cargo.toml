@@ -4,15 +4,15 @@ version = "0.3.1"
 edition = "2021"
 
 [dependencies]
+anyhow = { version = "1.0", default-features = false }
 tracing = { version = "0.1" }
 tokio = { version = "1", features = ["full"] }
 tokio-stream = { version = "0.1" }
-fluvio = { version = "0.15" }
+fluvio = { workspace = true }
 fluvio-future = { version = "0.4", features = ["subscriber"] }
 fluvio-connectors-common = { path = "../../common", features = ["sink"]}
 fluvio-model-postgres = { path = "../../models/fluvio-model-postgres" }
 bytes = "1"
-eyre = "0.6"
 thiserror = "1"
 clap = { version = "3.1", features = ["std", "derive", "env"], default-features = false }
 dotenv = "0.15"

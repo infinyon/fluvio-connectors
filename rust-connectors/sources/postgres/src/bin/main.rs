@@ -1,13 +1,12 @@
 use adaptive_backoff::prelude::*;
 use clap::Parser;
-use eyre::eyre;
 use fluvio_connectors_common::{common_initialize, git_hash_version};
 use postgres_source::{PgConnector, PgConnectorOpt};
 use schemars::schema_for;
 use tracing::{error, info};
 
 #[tokio::main]
-async fn main() -> eyre::Result<()> {
+async fn main() -> anyhow::Result<()> {
     common_initialize!();
     color_backtrace::install();
     let _ = dotenv::dotenv();
@@ -48,12 +47,12 @@ async fn main() -> eyre::Result<()> {
     Ok(())
 }
 
-async fn run_connector(config: &PgConnectorOpt) -> eyre::Result<()> {
+async fn run_connector(config: &PgConnectorOpt) -> anyhow::Result<()> {
     let mut backoff = ExponentialBackoffBuilder::default()
         .min(std::time::Duration::from_secs(1))
         .max(std::time::Duration::from_secs(60))
         .build()
-        .map_err(|err| eyre!("{}", err))?;
+        .map_err(|err| anyhow::anyhow!("{}", err))?;
 
     loop {
         let mut connector = match PgConnector::new(config.clone()).await {
