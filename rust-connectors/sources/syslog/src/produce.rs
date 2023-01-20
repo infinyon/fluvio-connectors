@@ -32,7 +32,8 @@ impl ProducerOpts {
         let admin = fluvio.admin().await;
         let topics = admin
             .list::<TopicSpec, String>(vec![])
-            .await?
+            .await
+            .map_err(|e| ConnectorError::Other(format!("Failed to list topics: {}", e)))?
             .iter()
             .map(|topic| topic.name.clone())
             .collect::<String>();
@@ -44,7 +45,8 @@ impl ProducerOpts {
                     false,
                     TopicSpec::new_computed(1, 1, Some(false)),
                 )
-                .await?;
+                .await
+                .map_err(|e| ConnectorError::Other(format!("Failed to create topic: {}", e)))?;
         }
 
         let producer = fluvio.topic_producer(topic.clone()).await?;

@@ -10,10 +10,10 @@ authors = ["Fluvio Contributors <team@fluvio.io>"]
 fluvio-model-sql = {path= "../../models/fluvio-model-sql" }
 fluvio-connectors-common = { path = "../../common", features = ["sink"]}
 fluvio-future = { version = "0.4.1" , features = ["subscriber"]}
-fluvio-smartengine = { version = "0.5" }
-fluvio-smartmodule = "0.3"
-fluvio-spu-schema = { version = "0.11.0", default-features = false }
-fluvio = { version = "0.15" }
+fluvio-smartengine = { workspace = true }
+fluvio-smartmodule = { workspace = true }
+fluvio-spu-schema = { workspace = true, default-features = false }
+fluvio = { workspace = true }
 
 serde = { version = "1", features = ["derive"], default-features = false}
 serde_json = { version = "1", default-features = false }

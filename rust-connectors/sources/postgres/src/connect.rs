@@ -37,7 +37,7 @@ pub struct PgConnector {
 }
 
 impl PgConnector {
-    pub async fn new(config: PgConnectorOpt) -> eyre::Result<Self> {
+    pub async fn new(config: PgConnectorOpt) -> anyhow::Result<Self> {
         tracing::info!("Initializing PgConnector");
         let fluvio = Fluvio::connect().await?;
         tracing::info!("Connected to Fluvio");
@@ -101,7 +101,7 @@ impl PgConnector {
             relations: BTreeMap::default(),
         })
     }
-    pub async fn create_replication_slot(config: &PgConnectorOpt) -> eyre::Result<()> {
+    pub async fn create_replication_slot(config: &PgConnectorOpt) -> anyhow::Result<()> {
         let (pg_client, conn) = config
             .url
             .as_str()
@@ -136,7 +136,7 @@ impl PgConnector {
         }
         Ok(())
     }
-    pub async fn delete_replication_slot(config: &PgConnectorOpt) -> eyre::Result<()> {
+    pub async fn delete_replication_slot(config: &PgConnectorOpt) -> anyhow::Result<()> {
         let (pg_client, conn) = config
             .url
             .as_str()
@@ -152,7 +152,7 @@ impl PgConnector {
         Ok(())
     }
 
-    pub async fn process_stream(&mut self) -> eyre::Result<()> {
+    pub async fn process_stream(&mut self) -> anyhow::Result<()> {
         let mut last_lsn = self.lsn.unwrap_or_else(|| PgLsn::from(0));
 
         // We now switch to consuming the stream
@@ -196,7 +196,7 @@ impl PgConnector {
         mut stream: Pin<&mut LogicalReplicationStream>,
         event: ReplicationMessage<PgReplication>,
         last_lsn: &mut PgLsn,
-    ) -> eyre::Result<()> {
+    ) -> anyhow::Result<()> {
         match event {
             ReplicationMessage::XLogData(xlog_data) => {
                 let event = convert_replication_event(&self.relations, &xlog_data)?;

@@ -17,4 +17,7 @@ pub enum ConnectorError {
 
     #[error("Config Error {0}")]
     Config(#[from] ConfigError),
+
+    #[error("Other error {0}")]
+    Other(String),
 }

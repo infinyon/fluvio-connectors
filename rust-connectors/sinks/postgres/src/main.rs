@@ -6,7 +6,7 @@ use schemars::schema_for;
 use tracing::info;
 
 #[tokio::main]
-async fn main() -> eyre::Result<()> {
+async fn main() -> anyhow::Result<()> {
     common_initialize!();
     color_backtrace::install();
     let _ = dotenv::dotenv();
