@@ -24,15 +24,16 @@ members = [
 ]
 resolver = "2"
 
+
 [workspace.dependencies]
-fluvio             = { git = "https://github.com/infinyon/fluvio", branch = "master" }
 fluvio-smartmodule = { git = "https://github.com/infinyon/fluvio", branch = "master" }
-fluvio-smartengine = { git = "https://github.com/infinyon/fluvio", branch = "master" }
 fluvio-protocol    = { git = "https://github.com/infinyon/fluvio", branch = "master" }
 fluvio-spu-schema  = { git = "https://github.com/infinyon/fluvio", branch = "master" }
 fluvio-sc-schema   = { git = "https://github.com/infinyon/fluvio", branch = "master"}
 
 [patch.crates-io]
+fluvio             = { git = "https://github.com/infinyon/fluvio", branch = "master" }
+fluvio-smartengine = { git = "https://github.com/infinyon/fluvio", branch = "master" }
 sasl2-sys          = { git = "https://github.com/infinyon/rust-sasl/", branch = "fix-cross-compiling" }
 krb5-src           = { git = "https://github.com/infinyon/rust-krb5-src", branch = "fix-cross-compiling" }
 
