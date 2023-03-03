@@ -33,10 +33,11 @@ thiserror = "1.0.31"
 tracing = "0.1.37"
 
 fluvio-future = { version = "0.4.1", features = ["subscriber"] }
-fluvio = { workspace = true }
-fluvio-smartengine = { workspace = true, default-features = false, features = ["transformation"]}
-fluvio-protocol = { workspace = true }
-fluvio-sc-schema = { workspace = true }
+fluvio = { version = "0.17.0" }
+
+fluvio-smartengine = { version = "0.5.4", default-features = false, features = ["transformation"]}
+fluvio-protocol = { version = "0.8.4" }
+fluvio-sc-schema = { version = "0.17.0" }
 
 [dev-dependencies]
 pretty_assertions = "1.3.0"

@@ -68,7 +68,7 @@ async fn postgres_inserts() -> anyhow::Result<()> {
             .expect("Failed to get next fluvio steram")?;
         let next = next.value();
         let event: ReplicationEvent = serde_json::de::from_slice(next)?;
-        println!("EVENT: {:?} COUNT : {:?}", event, i);
+        println!("EVENT: {event:?} COUNT : {i:?}");
         match event.message {
             LogicalReplicationMessage::Relation(_relation) => {
                 received_relation = true;
@@ -81,13 +81,12 @@ async fn postgres_inserts() -> anyhow::Result<()> {
                     (TupleData::Int4(id), TupleData::String(out_name)) => {
                         assert_eq!(
                             &name, out_name,
-                            "insert name {} doesn't match fluvio stream name {}",
-                            name, out_name
+                            "insert name {name} doesn't match fluvio stream name {out_name}"
                         );
                         assert_eq!(id, &1, "insert id {} doesn't match expected {}", name, 1);
                     }
                     other => {
-                        panic!("Unexpected tuple type {:?}", other);
+                        panic!("Unexpected tuple type {other:?}");
                     }
                 }
             }
@@ -105,7 +104,7 @@ async fn postgres_inserts() -> anyhow::Result<()> {
 
     for i in 2..10 {
         let query = "INSERT INTO foo (NAME) VALUES($1)";
-        let name = format!("Fluvio - {}", i);
+        let name = format!("Fluvio - {i}");
         let _ = pg_client.query(query, &[&name]).await?;
     }
     for i in 2..10 {
@@ -120,8 +119,8 @@ async fn postgres_inserts() -> anyhow::Result<()> {
 
         let next = next.value();
         let event: ReplicationEvent = serde_json::de::from_slice(next)?;
-        println!("FLUVIO EVENT: {:?}", event);
-        let name = format!("Fluvio - {}", i);
+        println!("FLUVIO EVENT: {event:?}");
+        let name = format!("Fluvio - {i}");
         match event.message {
             LogicalReplicationMessage::Insert(insert) => {
                 let id = insert.tuple.0.get(0).expect("No first ID in tuple");
@@ -130,18 +129,17 @@ async fn postgres_inserts() -> anyhow::Result<()> {
                     (TupleData::Int4(id), TupleData::String(out_name)) => {
                         assert_eq!(
                             &name, out_name,
-                            "insert name {} doesn't match fluvio stream name {}",
-                            name, out_name
+                            "insert name {name} doesn't match fluvio stream name {out_name}"
                         );
-                        assert_eq!(id, &i, "insert id {} doesn't match expected {}", name, i);
+                        assert_eq!(id, &i, "insert id {name} doesn't match expected {i}");
                     }
                     other => {
-                        panic!("Unexpected tuple type {:?}", other);
+                        panic!("Unexpected tuple type {other:?}");
                     }
                 }
             }
             other => {
-                panic!("Received unexpected event {:?}", other);
+                panic!("Received unexpected event {other:?}");
             }
         }
         let _next = stream

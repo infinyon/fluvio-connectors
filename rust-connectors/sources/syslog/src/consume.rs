@@ -23,7 +23,7 @@ impl ConsumerOpts {
             let record = record?;
             let record = String::from_utf8_lossy(record.value());
             let msg = parse_message(&record);
-            println!("{:?}", msg);
+            println!("{msg:?}");
         }
         Ok(())
     }

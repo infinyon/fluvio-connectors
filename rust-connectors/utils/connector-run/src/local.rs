@@ -36,7 +36,7 @@ impl LocalOpt {
 
         let mut env_args: Vec<String> = vec![];
         for (key, value) in &build_envs(&config)? {
-            env_args.push(format!("{}={}", key, value));
+            env_args.push(format!("{key}={value}"));
         }
 
         let mut binding = Command::new("docker");

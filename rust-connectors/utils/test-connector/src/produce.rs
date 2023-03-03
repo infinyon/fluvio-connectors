@@ -18,9 +18,9 @@ pub async fn produce(opts: TestConnectorOpts) -> anyhow::Result<()> {
     let timeout = opts.timeout.unwrap_or(Duration::from_millis(1000));
 
     for i in 1..num_records {
-        let value = format!("Hello, Fluvio! - {}", i);
+        let value = format!("Hello, Fluvio! - {i}");
 
-        println!("Sending {}", value);
+        println!("Sending {value}");
 
         producer.send(RecordKey::NULL, value).await?;
         async_std::task::sleep(timeout).await;

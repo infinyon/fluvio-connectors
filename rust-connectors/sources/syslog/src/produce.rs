@@ -33,7 +33,7 @@ impl ProducerOpts {
         let topics = admin
             .list::<TopicSpec, String>(vec![])
             .await
-            .map_err(|e| ConnectorError::Other(format!("Failed to list topics: {}", e)))?
+            .map_err(|e| ConnectorError::Other(format!("Failed to list topics: {e}")))?
             .iter()
             .map(|topic| topic.name.clone())
             .collect::<String>();
@@ -46,7 +46,7 @@ impl ProducerOpts {
                     TopicSpec::new_computed(1, 1, Some(false)),
                 )
                 .await
-                .map_err(|e| ConnectorError::Other(format!("Failed to create topic: {}", e)))?;
+                .map_err(|e| ConnectorError::Other(format!("Failed to create topic: {e}")))?;
         }
 
         let producer = fluvio.topic_producer(topic.clone()).await?;
@@ -71,10 +71,10 @@ impl ProducerOpts {
             let mut watcher: RecommendedWatcher =
                 RecommendedWatcher::new(move |res: NotifyResult<notify::Event>| match res {
                     Ok(event) => {
-                        println!("NEW EVENT: {:?}", event);
+                        println!("NEW EVENT: {event:?}");
                         let _ = tx.send(event);
                     }
-                    Err(e) => println!("watch error: {:?}", e),
+                    Err(e) => println!("watch error: {e:?}"),
                 })?;
             watcher.watch(Path::new(&file), RecursiveMode::Recursive)?;
 
@@ -108,7 +108,7 @@ impl ProducerOpts {
                         }
                     }
                     other => {
-                        println!("OTHER EVENT {:?}", other);
+                        println!("OTHER EVENT {other:?}");
                     }
                 }
             }

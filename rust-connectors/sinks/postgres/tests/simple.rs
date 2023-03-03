@@ -28,13 +28,13 @@ async fn postgres_sink_and_source() -> anyhow::Result<()> {
     // Insert into those rows
     for i in 1..100 {
         let query = "INSERT INTO names (NAME) VALUES($1)";
-        let name = format!("Fluvio_{}", i);
+        let name = format!("Fluvio_{i}");
         let _ = pg_source_client.query(query, &[&name]).await?;
     }
     sleep(Duration::from_millis(100)).await;
     for i in 1..100 {
         let query = "SELECT * FROM names WHERE name=$1";
-        let name = format!("Fluvio_{}", i);
+        let name = format!("Fluvio_{i}");
         let sink_name = pg_sink_client.query(query, &[&name]).await?;
         assert_eq!(
             sink_name.len(),
@@ -58,15 +58,15 @@ async fn postgres_sink_and_source() -> anyhow::Result<()> {
     let _ = pg_source_client.execute(table_alter, &[]).await?;
     for i in 100..200 {
         let query = "INSERT INTO names (NAME, Email) VALUES($1, $2)";
-        let name = format!("Fluvio_{}", i);
-        let email = format!("{}@gmail.com", name);
+        let name = format!("Fluvio_{i}");
+        let email = format!("{name}@gmail.com");
         let _ = pg_source_client.query(query, &[&name, &email]).await?;
     }
     sleep(Duration::from_millis(100)).await;
     for i in 100..200 {
         let query = "SELECT * FROM names WHERE name=$1";
-        let name = format!("Fluvio_{}", i);
-        let email = format!("{}@gmail.com", name);
+        let name = format!("Fluvio_{i}");
+        let email = format!("{name}@gmail.com");
         let sink_name = pg_sink_client.query(query, &[&name]).await?;
         assert_eq!(
             sink_name.len(),
@@ -92,16 +92,16 @@ async fn postgres_sink_and_source() -> anyhow::Result<()> {
     let _ = pg_source_client.execute(table_alter, &[]).await?;
     for i in 200..300 {
         let query = "INSERT INTO names (fluvio_id, Email) VALUES($1, $2)";
-        let name = format!("Fluvio_{}", i);
-        let email = format!("{}@gmail.com", name);
+        let name = format!("Fluvio_{i}");
+        let email = format!("{name}@gmail.com");
         let _ = pg_source_client.query(query, &[&name, &email]).await?;
     }
     sleep(Duration::from_millis(500)).await;
 
     for i in 200..300 {
         let query = "SELECT * FROM names WHERE fluvio_id=$1";
-        let name = format!("Fluvio_{}", i);
-        let email = format!("{}@gmail.com", name);
+        let name = format!("Fluvio_{i}");
+        let email = format!("{name}@gmail.com");
         let sink_name = pg_sink_client.query(query, &[&name]).await?;
         assert_eq!(
             sink_name.len(),
@@ -131,8 +131,8 @@ async fn postgres_sink_and_source() -> anyhow::Result<()> {
     let _ = pg_source_client.execute(table_alter, &[]).await?;
     for i in 300..400 {
         let query = "INSERT INTO names (name, Email) VALUES($1, $2)";
-        let name = format!("Fluvio_{}", i);
-        let email = format!("{}@gmail.com", name);
+        let name = format!("Fluvio_{i}");
+        let email = format!("{name}@gmail.com");
         let _ = pg_source_client.query(query, &[&name, &email]).await?;
     }
     sleep(Duration::from_millis(5000)).await;
@@ -143,15 +143,13 @@ async fn postgres_sink_and_source() -> anyhow::Result<()> {
 
     for i in 300..400 {
         let query = "SELECT * FROM names WHERE name=$1";
-        let name = format!("Fluvio_{}", i);
-        let email = format!("{}@gmail.com", name);
+        let name = format!("Fluvio_{i}");
+        let email = format!("{name}@gmail.com");
         let sink_name = pg_sink_client.query(query, &[&name]).await?;
         assert_eq!(
             sink_name.len(),
             1,
-            "Found more than one result for select query {} - {}",
-            query,
-            name
+            "Found more than one result for select query {query} - {name}"
         );
         let row = sink_name.first().unwrap();
         let columns = row.columns();
@@ -172,22 +170,20 @@ async fn postgres_sink_and_source() -> anyhow::Result<()> {
     let _ = pg_source_client.execute(table_alter, &[]).await?;
     for i in 400..500 {
         let query = "INSERT INTO old_names (name, Email) VALUES($1, $2)";
-        let name = format!("Fluvio_{}", i);
-        let email = format!("{}@gmail.com", name);
+        let name = format!("Fluvio_{i}");
+        let email = format!("{name}@gmail.com");
         let _ = pg_source_client.query(query, &[&name, &email]).await?;
     }
     sleep(Duration::from_millis(500)).await;
     for i in 400..500 {
         let query = "SELECT * FROM old_names WHERE name=$1";
-        let name = format!("Fluvio_{}", i);
-        let email = format!("{}@gmail.com", name);
+        let name = format!("Fluvio_{i}");
+        let email = format!("{name}@gmail.com");
         let sink_name = pg_sink_client.query(query, &[&name]).await?;
         assert_eq!(
             sink_name.len(),
             1,
-            "Found more than one result for select query {} - {}",
-            query,
-            name
+            "Found more than one result for select query {query} - {name}"
         );
         let row = sink_name.first().unwrap();
         let columns = row.columns();
@@ -211,20 +207,18 @@ async fn postgres_sink_and_source() -> anyhow::Result<()> {
 
     for i in 500..600 {
         let query = "INSERT INTO names (name) VALUES($1)";
-        let name = format!("Fluvio_{}", i);
+        let name = format!("Fluvio_{i}");
         let _ = pg_source_client.query(query, &[&name]).await?;
     }
     sleep(Duration::from_millis(1000)).await;
     for i in 500..600 {
         let query = "SELECT * FROM names WHERE name=$1";
-        let name = format!("Fluvio_{}", i);
+        let name = format!("Fluvio_{i}");
         let sink_name = pg_sink_client.query(query, &[&name]).await?;
         assert_eq!(
             sink_name.len(),
             1,
-            "Found more than one result for select query {} - {}",
-            query,
-            name
+            "Found more than one result for select query {query} - {name}"
         );
         let row = sink_name.first().unwrap();
         let columns = row.columns();
@@ -240,23 +234,21 @@ async fn postgres_sink_and_source() -> anyhow::Result<()> {
     }
 
     for i in 300..600 {
-        let new_name = format!("Fluvio_fluvio_{}", i);
+        let new_name = format!("Fluvio_fluvio_{i}");
         //let query = "UPDATE names SET name=$1 WHERE name=$2";
-        let query = format!("UPDATE names SET name='{}' WHERE id={}", new_name, i);
+        let query = format!("UPDATE names SET name='{new_name}' WHERE id={i}");
         let query = query.as_str();
         let _update = pg_source_client.query(query, &[]).await?;
     }
     sleep(Duration::from_millis(5000)).await;
     for i in 300..600 {
         let query = "SELECT * FROM names WHERE name=$1";
-        let name = format!("Fluvio_fluvio_{}", i);
+        let name = format!("Fluvio_fluvio_{i}");
         let sink_name = pg_sink_client.query(query, &[&name]).await?;
         assert_eq!(
             sink_name.len(),
             1,
-            "Found more than one result for select query {} - {}",
-            query,
-            name
+            "Found more than one result for select query {query} - {name}"
         );
         let row = sink_name.first().unwrap();
         let columns = row.columns();

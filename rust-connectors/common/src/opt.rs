@@ -73,7 +73,7 @@ impl CommonConnectorOpt {
         connector_name: &str,
     ) -> anyhow::Result<fluvio::TopicProducer> {
         let mut cluster_config = FluvioConfig::load()?;
-        cluster_config.client_id = Some(format!("fluvio_connector_{}", connector_name));
+        cluster_config.client_id = Some(format!("fluvio_connector_{connector_name}"));
 
         let fluvio = fluvio::Fluvio::connect_with_config(&cluster_config).await?;
         self.ensure_topic_exists().await?;
@@ -116,7 +116,7 @@ impl CommonConnectorOpt {
 impl CommonConnectorOpt {
     pub async fn create_consumer(&self) -> anyhow::Result<fluvio::PartitionConsumer> {
         self.ensure_topic_exists().await?;
-        Ok(fluvio::consumer(&self.fluvio_topic, self.consumer_common.consumer_partition).await?)
+        fluvio::consumer(&self.fluvio_topic, self.consumer_common.consumer_partition).await
     }
 
     pub async fn create_consumer_stream(
@@ -129,7 +129,7 @@ impl CommonConnectorOpt {
         >,
     > {
         let mut cluster_config = FluvioConfig::load()?;
-        cluster_config.client_id = Some(format!("fluvio_connector_{}", connector_name));
+        cluster_config.client_id = Some(format!("fluvio_connector_{connector_name}"));
         let smartmodule = self
             .transform_common
             .transform
@@ -246,7 +246,7 @@ pub trait GetOpts {
                 "schema": schema,
             });
             let metadata_json = serde_json::to_string_pretty(&metadata).unwrap();
-            println!("{}", metadata_json);
+            println!("{metadata_json}");
             None
         } else {
             Some(Self::Opt::from_args())

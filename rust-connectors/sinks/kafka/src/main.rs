@@ -186,7 +186,7 @@ impl KafkaSinkDependencies {
                 (_, Some(ca_pem)) => {
                     let mut tmpfile = NamedTempFile::new().unwrap();
 
-                    write!(tmpfile, "{}", ca_pem).unwrap();
+                    write!(tmpfile, "{ca_pem}").unwrap();
                     let (_file, path) = tmpfile.keep()?;
                     let path = path.into_os_string().into_string().unwrap_or_default();
                     client_config.set("ssl.ca.location", path);

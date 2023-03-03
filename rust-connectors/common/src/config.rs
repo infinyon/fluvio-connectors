@@ -99,7 +99,7 @@ impl ConnectorConfig {
         if let Some(consumer) = self.consumer.as_ref() {
             if let Some(partition) = consumer.partition {
                 params.push("--consumer-partition".to_string());
-                params.push(format!("{}", partition));
+                params.push(format!("{partition}"));
             }
         }
         params
@@ -390,24 +390,24 @@ mod tests {
         let connector_cfg = ConnectorConfig::from_file("test-data/connectors/error-linger.yaml")
             .expect_err("This yaml should error");
         #[cfg(unix)]
-        assert_eq!("Yaml(Message(\"invalid value: string \\\"1\\\", expected a duration\", Some(Pos { marker: Marker { index: 100, line: 7, col: 10 }, path: \"producer.linger\" })))", format!("{:?}", connector_cfg));
+        assert_eq!("Yaml(Message(\"invalid value: string \\\"1\\\", expected a duration\", Some(Pos { marker: Marker { index: 100, line: 7, col: 10 }, path: \"producer.linger\" })))", format!("{connector_cfg:?}"));
         let connector_cfg =
             ConnectorConfig::from_file("test-data/connectors/error-compression.yaml")
                 .expect_err("This yaml should error");
         #[cfg(unix)]
-        assert_eq!("Yaml(Message(\"unknown variant `gzipaoeu`, expected one of `none`, `gzip`, `snappy`, `lz4`\", Some(Pos { marker: Marker { index: 105, line: 7, col: 15 }, path: \"producer.compression\" })))", format!("{:?}", connector_cfg));
+        assert_eq!("Yaml(Message(\"unknown variant `gzipaoeu`, expected one of `none`, `gzip`, `snappy`, `lz4`\", Some(Pos { marker: Marker { index: 105, line: 7, col: 15 }, path: \"producer.compression\" })))", format!("{connector_cfg:?}"));
 
         let connector_cfg = ConnectorConfig::from_file("test-data/connectors/error-batchsize.yaml")
             .expect_err("This yaml should error");
         #[cfg(unix)]
         assert_eq!(
             "ByteSizeParse(\"couldn't parse \\\"aoeu\\\" into a known SI unit, couldn't parse unit of \\\"aoeu\\\"\")",
-            format!("{:?}", connector_cfg)
+            format!("{connector_cfg:?}")
         );
         let connector_cfg = ConnectorConfig::from_file("test-data/connectors/error-version.yaml")
             .expect_err("This yaml should error");
         #[cfg(unix)]
-        assert_eq!("Yaml(Message(\"missing field `version`\", Some(Pos { marker: Marker { index: 4, line: 1, col: 4 }, path: \".\" })))", format!("{:?}", connector_cfg));
+        assert_eq!("Yaml(Message(\"missing field `version`\", Some(Pos { marker: Marker { index: 4, line: 1, col: 4 }, path: \".\" })))", format!("{connector_cfg:?}"));
     }
 
     #[test]

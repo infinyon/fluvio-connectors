@@ -186,7 +186,7 @@ fn build_args(config: &ConnectorConfig) -> anyhow::Result<Vec<String>> {
             .transforms
             .iter()
             .map(serde_json::to_string)
-            .map_ok(|transform| format!("--transform={}", transform))
+            .map_ok(|transform| format!("--transform={transform}"))
             .collect();
         args.extend(transforms.context("unable serialize TransformParameters into arguments")?);
     }

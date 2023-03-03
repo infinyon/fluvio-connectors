@@ -23,7 +23,7 @@ fn init(params: SmartModuleExtraParams) -> Result<()> {
                 Ok(())
             }
             Err(err) => {
-                eprintln!("unable to parse init params: {:?}", err);
+                eprintln!("unable to parse init params: {err:?}");
                 Err(eyre::Report::msg("could not parse json-sql mapping"))
             }
         }

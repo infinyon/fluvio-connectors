@@ -20,7 +20,7 @@ fn init(params: SmartModuleExtraParams) -> Result<()> {
                 Ok(())
             }
             Err(err) => {
-                eprintln!("unable to parse spec from params: {:?}", err);
+                eprintln!("unable to parse spec from params: {err:?}");
                 Err(eyre::Report::msg(
                     "could not parse the specification from `spec` param",
                 ))
