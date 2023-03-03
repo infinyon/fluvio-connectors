@@ -95,9 +95,9 @@ where
 trait Insert<DB: Database> {
     fn query(table: &str, values: &[Value]) -> String;
 
-    fn bind_value<'a, 'b>(
+    fn bind_value<'a>(
         query: Query<'a, DB, <DB as HasArguments<'a>>::Arguments>,
-        value: &'b Value,
+        value: &Value,
     ) -> anyhow::Result<Query<'a, DB, <DB as HasArguments<'a>>::Arguments>>;
 }
 
@@ -108,9 +108,9 @@ impl Insert<Postgres> for Db {
         format!("INSERT INTO {table} ({columns}) VALUES ({values_clause})")
     }
 
-    fn bind_value<'a, 'b>(
+    fn bind_value<'a>(
         query: Query<'a, Postgres, PgArguments>,
-        value: &'b Value,
+        value: &Value,
     ) -> anyhow::Result<Query<'a, Postgres, PgArguments>> {
         let query = match value.type_ {
             Type::Bool => query.bind(bool::from_str(&value.raw_value)?),
@@ -143,9 +143,9 @@ impl Insert<Sqlite> for Db {
         format!("INSERT INTO {table} ({columns}) VALUES ({values_clause})")
     }
 
-    fn bind_value<'a, 'b>(
+    fn bind_value<'a>(
         query: Query<'a, Sqlite, SqliteArguments<'a>>,
-        value: &'b Value,
+        value: &Value,
     ) -> anyhow::Result<Query<'a, Sqlite, SqliteArguments<'a>>> {
         let query = match value.type_ {
             Type::Bool => query.bind(bool::from_str(&value.raw_value)?),
