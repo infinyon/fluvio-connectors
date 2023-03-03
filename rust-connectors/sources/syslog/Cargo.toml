@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.56"
-syslog_loose = "0.17.0"
+syslog_loose = "0.18.0"
 structopt = "0.3"
 fluvio = { version = "0.17.0" }
 thiserror = "1.0.25"
