@@ -154,9 +154,7 @@ impl PgConnector {
                 }
             }
             if !sql_statements.is_empty() {
-                let sql = format!(
-                    "UPDATE fluvio.offset SET current_offset={offset} where id = 1"
-                );
+                let sql = format!("UPDATE fluvio.offset SET current_offset={offset} where id = 1");
                 sql_statements.push(sql);
                 let batch = sql_statements.join(";");
                 tracing::info!("executing sql: {:?}", batch);

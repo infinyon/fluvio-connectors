@@ -105,9 +105,7 @@ impl Insert<Postgres> for Db {
     fn query(table: &str, values: &[Value]) -> String {
         let columns = values.iter().map(|v| v.column.as_str()).join(",");
         let values_clause = (1..=values.len()).map(|i| format!("${i}")).join(",");
-        format!(
-            "INSERT INTO {table} ({columns}) VALUES ({values_clause})"
-        )
+        format!("INSERT INTO {table} ({columns}) VALUES ({values_clause})")
     }
 
     fn bind_value<'a, 'b>(
@@ -142,9 +140,7 @@ impl Insert<Sqlite> for Db {
     fn query(table: &str, values: &[Value]) -> String {
         let columns = values.iter().map(|v| v.column.as_str()).join(",");
         let values_clause = (1..=values.len()).map(|_| "?").join(",");
-        format!(
-            "INSERT INTO {table} ({columns}) VALUES ({values_clause})"
-        )
+        format!("INSERT INTO {table} ({columns}) VALUES ({values_clause})")
     }
 
     fn bind_value<'a, 'b>(
