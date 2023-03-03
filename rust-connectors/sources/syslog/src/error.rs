@@ -1,8 +1,13 @@
 use crate::config::ConfigError;
 use thiserror::Error;
 
+pub use anyhow::Error as AnyError;
+
 #[derive(Debug, Error)]
 pub enum ConnectorError {
+    #[error("Anyhow Error {0}")]
+    Anyhow(#[from] AnyError),
+
     #[error("Fluvio Error {0}")]
     Fluvio(#[from] fluvio::FluvioError),
 

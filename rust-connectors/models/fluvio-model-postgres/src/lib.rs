@@ -96,7 +96,7 @@ impl TryInto<String> for &TupleData {
             TupleData::Float4(i) => Ok(format!("{i}")),
             TupleData::Float8(i) => Ok(format!("{i}")),
             TupleData::String(i) => Ok(format!("'{i}'")),
-            other => Err(format!("Unsupported tupple type {:?}", other)),
+            other => Err(format!("Unsupported tupple type {other:?}")),
         }
     }
 }

@@ -790,12 +790,6 @@ checksum = "9e1b586273c5702936fe7b7d6896644d8be71e6314cfe09d3167c95f712589e8"
 
 [[package]]
 name = "base64"
-version = "0.20.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0ea22880d78093b0cbe17c89f64a7d457941e65759157ec6cb31a31d652b05e5"
-
-[[package]]
-name = "base64"
 version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a4a4ddaa51a5bc52a6948f74c06d20aaaddb71924eab79b8c97a8c556e942d6a"
@@ -860,15 +854,6 @@ dependencies = [
  "fastrand",
  "futures-lite",
  "once_cell",
-]
-
-[[package]]
-name = "built"
-version = "0.5.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5b9c056b9ed43aee5e064b683aa1ec783e19c6acec7559e3ae931b7490472fbe"
-dependencies = [
- "cargo-lock",
 ]
 
 [[package]]
@@ -1868,47 +1853,8 @@ dependencies = [
 
 [[package]]
 name = "fluvio"
-version = "0.16.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "05dd7e4c85ab7516ec6ffa957fdaededb3acecd53976e95d3b0643063cdd6940"
-dependencies = [
- "anyhow",
- "async-channel",
- "async-lock",
- "async-rwlock",
- "async-trait",
- "base64 0.20.0",
- "bytes 1.2.1",
- "cfg-if 1.0.0",
- "chrono",
- "derive_builder",
- "dirs",
- "event-listener",
- "fluvio-compression 0.2.1",
- "fluvio-future 0.4.5",
- "fluvio-protocol 0.8.3",
- "fluvio-sc-schema 0.16.0",
- "fluvio-smartmodule 0.3.1",
- "fluvio-socket 0.13.2",
- "fluvio-spu-schema 0.11.1",
- "fluvio-types 0.4.0",
- "futures-util",
- "once_cell",
- "pin-project-lite 0.2.9",
- "semver 1.0.14",
- "serde",
- "serde_json",
- "siphasher",
- "thiserror",
- "tokio",
- "toml 0.5.9",
- "tracing",
-]
-
-[[package]]
-name = "fluvio"
-version = "0.18.0"
-source = "git+https://github.com/infinyon/fluvio?branch=master#065b4fc079112edbac265f6c851f49598bb94e17"
+version = "0.17.0"
+source = "git+https://github.com/infinyon/fluvio?tag=v0.10.5#b9600cff39ee7c2c1eb4231e7a59d7d0230bbcd5"
 dependencies = [
  "anyhow",
  "async-channel",
@@ -1924,12 +1870,12 @@ dependencies = [
  "event-listener",
  "fluvio-compression 0.2.3",
  "fluvio-future 0.4.5",
- "fluvio-protocol 0.9.0",
- "fluvio-sc-schema 0.18.0",
- "fluvio-smartengine",
- "fluvio-smartmodule 0.5.0",
- "fluvio-socket 0.14.0",
- "fluvio-spu-schema 0.13.0",
+ "fluvio-protocol 0.8.4",
+ "fluvio-sc-schema",
+ "fluvio-smartengine 0.6.0",
+ "fluvio-smartmodule 0.4.0",
+ "fluvio-socket",
+ "fluvio-spu-schema",
  "fluvio-types 0.4.1",
  "futures-util",
  "once_cell",
@@ -1961,7 +1907,7 @@ dependencies = [
 [[package]]
 name = "fluvio-compression"
 version = "0.2.3"
-source = "git+https://github.com/infinyon/fluvio?branch=master#065b4fc079112edbac265f6c851f49598bb94e17"
+source = "git+https://github.com/infinyon/fluvio?tag=v0.10.5#b9600cff39ee7c2c1eb4231e7a59d7d0230bbcd5"
 dependencies = [
  "bytes 1.2.1",
  "flate2",
@@ -1980,11 +1926,11 @@ dependencies = [
  "bytesize",
  "clap 3.2.23",
  "flate2",
- "fluvio 0.18.0",
+ "fluvio",
  "fluvio-future 0.4.5",
- "fluvio-protocol 0.9.0",
- "fluvio-sc-schema 0.18.0",
- "fluvio-smartengine",
+ "fluvio-protocol 0.8.4",
+ "fluvio-sc-schema",
+ "fluvio-smartengine 0.5.4",
  "futures-util",
  "humantime",
  "humantime-serde",
@@ -2001,39 +1947,16 @@ dependencies = [
 
 [[package]]
 name = "fluvio-controlplane-metadata"
-version = "0.20.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c124889987d8a4adf98f70627a2bd5924eae9eac43e3f92c7a15b38132d782e"
-dependencies = [
- "async-trait",
- "base64 0.20.0",
- "bytes 1.2.1",
- "flate2",
- "fluvio-future 0.4.5",
- "fluvio-protocol 0.8.3",
- "fluvio-stream-model 0.8.3",
- "fluvio-types 0.4.0",
- "flv-util",
- "lenient_semver",
- "semver 1.0.14",
- "serde",
- "thiserror",
- "toml 0.5.9",
- "tracing",
-]
-
-[[package]]
-name = "fluvio-controlplane-metadata"
-version = "0.22.0"
-source = "git+https://github.com/infinyon/fluvio?branch=master#065b4fc079112edbac265f6c851f49598bb94e17"
+version = "0.21.0"
+source = "git+https://github.com/infinyon/fluvio?tag=v0.10.5#b9600cff39ee7c2c1eb4231e7a59d7d0230bbcd5"
 dependencies = [
  "async-trait",
  "base64 0.21.0",
  "bytes 1.2.1",
  "flate2",
  "fluvio-future 0.4.5",
- "fluvio-protocol 0.9.0",
- "fluvio-stream-model 0.8.4",
+ "fluvio-protocol 0.8.4",
+ "fluvio-stream-model",
  "fluvio-types 0.4.1",
  "flv-util",
  "lenient_semver",
@@ -2152,30 +2075,8 @@ dependencies = [
 
 [[package]]
 name = "fluvio-protocol"
-version = "0.8.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "175c3ba82fb0fa388cbb9d01b2ee90b210e622e75c544205c1464d016bc1d397"
-dependencies = [
- "bytes 1.2.1",
- "content_inspector",
- "crc32c",
- "eyre",
- "fluvio-compression 0.2.1",
- "fluvio-future 0.4.5",
- "fluvio-protocol-derive 0.4.4",
- "fluvio-types 0.4.0",
- "flv-util",
- "once_cell",
- "semver 1.0.14",
- "thiserror",
- "tokio-util 0.7.4",
- "tracing",
-]
-
-[[package]]
-name = "fluvio-protocol"
-version = "0.9.0"
-source = "git+https://github.com/infinyon/fluvio?branch=master#065b4fc079112edbac265f6c851f49598bb94e17"
+version = "0.8.4"
+source = "git+https://github.com/infinyon/fluvio?tag=v0.10.5#b9600cff39ee7c2c1eb4231e7a59d7d0230bbcd5"
 dependencies = [
  "bytes 1.2.1",
  "content_inspector",
@@ -2208,7 +2109,7 @@ dependencies = [
 [[package]]
 name = "fluvio-protocol-derive"
 version = "0.4.5"
-source = "git+https://github.com/infinyon/fluvio?branch=master#065b4fc079112edbac265f6c851f49598bb94e17"
+source = "git+https://github.com/infinyon/fluvio?tag=v0.10.5#b9600cff39ee7c2c1eb4231e7a59d7d0230bbcd5"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2218,29 +2119,12 @@ dependencies = [
 
 [[package]]
 name = "fluvio-sc-schema"
-version = "0.16.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a067fbedf0061c6333fcc5521b1d55dc5bc56cad3a54ea1f9cd037423c552499"
+version = "0.17.0"
+source = "git+https://github.com/infinyon/fluvio?tag=v0.10.5#b9600cff39ee7c2c1eb4231e7a59d7d0230bbcd5"
 dependencies = [
- "fluvio-controlplane-metadata 0.20.0",
- "fluvio-protocol 0.8.3",
- "fluvio-socket 0.13.2",
- "fluvio-types 0.4.0",
- "log",
- "paste",
- "static_assertions",
- "thiserror",
- "tracing",
-]
-
-[[package]]
-name = "fluvio-sc-schema"
-version = "0.18.0"
-source = "git+https://github.com/infinyon/fluvio?branch=master#065b4fc079112edbac265f6c851f49598bb94e17"
-dependencies = [
- "fluvio-controlplane-metadata 0.22.0",
- "fluvio-protocol 0.9.0",
- "fluvio-socket 0.14.0",
+ "fluvio-controlplane-metadata",
+ "fluvio-protocol 0.8.4",
+ "fluvio-socket",
  "fluvio-types 0.4.1",
  "log",
  "paste",
@@ -2251,18 +2135,35 @@ dependencies = [
 
 [[package]]
 name = "fluvio-smartengine"
-version = "0.7.0"
-source = "git+https://github.com/infinyon/fluvio?branch=master#065b4fc079112edbac265f6c851f49598bb94e17"
+version = "0.5.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b13af14c1ec4b0d391ba8a031bfa90f3abab5da138e603e615cc58cf299eb7f5"
 dependencies = [
  "anyhow",
  "cfg-if 1.0.0",
  "derive_builder",
  "fluvio-future 0.4.5",
- "fluvio-protocol 0.9.0",
- "fluvio-smartmodule 0.5.0",
+ "fluvio-protocol 0.8.4",
+ "fluvio-smartmodule 0.3.1",
  "serde",
  "serde_json",
  "serde_yaml 0.9.14",
+ "thiserror",
+ "tracing",
+]
+
+[[package]]
+name = "fluvio-smartengine"
+version = "0.6.0"
+source = "git+https://github.com/infinyon/fluvio?tag=v0.10.5#b9600cff39ee7c2c1eb4231e7a59d7d0230bbcd5"
+dependencies = [
+ "anyhow",
+ "cfg-if 1.0.0",
+ "derive_builder",
+ "fluvio-future 0.4.5",
+ "fluvio-protocol 0.8.4",
+ "fluvio-smartmodule 0.4.0",
+ "serde",
  "thiserror",
  "tracing",
  "wasmtime",
@@ -2275,7 +2176,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a10bef73ebe43bf2ec120003b36079424cd3bcad7d8d9f5dbd248078a3fab029"
 dependencies = [
  "eyre",
- "fluvio-protocol 0.8.3",
+ "fluvio-protocol 0.8.4",
  "fluvio-smartmodule-derive 0.3.0",
  "thiserror",
  "tracing",
@@ -2283,11 +2184,11 @@ dependencies = [
 
 [[package]]
 name = "fluvio-smartmodule"
-version = "0.5.0"
-source = "git+https://github.com/infinyon/fluvio?branch=master#065b4fc079112edbac265f6c851f49598bb94e17"
+version = "0.4.0"
+source = "git+https://github.com/infinyon/fluvio?tag=v0.10.5#b9600cff39ee7c2c1eb4231e7a59d7d0230bbcd5"
 dependencies = [
  "eyre",
- "fluvio-protocol 0.9.0",
+ "fluvio-protocol 0.8.4",
  "fluvio-smartmodule-derive 0.4.0",
  "thiserror",
  "tracing",
@@ -2307,7 +2208,7 @@ dependencies = [
 [[package]]
 name = "fluvio-smartmodule-derive"
 version = "0.4.0"
-source = "git+https://github.com/infinyon/fluvio?branch=master#065b4fc079112edbac265f6c851f49598bb94e17"
+source = "git+https://github.com/infinyon/fluvio?tag=v0.10.5#b9600cff39ee7c2c1eb4231e7a59d7d0230bbcd5"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2316,43 +2217,18 @@ dependencies = [
 
 [[package]]
 name = "fluvio-socket"
-version = "0.13.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "43b752d8e48b4b73431a94eba45f1111bfb7ffbf26691f88ff4212b602d164b5"
+version = "0.13.3"
+source = "git+https://github.com/infinyon/fluvio?tag=v0.10.5#b9600cff39ee7c2c1eb4231e7a59d7d0230bbcd5"
 dependencies = [
  "async-channel",
  "async-lock",
  "async-trait",
- "built 0.5.2",
+ "built",
  "bytes 1.2.1",
  "cfg-if 1.0.0",
  "event-listener",
  "fluvio-future 0.4.5",
- "fluvio-protocol 0.8.3",
- "futures-util",
- "once_cell",
- "pin-project",
- "semver 1.0.14",
- "thiserror",
- "tokio",
- "tokio-util 0.7.4",
- "tracing",
-]
-
-[[package]]
-name = "fluvio-socket"
-version = "0.14.0"
-source = "git+https://github.com/infinyon/fluvio?branch=master#065b4fc079112edbac265f6c851f49598bb94e17"
-dependencies = [
- "async-channel",
- "async-lock",
- "async-trait",
- "built 0.6.0",
- "bytes 1.2.1",
- "cfg-if 1.0.0",
- "event-listener",
- "fluvio-future 0.4.5",
- "fluvio-protocol 0.9.0",
+ "fluvio-protocol 0.8.4",
  "futures-util",
  "once_cell",
  "pin-project",
@@ -2365,34 +2241,15 @@ dependencies = [
 
 [[package]]
 name = "fluvio-spu-schema"
-version = "0.11.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a455b11d3d2115612f9b149570118727f7ce121ac4255d2ca66e77d505d9aca3"
+version = "0.12.0"
+source = "git+https://github.com/infinyon/fluvio?tag=v0.10.5#b9600cff39ee7c2c1eb4231e7a59d7d0230bbcd5"
 dependencies = [
  "bytes 1.2.1",
  "educe",
  "flate2",
  "fluvio-future 0.4.5",
- "fluvio-protocol 0.8.3",
- "fluvio-smartmodule 0.3.1",
- "fluvio-types 0.4.0",
- "log",
- "serde",
- "static_assertions",
- "tracing",
-]
-
-[[package]]
-name = "fluvio-spu-schema"
-version = "0.13.0"
-source = "git+https://github.com/infinyon/fluvio?branch=master#065b4fc079112edbac265f6c851f49598bb94e17"
-dependencies = [
- "bytes 1.2.1",
- "educe",
- "flate2",
- "fluvio-future 0.4.5",
- "fluvio-protocol 0.9.0",
- "fluvio-smartmodule 0.5.0",
+ "fluvio-protocol 0.8.4",
+ "fluvio-smartmodule 0.4.0",
  "fluvio-types 0.4.1",
  "log",
  "serde",
@@ -2402,20 +2259,8 @@ dependencies = [
 
 [[package]]
 name = "fluvio-stream-model"
-version = "0.8.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "72c92f9760268840bbc4b3e275421b6a9350e4e06746c36deb4c16455b70ea4d"
-dependencies = [
- "async-rwlock",
- "event-listener",
- "once_cell",
- "tracing",
-]
-
-[[package]]
-name = "fluvio-stream-model"
 version = "0.8.4"
-source = "git+https://github.com/infinyon/fluvio?branch=master#065b4fc079112edbac265f6c851f49598bb94e17"
+source = "git+https://github.com/infinyon/fluvio?tag=v0.10.5#b9600cff39ee7c2c1eb4231e7a59d7d0230bbcd5"
 dependencies = [
  "async-rwlock",
  "event-listener",
@@ -2427,8 +2272,9 @@ dependencies = [
 name = "fluvio-syslog"
 version = "0.2.1"
 dependencies = [
+ "anyhow",
  "cfg-if 1.0.0",
- "fluvio 0.18.0",
+ "fluvio",
  "futures-util",
  "notify",
  "serde",
@@ -2462,19 +2308,8 @@ dependencies = [
 
 [[package]]
 name = "fluvio-types"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "af493e9df6f0b531fbc0d56ef568aaf613f5298ea27c11ad6ad70c780d30f090"
-dependencies = [
- "event-listener",
- "thiserror",
- "tracing",
-]
-
-[[package]]
-name = "fluvio-types"
 version = "0.4.1"
-source = "git+https://github.com/infinyon/fluvio?branch=master#065b4fc079112edbac265f6c851f49598bb94e17"
+source = "git+https://github.com/infinyon/fluvio?tag=v0.10.5#b9600cff39ee7c2c1eb4231e7a59d7d0230bbcd5"
 dependencies = [
  "event-listener",
  "thiserror",
@@ -4184,7 +4019,7 @@ dependencies = [
  "clap 3.2.23",
  "color-backtrace",
  "dotenv",
- "fluvio 0.16.0",
+ "fluvio",
  "fluvio-connectors-common",
  "fluvio-future 0.4.5",
  "fluvio-model-postgres",
@@ -4214,7 +4049,7 @@ dependencies = [
  "clap 3.2.23",
  "color-backtrace",
  "dotenv",
- "fluvio 0.18.0",
+ "fluvio",
  "fluvio-connectors-common",
  "fluvio-future 0.4.5",
  "fluvio-model-postgres",
@@ -5275,13 +5110,13 @@ dependencies = [
  "chrono",
  "clap 3.2.23",
  "flate2",
- "fluvio 0.18.0",
+ "fluvio",
  "fluvio-connectors-common",
  "fluvio-future 0.4.5",
  "fluvio-model-sql",
- "fluvio-smartengine",
- "fluvio-smartmodule 0.5.0",
- "fluvio-spu-schema 0.13.0",
+ "fluvio-smartengine 0.6.0",
+ "fluvio-smartmodule 0.4.0",
+ "fluvio-spu-schema",
  "futures 0.3.25",
  "httpmock",
  "isahc",
