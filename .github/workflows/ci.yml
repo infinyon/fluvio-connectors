@@ -238,7 +238,7 @@ jobs:
       RUST_BACKTRACE: full
     steps:
       - uses: actions/checkout@v3
-      - uses: AbsaOSS/k3d-action@v2.3.0
+      - uses: AbsaOSS/k3d-action@v2.4.0
         name: "Create fluvio k3d Cluster"
         with:
           cluster-name: "fluvio"
@@ -385,7 +385,7 @@ jobs:
       - name: "Start postgres instance"
         run: |
           make -C ./rust-connectors/sources/postgres postgres
-      - uses: AbsaOSS/k3d-action@v2.3.0
+      - uses: AbsaOSS/k3d-action@v2.4.0
         name: "Create fluvio k3d Cluster"
         with:
           cluster-name: "fluvio"
@@ -427,7 +427,7 @@ jobs:
       - name: "Start postgres instance"
         run: |
           make -C ./rust-connectors/sinks/postgres postgres
-      - uses: AbsaOSS/k3d-action@v2.3.0
+      - uses: AbsaOSS/k3d-action@v2.4.0
         name: "Create fluvio k3d Cluster"
         with:
           cluster-name: "fluvio"
@@ -460,7 +460,7 @@ jobs:
   examples:
     runs-on: ubuntu-latest
     steps:
-      - uses: AbsaOSS/k3d-action@v2.3.0
+      - uses: AbsaOSS/k3d-action@v2.4.0
         name: "Create fluvio k3d Cluster"
         with:
           cluster-name: "fluvio"
