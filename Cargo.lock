@@ -1087,7 +1087,7 @@ dependencies = [
  "fluvio-connectors-common",
  "itertools",
  "k8-client",
- "k8-types",
+ "k8-types 0.6.1",
  "serde",
  "serde_json",
  "serde_yaml 0.8.26",
@@ -1668,7 +1668,7 @@ dependencies = [
  "aws-sdk-dynamodb",
  "clap 3.2.23",
  "fluvio-connectors-common",
- "fluvio-future 0.4.5",
+ "fluvio-future",
  "schemars",
  "serde_json",
  "tokio",
@@ -1869,7 +1869,7 @@ dependencies = [
  "dirs",
  "event-listener",
  "fluvio-compression 0.2.3",
- "fluvio-future 0.4.5",
+ "fluvio-future",
  "fluvio-protocol 0.8.4",
  "fluvio-sc-schema",
  "fluvio-smartengine 0.6.0",
@@ -1927,7 +1927,7 @@ dependencies = [
  "clap 3.2.23",
  "flate2",
  "fluvio",
- "fluvio-future 0.4.5",
+ "fluvio-future",
  "fluvio-protocol 0.8.4",
  "fluvio-sc-schema",
  "fluvio-smartengine 0.5.4",
@@ -1954,7 +1954,7 @@ dependencies = [
  "base64 0.21.0",
  "bytes 1.2.1",
  "flate2",
- "fluvio-future 0.4.5",
+ "fluvio-future",
  "fluvio-protocol 0.8.4",
  "fluvio-stream-model",
  "fluvio-types 0.4.1",
@@ -1979,7 +1979,7 @@ dependencies = [
  "crc32c",
  "eyre",
  "fluvio-compression 0.2.1",
- "fluvio-future 0.4.5",
+ "fluvio-future",
  "fluvio-protocol 0.7.9",
  "fluvio-types 0.3.9",
  "flv-util",
@@ -1988,29 +1988,6 @@ dependencies = [
  "semver 1.0.14",
  "thiserror",
  "tracing",
-]
-
-[[package]]
-name = "fluvio-future"
-version = "0.3.18"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1e2d1fad8e412d44c516add2349a34f6d71d9279b108c8e012325ab17fcbf982"
-dependencies = [
- "async-io",
- "async-net",
- "async-std",
- "async-trait",
- "cfg-if 1.0.0",
- "fluvio-wasm-timer",
- "futures-lite",
- "futures-util",
- "log",
- "openssl",
- "openssl-sys",
- "pin-project",
- "thiserror",
- "tracing",
- "ws_stream_wasm",
 ]
 
 [[package]]
@@ -2083,7 +2060,7 @@ dependencies = [
  "crc32c",
  "eyre",
  "fluvio-compression 0.2.3",
- "fluvio-future 0.4.5",
+ "fluvio-future",
  "fluvio-protocol-derive 0.4.5",
  "fluvio-types 0.4.1",
  "flv-util",
@@ -2142,7 +2119,7 @@ dependencies = [
  "anyhow",
  "cfg-if 1.0.0",
  "derive_builder",
- "fluvio-future 0.4.5",
+ "fluvio-future",
  "fluvio-protocol 0.8.4",
  "fluvio-smartmodule 0.3.1",
  "serde",
@@ -2160,7 +2137,7 @@ dependencies = [
  "anyhow",
  "cfg-if 1.0.0",
  "derive_builder",
- "fluvio-future 0.4.5",
+ "fluvio-future",
  "fluvio-protocol 0.8.4",
  "fluvio-smartmodule 0.4.0",
  "serde",
@@ -2227,7 +2204,7 @@ dependencies = [
  "bytes 1.2.1",
  "cfg-if 1.0.0",
  "event-listener",
- "fluvio-future 0.4.5",
+ "fluvio-future",
  "fluvio-protocol 0.8.4",
  "futures-util",
  "once_cell",
@@ -2247,7 +2224,7 @@ dependencies = [
  "bytes 1.2.1",
  "educe",
  "flate2",
- "fluvio-future 0.4.5",
+ "fluvio-future",
  "fluvio-protocol 0.8.4",
  "fluvio-smartmodule 0.4.0",
  "fluvio-types 0.4.1",
@@ -2774,7 +2751,7 @@ version = "0.4.3"
 dependencies = [
  "clap 3.2.23",
  "fluvio-connectors-common",
- "fluvio-future 0.4.5",
+ "fluvio-future",
  "humantime",
  "reqwest",
  "rstest",
@@ -3151,27 +3128,27 @@ dependencies = [
 
 [[package]]
 name = "k8-client"
-version = "7.0.1"
+version = "8.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f75c80bd15d1ce4f12b002d3a9b7de5b8e0787018913de687a3f4ee007fed7c"
+checksum = "5f2ab958be0d11da969be0522c572f09762ab40a30432fdd23e506541cceb624"
 dependencies = [
  "async-trait",
  "base64 0.13.1",
  "bytes 1.2.1",
  "cfg-if 1.0.0",
- "fluvio-future 0.3.18",
+ "fluvio-future",
  "futures-util",
  "http",
  "hyper",
  "k8-config",
  "k8-diff",
  "k8-metadata-client",
- "k8-types",
+ "k8-types 0.7.1",
  "pin-utils",
  "rand 0.8.5",
  "serde",
  "serde_json",
- "serde_qs 0.9.2",
+ "serde_qs 0.10.1",
  "tokio",
  "tracing",
 ]
@@ -3204,14 +3181,14 @@ dependencies = [
 
 [[package]]
 name = "k8-metadata-client"
-version = "4.0.1"
+version = "5.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8005481343e102fb47ba4bf19de02eb37f7d6e8c16f3f2d3f9c96a5807c3410a"
+checksum = "651501c896262bc478f439514f9f36114f88a460f65661ed18688f3886a8ee89"
 dependencies = [
  "async-trait",
  "futures-util",
  "k8-diff",
- "k8-types",
+ "k8-types 0.7.1",
  "pin-utils",
  "serde",
  "serde_json",
@@ -3223,6 +3200,16 @@ name = "k8-types"
 version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf8debf570f7ab9c2fc4c5f4c59d006b58f97de9570248cf940cd8ec086cc202"
+dependencies = [
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "k8-types"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e1dd2af92a6a6f18bc1e7e218e50305e2fd110e94ed22ad8e0672d175f291267"
 dependencies = [
  "serde",
  "serde_json",
@@ -3254,7 +3241,7 @@ dependencies = [
  "anyhow",
  "clap 3.2.23",
  "fluvio-connectors-common",
- "fluvio-future 0.4.5",
+ "fluvio-future",
  "rdkafka",
  "schemars",
  "serde",
@@ -3271,7 +3258,7 @@ dependencies = [
  "anyhow",
  "clap 3.2.23",
  "fluvio-connectors-common",
- "fluvio-future 0.4.5",
+ "fluvio-future",
  "kafka",
  "schemars",
  "serde",
@@ -3557,7 +3544,7 @@ dependencies = [
  "async-std",
  "clap 3.2.23",
  "fluvio-connectors-common",
- "fluvio-future 0.4.5",
+ "fluvio-future",
  "rumqttc",
  "rustls 0.20.7",
  "rustls-native-certs 0.6.2",
@@ -4021,7 +4008,7 @@ dependencies = [
  "dotenv",
  "fluvio",
  "fluvio-connectors-common",
- "fluvio-future 0.4.5",
+ "fluvio-future",
  "fluvio-model-postgres",
  "once_cell",
  "postgres-protocol 0.6.1",
@@ -4051,7 +4038,7 @@ dependencies = [
  "dotenv",
  "fluvio",
  "fluvio-connectors-common",
- "fluvio-future 0.4.5",
+ "fluvio-future",
  "fluvio-model-postgres",
  "once_cell",
  "postgres-protocol 0.6.1",
@@ -4826,9 +4813,9 @@ dependencies = [
 
 [[package]]
 name = "serde_qs"
-version = "0.9.2"
+version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6af4cee6cd4b23b45e6709150d1e9af5c748131de7e3316a7c2b3008051ed725"
+checksum = "8cac3f1e2ca2fe333923a1ae72caca910b98ed0630bb35ef6f8c8517d6e81afa"
 dependencies = [
  "percent-encoding",
  "serde",
@@ -5038,7 +5025,7 @@ dependencies = [
  "anyhow",
  "clap 3.2.23",
  "fluvio-connectors-common",
- "fluvio-future 0.4.5",
+ "fluvio-future",
  "reqwest",
  "schemars",
  "serde",
@@ -5112,7 +5099,7 @@ dependencies = [
  "flate2",
  "fluvio",
  "fluvio-connectors-common",
- "fluvio-future 0.4.5",
+ "fluvio-future",
  "fluvio-model-sql",
  "fluvio-smartengine 0.6.0",
  "fluvio-smartmodule 0.4.0",
