@@ -11,7 +11,7 @@ anyhow = "1.0.56"
 clap = { version = "3.1", features = ["std", "derive"], default-features = false }
 fluvio-connectors-common = { path = "../../common" }
 k8-types = { version = "0.6.0", default-features = false, features = ["app"] }
-k8-client = "7.0.0"
+k8-client = "8.0.0"
 serde = { version = "1.0.127", features = ["derive"] }
 serde_yaml = "0.8.18"
 serde_json = { version = "1", default-features = false}
