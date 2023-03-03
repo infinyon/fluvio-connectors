@@ -10,7 +10,7 @@ path = "src/bin/main.rs"
 
 [dependencies]
 tracing = "0.1"
-clap = { version = "3.1", features = ["std", "derive"], default-features = false }
+clap = { version = "4.1", features = ["std", "derive"], default-features = false }
 tokio = { version = "1", features = ["full"] }
 tokio-stream = "0.1"
 reqwest = "0.11"

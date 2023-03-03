@@ -17,7 +17,7 @@ fluvio-connectors-common = { path = "../../common", features = ["source"]}
 fluvio-model-postgres = { path = "../../models/fluvio-model-postgres" }
 bytes = "1"
 thiserror = "1"
-clap = { version = "3.1", features = ["std", "derive", "env"], default-features = false }
+clap = { version = "4.1", features = ["std", "derive", "env"], default-features = false }
 dotenv = "0.15"
 url = "2.2"
 serde = { version = "1", features = ["derive"] }
