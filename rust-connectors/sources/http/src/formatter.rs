@@ -178,8 +178,8 @@ mod tests {
         if count_header > 0 {
             for x in 0..count_header {
                 let (hdr_key, hdr_val) = (
-                    format!("x-{}-key-{}", k_prefix, x),
-                    format!("x-{}-val-{}", v_prefix, x),
+                    format!("x-{k_prefix}-key-{x}"),
+                    format!("x-{v_prefix}-val-{x}"),
                 );
 
                 let hdr_value =
@@ -195,7 +195,7 @@ mod tests {
                     name: hdr_key.clone(),
                     value: hdr_val.clone(),
                 });
-                expect_output_vec_str.push(format!("{}: {}", hdr_key, hdr_val));
+                expect_output_vec_str.push(format!("{hdr_key}: {hdr_val}"));
             }
         }
 

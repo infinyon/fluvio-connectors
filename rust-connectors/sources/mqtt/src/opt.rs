@@ -48,7 +48,7 @@ pub(crate) enum OutputType {
 impl Display for OutputType {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match serde_json::to_value(self) {
-            Ok(Value::String(s)) => write!(f, "{}", s),
+            Ok(Value::String(s)) => write!(f, "{s}"),
             _ => Err(std::fmt::Error),
         }
     }

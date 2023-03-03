@@ -24,7 +24,7 @@ impl TryFrom<&reqwest::Response> for HttpResponseRecord {
 
 // Reqwest Response TryFrom helper impl.
 fn version(version: &reqwest::Version) -> String {
-    format!("{:?}", version)
+    format!("{version:?}")
 }
 
 // Reqwest Response TryFrom helper impl.

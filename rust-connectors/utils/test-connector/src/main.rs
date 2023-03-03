@@ -94,7 +94,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     } else {
         // Otherwise run Hello, Fluvio
-        println!("cmd args: {:?}", opts);
+        println!("cmd args: {opts:?}");
         produce(opts).await?;
     }
 

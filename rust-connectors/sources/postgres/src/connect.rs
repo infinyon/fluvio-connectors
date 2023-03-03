@@ -131,7 +131,7 @@ impl PgConnector {
         if publications.is_empty() {
             tracing::info!("Creating publication {publication}");
 
-            let query = format!("CREATE PUBLICATION \"{}\" FOR ALL TABLES", publication);
+            let query = format!("CREATE PUBLICATION \"{publication}\" FOR ALL TABLES");
             let _query_out = pg_client.query(query.as_str(), &[]).await?;
         }
         Ok(())
@@ -145,7 +145,7 @@ impl PgConnector {
             .await?;
         tokio::spawn(conn);
         let publication = &config.publication;
-        let query = format!("DROP PUBLICATION IF EXISTS \"{}\"", publication);
+        let query = format!("DROP PUBLICATION IF EXISTS \"{publication}\"");
         let _query_out = pg_client.query(query.as_str(), &[]).await?;
         let query = format!("SELECT pg_drop_replication_slot('{}')", config.slot);
         let _query_out = pg_client.query(query.as_str(), &[]).await?;

@@ -104,10 +104,9 @@ trait Insert<DB: Database> {
 impl Insert<Postgres> for Db {
     fn query(table: &str, values: &[Value]) -> String {
         let columns = values.iter().map(|v| v.column.as_str()).join(",");
-        let values_clause = (1..=values.len()).map(|i| format!("${}", i)).join(",");
+        let values_clause = (1..=values.len()).map(|i| format!("${i}")).join(",");
         format!(
-            "INSERT INTO {} ({}) VALUES ({})",
-            table, columns, values_clause
+            "INSERT INTO {table} ({columns}) VALUES ({values_clause})"
         )
     }
 
@@ -144,8 +143,7 @@ impl Insert<Sqlite> for Db {
         let columns = values.iter().map(|v| v.column.as_str()).join(",");
         let values_clause = (1..=values.len()).map(|_| "?").join(",");
         format!(
-            "INSERT INTO {} ({}) VALUES ({})",
-            table, columns, values_clause
+            "INSERT INTO {table} ({columns}) VALUES ({values_clause})"
         )
     }
 

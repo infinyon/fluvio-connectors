@@ -116,7 +116,7 @@ impl CommonConnectorOpt {
 impl CommonConnectorOpt {
     pub async fn create_consumer(&self) -> anyhow::Result<fluvio::PartitionConsumer> {
         self.ensure_topic_exists().await?;
-        Ok(fluvio::consumer(&self.fluvio_topic, self.consumer_common.consumer_partition).await?)
+        fluvio::consumer(&self.fluvio_topic, self.consumer_common.consumer_partition).await
     }
 
     pub async fn create_consumer_stream(
